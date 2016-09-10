@@ -1,0 +1,23 @@
+{
+    "name": "hapi-starter",
+    "version": "0.0.1",
+    "description": "Hapi Starter",
+    "main": "lib/index.js",
+    "scripts": {
+        "start": "node lib/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:ferrao/hapi-starter.git"
+    },
+    "author": "Rui Ferrao",
+    "bugs": {
+        "url": "https://github.com/ferrao/hapi-starter/issues"
+    },
+    "homepage": "https://github.com/ferrao/hapi-starter",
+    "dependencies": {
+        "hapi": "^15.0.3",
+        "hoek": "^4.0.2"
+    }
+}
