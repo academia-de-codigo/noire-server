@@ -14,7 +14,7 @@ var expect = Code.expect;
 
 describe('version plugin', function() {
     it('returns the version from package.json', function(done) {
-        Server.init(8000, function(err, server) {
+        Server.init(0, function(err, server) {
 
             expect(err).to.not.exist();
 
