@@ -1,15 +1,5 @@
 {
     "globals": {
-        "jasmine": false,
-        "spyOn": false,
-        "it": false,
-        "console": false,
-        "describe": false,
-        "expect": false,
-        "beforeEach": false,
-        "waits": false,
-        "waitsFor": false,
-        "runs": false
     },
     "node": true,
     "boss": false,

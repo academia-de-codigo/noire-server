@@ -3,9 +3,13 @@
     "version": "0.0.1",
     "description": "Hapi Starter",
     "main": "lib/index.js",
+    "keywords": [
+        "hapi",
+        "boilerplate"
+    ],
     "scripts": {
         "start": "node lib/index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "lab -cLv -t100 -a code"
     },
     "repository": {
         "type": "git",
@@ -19,5 +23,9 @@
     "dependencies": {
         "hapi": "^15.0.3",
         "hoek": "^4.0.2"
+    },
+    "devDependencies": {
+        "code": "^3.0.2",
+        "lab": "^11.0.1"
     }
 }
