@@ -38,7 +38,7 @@ describe('server bootstrap', function() {
         });
     });
 
-    it('handles register plugin errors', function(done) {
+    it('handles register plugin errors', { parallel: false }, function(done) {
 
         var PLUGIN_ERROR = 'register version failed';
 
@@ -46,6 +46,7 @@ describe('server bootstrap', function() {
         var orig = Version.register;
 
         // crate a new fake version plugin register function
+        // parallel testing is not safe with monkey patching like this
         Version.register = function(server, options, next) {
 
             // restore the original version plugin register function
