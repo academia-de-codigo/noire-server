@@ -16,19 +16,20 @@ var expect = Code.expect;
 describe('authentication', function() {
 
     // a test ID that should not exist
-    var ID = 1912341234;
+    var ID_INVALID = 1912341234;
+    var ID_VALID = 2;
 
     // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
     var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
     process.env.JWT_SECRET = secret;
-    var jwt = Auth.getToken(ID);
+    var jwt = Auth.getToken(ID_INVALID);
 
     it('get token and validate with correct secret', function(done) {
 
         JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
 
             expect(err).not.to.exist();
-            expect(decoded.id).to.equals(ID);
+            expect(decoded.id).to.equals(ID_INVALID);
 
             done();
         });
@@ -49,7 +50,9 @@ describe('authentication', function() {
 
     });
 
-    it('handle plugin registration failure', { parallel: false }, function(done) {
+    it('handle plugin registration failure', {
+        parallel: false
+    }, function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
         var fakeServer = {};
@@ -62,6 +65,23 @@ describe('authentication', function() {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
+            done();
+        });
+
+    });
+
+    it('secret not present', function(done) {
+
+        var PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
+
+        var secret = process.env.JWT_SECRET;
+        process.env.JWT_SECRET = '';
+
+        Auth.register(null, null, function(error) {
+
+            expect(error).to.exist();
+            expect(error.message).to.equals(PLUGIN_ERROR);
+            process.env.JWT_SECRET = secret;
             done();
         });
 
@@ -115,7 +135,7 @@ describe('authentication', function() {
 
     });
 
-    it('invalid credentials ', function(done) {
+    it('invalid credentials', function(done) {
 
         Server.init(0, function(err, server) {
 
@@ -125,7 +145,7 @@ describe('authentication', function() {
                 method: 'GET',
                 url: '/admin',
                 headers: {
-                    authorization: Auth.getToken(ID)
+                    authorization: Auth.getToken(ID_INVALID)
                 }
             }, function(response) {
 
@@ -135,6 +155,29 @@ describe('authentication', function() {
                 expect(payload.error).to.equals('Unauthorized');
                 expect(payload.message).to.equals('Invalid credentials');
                 server.stop(done);
+            });
+
+        });
+
+    });
+
+    it('valid credentials', function(done) {
+
+        Server.init(0, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject({
+                method: 'GET',
+                url: '/admin',
+                headers: {
+                    authorization: Auth.getToken(ID_VALID)
+                }
+            }, function(response) {
+
+                expect(response.statusCode, 'Status code').to.equal(200);
+                server.stop(done);
+
             });
 
         });

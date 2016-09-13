@@ -1,8 +1,10 @@
 {
-	"admin": {
+	"1": {
+        "username": "admin",
 		"password": "admin"
 	},
-	"guest": {
+	"2": {
+        "username": "guest",
 		"password": "guest"
 	}
 }
