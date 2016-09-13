@@ -13,6 +13,7 @@ var it = lab.test;
 var expect = Code.expect;
 
 describe('version plugin', function() {
+
     it('returns the version from package.json', function(done) {
         Server.init(0, function(err, server) {
 

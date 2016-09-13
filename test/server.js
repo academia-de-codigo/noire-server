@@ -40,9 +40,10 @@ describe('server bootstrap', function() {
 
     it('handles register plugin errors', { parallel: false }, function(done) {
 
-        var PLUGIN_ERROR = 'register version failed';
+        var PLUGIN_ERROR = 'register plugin failed';
 
-        // save the original version plugin register function
+        // save the original version plugin register function, as we will
+        // monkey patch it to test how server handles plugin registration errors
         var orig = Version.register;
 
         // crate a new fake version plugin register function

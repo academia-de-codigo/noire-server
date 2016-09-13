@@ -3,3 +3,14 @@
 # Hapi Starter
 
 ES5 Hapi Boilerplate
+
+## Features
+
+* JWT authentication
+* Testing, code coverage and Travis CI integration
+
+### Desired Features
+
+* Database
+* Views
+* Promises
