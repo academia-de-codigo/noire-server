@@ -5,6 +5,7 @@ var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
 var Auth = require('../lib/auth');
 var Server = require('../lib/server');
+var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -12,6 +13,23 @@ var lab = exports.lab = Lab.script(); // export the test script
 var describe = lab.experiment;
 var it = lab.test;
 var expect = Code.expect;
+
+var internals = {};
+
+internals.manifest = {
+    connections: [{
+        port: 0
+    }],
+    registrations: [{
+        plugin: './auth'
+    }, {
+        plugin: './admin'
+    }]
+};
+
+internals.composeOptions = {
+    relativeTo: Path.resolve(__dirname, '../lib')
+};
 
 describe('authentication', function() {
 
@@ -89,7 +107,7 @@ describe('authentication', function() {
 
     it('token not present', function(done) {
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -109,7 +127,7 @@ describe('authentication', function() {
 
     it('invalid token', function(done) {
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             var invalidJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTkxMjM0MTIzNCwiaWF0IjoxNDczNzA2NzYzLCJleHAiOjE0NzM3MzU1NjN9.xjivOc1Smbf9M8uQHNTBTbcDBavXMjL-0oNxV-yxog0';
 
@@ -137,7 +155,7 @@ describe('authentication', function() {
 
     it('invalid credentials', function(done) {
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -163,7 +181,7 @@ describe('authentication', function() {
 
     it('valid credentials', function(done) {
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 

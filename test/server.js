@@ -5,6 +5,7 @@ var Lab = require('lab'); // the test framework
 var Hapi = require('hapi');
 var Server = require('../lib/server');
 var Version = require('../lib/version');
+var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -13,11 +14,13 @@ var describe = lab.experiment;
 var it = lab.test;
 var expect = Code.expect;
 
+var internals = {};
+
 describe('server bootstrap', function() {
 
     it('start server and return server object', function(done) {
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
@@ -29,7 +32,13 @@ describe('server bootstrap', function() {
 
     it('start server on specified port', function(done) {
 
-        Server.init(8080, function(err, server) {
+        var manifest = {
+            connections: [{
+                port: 8080
+            }]
+        };
+
+        Server.init(manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server.info.port).to.equal(8080);
@@ -63,7 +72,7 @@ describe('server bootstrap', function() {
             name: 'fake version'
         };
 
-        Server.init(0, function(err, server) {
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.exist();
             expect(server).to.not.exist();
@@ -75,3 +84,16 @@ describe('server bootstrap', function() {
     });
 
 });
+
+internals.manifest = {
+    connections: [{
+        port: 0
+    }],
+    registrations: [{
+        plugin: './version'
+    }]
+};
+
+internals.composeOptions = {
+    relativeTo: Path.resolve(__dirname, '../lib')
+};
