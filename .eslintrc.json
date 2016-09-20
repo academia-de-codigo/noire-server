@@ -14,7 +14,7 @@
         "semi": [2, "always"],
         "quotes": [2, "single", "avoid-escape"],
         "eqeqeq": [2, "smart"],
-        "brace-style": [2, "stroustrup"],
+        "brace-style": [2, "1tbs"],
         "space-before-function-paren": [1, "never"],
         "space-before-blocks": [1, "always"],
         "no-console": "off",
