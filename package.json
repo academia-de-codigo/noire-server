@@ -25,10 +25,12 @@
   "homepage": "https://github.com/ferrao/hapi-starter",
   "dependencies": {
     "glue": "^4.0.0",
+    "handlebars": "^4.0.5",
     "hapi": "^15.0.3",
     "hapi-auth-jwt2": "^7.1.3",
     "hoek": "^4.0.2",
-    "jsonwebtoken": "^7.1.9"
+    "jsonwebtoken": "^7.1.9",
+    "vision": "^4.1.0"
   },
   "devDependencies": {
     "code": "^3.0.2",

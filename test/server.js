@@ -16,7 +16,7 @@ var expect = Code.expect;
 
 var internals = {};
 
-describe('server bootstrap', function() {
+describe('Server bootstrap', function() {
 
     it('start server and return server object', function(done) {
 
@@ -47,7 +47,9 @@ describe('server bootstrap', function() {
         });
     });
 
-    it('handles register plugin errors', { parallel: false }, function(done) {
+    it('handles register plugin errors', {
+        parallel: false
+    }, function(done) {
 
         var PLUGIN_ERROR = 'register plugin failed';
 

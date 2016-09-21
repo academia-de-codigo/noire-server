@@ -31,7 +31,7 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../lib')
 };
 
-describe('authentication', function() {
+describe('Plugin: auth', function() {
 
     // a test ID that should not exist
     var ID_INVALID = 1912341234;
@@ -68,7 +68,7 @@ describe('authentication', function() {
 
     });
 
-    it('handle plugin registration failure', {
+    it('handle hapi-auth-jwt2 plugin registration failure', {
         parallel: false
     }, function(done) {
 
