@@ -111,7 +111,7 @@ describe('Plugin: auth', function() {
 
             expect(err).to.not.exist();
 
-            server.inject('/admin', function(response) {
+            server.inject('/', function(response) {
 
                 var payload = JSON.parse(response.payload);
 
@@ -135,7 +135,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: '/',
                 headers: {
                     authorization: invalidJwt
                 }
@@ -161,7 +161,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: '/',
                 headers: {
                     authorization: Auth.getToken(ID_INVALID)
                 }
@@ -187,7 +187,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: '/',
                 headers: {
                     authorization: Auth.getToken(ID_VALID)
                 }
