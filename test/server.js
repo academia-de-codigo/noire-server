@@ -4,7 +4,7 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Hapi = require('hapi');
 var Server = require('../lib/server');
-var Version = require('../lib/version');
+var Version = require('../lib/plugins/version');
 var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -92,7 +92,7 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
-        plugin: './version'
+        plugin: './plugins/version'
     }]
 };
 

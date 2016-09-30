@@ -3,7 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Server = require('../lib/server');
-var Views = require('../lib/views');
+var Views = require('../lib/plugins/views');
 var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -20,7 +20,7 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
-        plugin: './views'
+        plugin: './plugins/views'
     }]
 };
 

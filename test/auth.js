@@ -3,7 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
-var Auth = require('../lib/auth');
+var Auth = require('../lib/plugins/auth');
 var Server = require('../lib/server');
 var Path = require('path');
 
@@ -21,9 +21,9 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
-        plugin: './auth'
+        plugin: './plugins/auth'
     }, {
-        plugin: './admin'
+        plugin: './plugins/admin'
     }]
 };
 

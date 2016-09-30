@@ -20,7 +20,7 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
-        plugin: './version'
+        plugin: './plugins/version'
     }]
 };
 
