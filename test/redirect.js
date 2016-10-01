@@ -29,9 +29,25 @@ var internals = {
     }
 };
 internals.manifest = {
-    connections: [{
-        port: 0
-    }],
+    connections: [
+        {
+            host: 'localhost',
+            port: 0,
+            labels: ['web']
+        },
+        {
+            host: 'localhost',
+            port: 0,
+            labels: ['admin'],
+            tls: Config.tls
+        },
+        {
+            host: 'localhost',
+            port: 0,
+            labels: ['api'],
+            tls: Config.tls
+        }
+    ],
     registrations: [{
         plugin: './plugins/admin',
     }, {
@@ -51,8 +67,9 @@ describe('Plugin: redirect', function() {
         var redirectUrl = Url.format(internals.apiUrl) + Path.resolve(Config.servers.api.prefix, 'version');
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
+            var web = server.select('web');
             expect(err).to.not.exist();
-            server.inject('/api/version', function(response) {
+            web.inject('/api/version', function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
@@ -70,8 +87,9 @@ describe('Plugin: redirect', function() {
         var redirectUrl = Url.format(internals.adminUrl) + Path.resolve(Config.servers.admin.prefix);
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
+            var web = server.select('web');
             expect(err).to.not.exist();
-            server.inject('/admin', function(response) {
+            web.inject('/admin', function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
