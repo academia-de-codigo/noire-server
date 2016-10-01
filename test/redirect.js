@@ -28,6 +28,7 @@ var internals = {
         port: Config.servers.api.port
     }
 };
+
 internals.manifest = {
     connections: [
         {

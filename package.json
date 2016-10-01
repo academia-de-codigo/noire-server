@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "node lib/index.js",
-    "test": "lab -cLv -t90 -a code",
+    "test": "lab -cLv -t90 -a code --coverage-exclude lib/config",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token"
   },
