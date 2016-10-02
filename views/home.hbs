@@ -12,6 +12,39 @@
 
 <body>
 
+    <div class="off-canvas-wrapper">
+        <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+            <!-- Mobile Navigation -->
+            <div class="off-canvas position-left" id="mobile-nav" data-off-canvas>
+                {{> mobile-nav}}
+            </div>
+
+            <div class="off-canvas-content" data-off-canvas-content>
+
+                <div class="title-bar show-for-small-only">
+                    <div class="title-bar-left">
+                        <button class="menu-icon" type="button" data-open="mobile-nav"></button>
+                        <span class="title-bar-title">Menu</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                {{> desktop-nav}}
+
+                <!-- Hero -->
+                {{> hero}}
+
+                <!-- Main Content -->
+                {{> main}}
+
+                <!-- Footer -->
+                {{> footer}}
+            </div>
+
+        </div>
+    </div>
+
     <script src="js/vendor/jquery.js"></script>
     <script src="js/vendor/what-input.js"></script>
     <script src="js/vendor/foundation.js"></script>

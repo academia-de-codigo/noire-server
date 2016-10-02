@@ -1,0 +1,145 @@
+/*
+    General
+ */
+.wrap {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.off-canvas-wrapper {
+    background-color: #222;
+}
+
+/*
+    Mobile Navigation
+ */
+.title-bar {
+    background-color: #222;
+    height: 60px;
+    padding-top: 17px;
+}
+
+.off-canvas {
+    background-color: #222;
+    padding: 10px;
+}
+
+.off-canvas a {
+    color: rgba(255,255,255,0.6);
+    font-weight: bold;
+    line-height: 2;
+}
+
+.off-canvas a:hover {
+    color: rgba(255,255,255,0.8);
+}
+
+.js-off-canvas-exit {
+    background: rgba(0,0,0,0.6);
+}
+
+/*
+    Desktop Navigation
+ */
+.nav-desktop {
+    background-color: #222;
+    height: 60px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.site-logo {
+    color: white;
+    display: inline-block;
+    /* allows usage of line-height to center vertically */
+    line-height: 60px;
+    /* same as nav-desktop will get this centered */
+}
+
+.nav-desktop .menu-desktop {
+    background-color: transparent;
+    ;
+}
+
+.nav-desktop .menu-desktop a {
+    display: inline-block;
+    /* allows usage of line-height to center vertically */
+    line-height: 60px;
+    /* same as nav-desktop will get this centered */
+    padding-top: 0;
+    padding-bottom: 0;
+    color: white;
+}
+
+.nav-desktop .menu-desktop a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-desktop .menu-desktop .button {
+    border: none;
+    /* default border messes up menu-desktop height */
+}
+
+.nav-desktop .menu-desktop .button:hover {
+    background-color: #1583cc
+}
+
+
+/*
+    Hero
+ */
+
+.hero {
+    padding: 80px 0;
+    background-color: #999;
+    background-image: url("../img/low_contrast_linen.png");
+}
+
+.hero p, .hero h1 {
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 80%;
+}
+
+
+/*
+    Main Content
+ */
+.main {
+    padding: 80px 0;
+}
+
+/*
+    Footer
+ */
+
+footer {
+    background-color: #222;
+    padding: 80px 0;
+}
+
+footer h4 {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.2em;
+}
+
+footer hr {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 10px 0;
+}
+
+footer a {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8em;
+}
+
+footer a:hover {
+    display: block;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+
+/*
+    Media Queries
+ */
