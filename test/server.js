@@ -6,7 +6,7 @@ var Hapi = require('hapi');
 var Http = require('http');
 var Https = require('https');
 var Server = require('../lib/server');
-var Version = require('../lib/plugins/version');
+var Api = require('../lib/plugins/api');
 var Config = require('../lib/config');
 var Path = require('path');
 
@@ -35,7 +35,7 @@ internals.manifest = {
         tls: Config.tls
     }],
     registrations: [{
-        plugin: './plugins/version'
+        plugin: './plugins/api'
     }]
 };
 
@@ -139,14 +139,14 @@ describe('Server bootstrap', function() {
 
         // save the original version plugin register function, as we will
         // monkey patch it to test how server handles plugin registration errors
-        var orig = Version.register;
+        var orig = Api.register;
 
         // crate a new fake version plugin register function
         // parallel testing is not safe with monkey patching like this
-        Version.register = function(server, options, next) {
+        Api.register = function(server, options, next) {
 
             // restore the original version plugin register function
-            Version.register = orig;
+            Api.register = orig;
 
             // force plugin registration to fail
             return next(new Error(PLUGIN_ERROR));
@@ -154,7 +154,7 @@ describe('Server bootstrap', function() {
         };
 
         // registration function needs a version
-        Version.register.attributes = {
+        Api.register.attributes = {
             name: 'fake version'
         };
 

@@ -20,7 +20,7 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
-        plugin: './plugins/version'
+        plugin: './plugins/api'
     }]
 };
 
@@ -28,7 +28,7 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../lib')
 };
 
-describe('Plugin: version', function() {
+describe('Plugin: api', function() {
 
     it('returns the version from package.json', function(done) {
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {

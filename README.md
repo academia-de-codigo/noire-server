@@ -8,9 +8,9 @@ ES5 Hapi Boilerplate
 
 * JWT authentication
 * Testing, code coverage and Travis CI integration
+* Views with the Foundation front-end framework and Handlebars template engine
 
 ### Desired Features
 
-* Database
-* Views
+* Database ORM
 * Promises

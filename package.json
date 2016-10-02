@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "start": "node lib/index.js",
-    "test": "lab -cLv -t90 -a code --coverage-exclude lib/config",
+    "test": "lab",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token"
   },
@@ -29,6 +29,7 @@
     "hapi": "^15.0.3",
     "hapi-auth-jwt2": "^7.1.3",
     "hoek": "^4.0.2",
+    "inert": "^4.0.2",
     "jsonwebtoken": "^7.1.9",
     "vision": "^4.1.0"
   },
