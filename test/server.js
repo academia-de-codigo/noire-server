@@ -26,7 +26,7 @@ internals.manifest = {
     }, {
         host: 'localhost',
         port: 0,
-        labels: ['admin'],
+        labels: ['web-tls'],
         tls: Config.tls
     }, {
         host: 'localhost',
@@ -87,7 +87,7 @@ describe('Server bootstrap', function() {
             expect(server).to.be.instanceof(Hapi.Server);
             expect(server.connections.length).to.equal(3);
             expect(server.select('web').connections.length).to.equal(1);
-            expect(server.select('admin').connections.length).to.equal(1);
+            expect(server.select('web-tls').connections.length).to.equal(1);
             expect(server.select('api').connections.length).to.equal(1);
 
             server.stop(done);
@@ -107,13 +107,13 @@ describe('Server bootstrap', function() {
 
     });
 
-    it('should use https for listener admin', function(done) {
+    it('should use https for listener web-tls', function(done) {
 
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
-            expect(server.select('admin').listener instanceof Https.Server).to.equal(true);
+            expect(server.select('web-tls').listener instanceof Https.Server).to.equal(true);
             server.stop(done);
         });
 
