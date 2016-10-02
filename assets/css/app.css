@@ -1,6 +1,7 @@
 /*
     General
  */
+
 .wrap {
     width: 90%;
     max-width: 1100px;
@@ -11,9 +12,11 @@
     background-color: #222;
 }
 
+
 /*
     Mobile Navigation
  */
+
 .title-bar {
     background-color: #222;
     height: 60px;
@@ -26,22 +29,24 @@
 }
 
 .off-canvas a {
-    color: rgba(255,255,255,0.6);
+    color: rgba(255, 255, 255, 0.6);
     font-weight: bold;
     line-height: 2;
 }
 
 .off-canvas a:hover {
-    color: rgba(255,255,255,0.8);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .js-off-canvas-exit {
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
 }
+
 
 /*
     Desktop Navigation
  */
+
 .nav-desktop {
     background-color: #222;
     height: 60px;
@@ -105,9 +110,11 @@
 /*
     Main Content
  */
+
 .main {
     padding: 80px 0;
 }
+
 
 /*
     Footer
@@ -141,5 +148,26 @@ footer a:hover {
 
 
 /*
+    Login form
+ */
+
+.login {
+    padding-top: 100px;
+}
+
+#log-in-form {
+    border: 1px solid #cacaca;
+    padding: 16px;
+    border-radius: 3px;
+}
+
+
+/*
     Media Queries
  */
+
+@media (max-width: 40em) {
+    .login {
+        padding-top: 20px;
+    }
+}
