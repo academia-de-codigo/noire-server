@@ -3,8 +3,8 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
-var Auth = require('../lib/plugins/auth');
-var Server = require('../lib/server');
+var Auth = require('../../lib/plugins/auth');
+var Server = require('../../lib/server');
 var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -28,7 +28,7 @@ internals.manifest = {
 };
 
 internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../lib')
+    relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
 describe('Plugin: auth', function() {

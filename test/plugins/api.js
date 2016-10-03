@@ -2,8 +2,8 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
-var Server = require('../lib/server');
-var Package = require('../package.json');
+var Server = require('../../lib/server');
+var Package = require('../../package.json');
 var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -25,7 +25,7 @@ internals.manifest = {
 };
 
 internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../lib')
+    relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
 describe('Plugin: api', function() {

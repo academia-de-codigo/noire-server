@@ -4,8 +4,8 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Url = require('url');
-var Server = require('../lib/server');
-var Config = require('../lib/config');
+var Server = require('../../lib/server');
+var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -55,7 +55,7 @@ internals.apiUrl = {
 
 
 internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../lib')
+    relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
 

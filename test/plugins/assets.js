@@ -2,11 +2,9 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Server = require('../../lib/server');
+var Assets = require('../../lib/plugins/assets');
 var Path = require('path');
-var Config = require('../lib/config');
-var Server = require('../lib/server');
-var Views = require('../lib/plugins/views');
-
 var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
@@ -18,25 +16,20 @@ var internals = {};
 
 internals.manifest = {
     connections: [{
-        port: 0,
-        labels: ['web']
-    }, {
-        port: 0,
-        labels: ['web-tls'],
-        tls: Config.tls
+        port: 0
     }],
     registrations: [{
-        plugin: './plugins/views'
+        plugin: './plugins/assets'
     }]
 };
 
 internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../lib')
+    relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
-describe('Plugin: views', function() {
+describe('Plugin: assets', function() {
 
-    it('handles vision plugin registration failure', {
+    it('handles inert plugin registration failure', {
         parallel: false
     }, function(done) {
 
@@ -47,7 +40,7 @@ describe('Plugin: views', function() {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Views.register(fakeServer, null, function(error) {
+        Assets.register(fakeServer, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -57,14 +50,13 @@ describe('Plugin: views', function() {
 
     });
 
-    it('returns the home view', function(done) {
+    it('returns the app css', function(done) {
 
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            var web = server.select('web');
-            web.inject('/home', function(response) {
+            server.inject('/css/app.css', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
@@ -74,14 +66,13 @@ describe('Plugin: views', function() {
         });
     });
 
-    it('returns the login view', function(done) {
+    it('returns the app js', function(done) {
 
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            var webTls = server.select('web-tls');
-            webTls.inject('/login', function(response) {
+            server.inject('/js/app.js', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();

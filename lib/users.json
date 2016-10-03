@@ -1,14 +1,15 @@
-{
-    "0": {
-        "username": "test@gmail.com",
+[
+    {
+        "id": 0,
+        "email": "test@gmail.com",
         "password": "test"
-    },
-	"1": {
-        "username": "admin@gmail.com",
+    }, {
+        "id": 1,
+        "email": "admin@gmail.com",
 		"password": "admin"
-	},
-	"2": {
-        "username": "guest@gmail.com",
+	}, {
+        "id": 2,
+        "email": "guest@gmail.com",
 		"password": "guest"
 	}
-}
+]
