@@ -23,7 +23,7 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/auth'
     }, {
-        plugin: './plugins/admin'
+        plugin: './plugins/restricted'
     }]
 };
 

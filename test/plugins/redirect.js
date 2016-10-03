@@ -32,7 +32,7 @@ internals.manifest = {
         tls: Config.tls
     }],
     registrations: [{
-        plugin: './plugins/admin',
+        plugin: './plugins/restricted',
     }, {
         plugin: './plugins/redirect'
     }]
@@ -83,7 +83,7 @@ describe('Plugin: redirect', function() {
 
     it('redirects http admin requests to https', function(done) {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Path.resolve(Config.prefixes.admin);
+        var redirectUrl = Url.format(internals.webTlsUrl) + Path.resolve(Config.prefixes.restricted);
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
             var web = server.select('web');
