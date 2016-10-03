@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "code": "^3.0.2",
+    "hapi-auth-basic": "^4.2.0",
     "lab": "^11.0.1"
   }
 }

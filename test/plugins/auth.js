@@ -3,14 +3,16 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
+var Path = require('path');
 var Auth = require('../../lib/plugins/auth');
 var Server = require('../../lib/server');
-var Path = require('path');
+var UserService = require('../../lib/services/user');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
 var describe = lab.experiment;
+var before = lab.before;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -31,11 +33,28 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
+internals.users = [{
+    'id': 0,
+    'email': 'test@gmail.com',
+    'password': 'test',
+    'scope': 'user'
+}, {
+    'id': 1,
+    'email': 'admin@gmail.com',
+    'password': 'admin',
+    'scope': 'admin'
+}];
+
 describe('Plugin: auth', function() {
 
+    before(function(done) {
+        UserService.setUsers(internals.users);
+        done();
+    });
+
     // a test ID that should not exist
-    var ID_INVALID = 1912341234;
-    var ID_VALID = 2;
+    var ID_INVALID = 2;
+    var ID_VALID = 1;
 
     // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
     var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
@@ -192,6 +211,8 @@ describe('Plugin: auth', function() {
                     authorization: Auth.getToken(ID_VALID)
                 }
             }, function(response) {
+
+                console.log(response.payload);
 
                 expect(response.statusCode, 'Status code').to.equal(200);
                 server.stop(done);

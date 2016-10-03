@@ -2,14 +2,17 @@
     {
         "id": 0,
         "email": "test@gmail.com",
-        "password": "test"
+        "password": "test",
+        "scope": ["user", "guest"]
     }, {
         "id": 1,
         "email": "admin@gmail.com",
-		"password": "admin"
+		"password": "admin",
+        "scope": ["admin", "user", "guest"]
 	}, {
         "id": 2,
         "email": "guest@gmail.com",
-		"password": "guest"
+		"password": "guest",
+        "scope": "guest"
 	}
 ]

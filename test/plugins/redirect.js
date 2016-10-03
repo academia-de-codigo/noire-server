@@ -32,6 +32,11 @@ internals.manifest = {
         tls: Config.tls
     }],
     registrations: [{
+        plugin: './plugins/auth',
+        options: {
+            select: ['web-tls']
+        }
+    }, {
         plugin: './plugins/restricted',
         options: {
             select: ['web-tls'],
@@ -43,6 +48,18 @@ internals.manifest = {
         }
     }]
 };
+
+internals.users = [{
+    'id': 0,
+    'email': 'test@gmail.com',
+    'password': 'test',
+    'scope': 'user'
+}, {
+    'id': 1,
+    'email': 'admin@gmail.com',
+    'password': 'admin',
+    'scope': 'admin'
+}];
 
 internals.webTlsUrl = {
     protocol: 'https',
@@ -64,7 +81,7 @@ internals.composeOptions = {
 
 describe('Plugin: redirect', function() {
 
-    it('redirects http api requests to https', function(done) {
+    it('http api requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.apiUrl) + Path.resolve(Config.prefixes.api, 'version');
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
@@ -84,7 +101,7 @@ describe('Plugin: redirect', function() {
 
     });
 
-    it('redirects http admin requests to https', function(done) {
+    it('http admin requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.admin;
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
@@ -104,7 +121,7 @@ describe('Plugin: redirect', function() {
 
     });
 
-    it('redirects http account requests to https', function(done) {
+    it('http account requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.account;
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
@@ -123,8 +140,7 @@ describe('Plugin: redirect', function() {
 
     });
 
-
-    it('redirects http login requests to https', function(done) {
+    it('http login requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + '/login';
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
