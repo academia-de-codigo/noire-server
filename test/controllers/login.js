@@ -2,7 +2,9 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Url = require('url');
 var JWT = require('jsonwebtoken');
+var Config = require('../../lib/config');
 var LoginCtrl = require('../../lib/controllers/login');
 var UserService = require('../../lib/services/user');
 
@@ -19,6 +21,12 @@ internals.user = {
     'id': 0,
     'email': 'test@gmail.com',
     'password': 'test'
+};
+internals.adminUrl = {
+    protocol: 'https',
+    slashes: true,
+    hostname: Config.connections.webTls.host,
+    port: Config.connections.webTls.port
 };
 
 describe('Controller: login', function() {
@@ -79,25 +87,34 @@ describe('Controller: login', function() {
             }
         };
 
-        LoginCtrl.login(request, function(response) {
+        LoginCtrl.login(request, {
 
-            expect(response.isBoom).to.not.exist();
-            expect(response).to.be.a.string();
-            return {
-                header: function(header, token) {
-                    expect(header).to.equal('Authorization');
-                    expect(token).to.be.a.string();
+            redirect: function(url) {
 
-                    JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+                expect(url).to.exist();
+                expect(url).to.equals(Url.format(internals.adminUrl) + Config.prefixes.admin);
+                return {
+                    header: function(header, token) {
+                        expect(header).to.equal('Authorization');
+                        expect(token).to.be.a.string();
 
-                        expect(err).not.to.exist();
-                        expect(decoded.id).to.equals(internals.user.id);
+                        JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
 
-                        done();
-                    });
-                }
-            };
+                            expect(err).not.to.exist();
+                            expect(decoded.id).to.equals(internals.user.id);
+                        });
+
+                        return {
+                            state: function(name, value, options) {
+                                expect(name).to.equals('token');
+                                expect(value).to.equals(token);
+                                expect(options).to.exist();
+                                done();
+                            }
+                        };
+                    }
+                };
+            }
         });
     });
-
 });
