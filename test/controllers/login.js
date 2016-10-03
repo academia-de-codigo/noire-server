@@ -22,7 +22,7 @@ internals.user = {
     'email': 'test@gmail.com',
     'password': 'test'
 };
-internals.restrictedUrl = {
+internals.accountUrl = {
     protocol: 'https',
     slashes: true,
     hostname: Config.connections.webTls.host,
@@ -92,7 +92,7 @@ describe('Controller: login', function() {
             redirect: function(url) {
 
                 expect(url).to.exist();
-                expect(url).to.equals(Url.format(internals.restrictedUrl) + Config.prefixes.restricted);
+                expect(url).to.equals(Url.format(internals.accountUrl) + Config.prefixes.account);
                 return {
                     header: function(header, token) {
                         expect(header).to.equal('Authorization');
