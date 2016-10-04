@@ -49,18 +49,6 @@ internals.manifest = {
     }]
 };
 
-internals.users = [{
-    'id': 0,
-    'email': 'test@gmail.com',
-    'password': 'test',
-    'scope': 'user'
-}, {
-    'id': 1,
-    'email': 'admin@gmail.com',
-    'password': 'admin',
-    'scope': 'admin'
-}];
-
 internals.webUrl = {
     protocol: 'http',
     slashes: true,
