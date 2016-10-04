@@ -29,6 +29,14 @@ internals.accountUrl = {
     port: Config.connections.webTls.port
 };
 
+internals.webUrl = {
+    protocol: 'http',
+    slashes: true,
+    hostname: Config.connections.web.host,
+    port: Config.connections.web.port
+};
+
+
 describe('Controller: login', function() {
 
     before(function(done) {
@@ -41,7 +49,7 @@ describe('Controller: login', function() {
         done();
     });
 
-    it('login with invalid email address', function(done) {
+    it('invalid email address', function(done) {
 
         var request = {
             payload: {
@@ -59,7 +67,7 @@ describe('Controller: login', function() {
         });
     });
 
-    it('login with invalid password', function(done) {
+    it('invalid password', function(done) {
 
         var request = {
             payload: {
@@ -78,7 +86,7 @@ describe('Controller: login', function() {
         });
     });
 
-    it('login with valid credentials', function(done) {
+    it('valid credentials', function(done) {
 
         var request = {
             payload: {
@@ -116,5 +124,26 @@ describe('Controller: login', function() {
                 };
             }
         });
+    });
+
+    it('logout', function(done) {
+
+        LoginCtrl.logout(null, {
+
+            redirect: function(url) {
+                expect(url).to.exist();
+                expect(url).to.equals(Url.format(internals.webUrl) + '/login');
+
+                return {
+                    unstate: function(name, options) {
+                        expect(name).to.equals('token');
+                        expect(options).to.exist();
+                        done();
+                    }
+                };
+            }
+
+        });
+
     });
 });

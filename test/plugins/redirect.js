@@ -61,6 +61,13 @@ internals.users = [{
     'scope': 'admin'
 }];
 
+internals.webUrl = {
+    protocol: 'http',
+    slashes: true,
+    hostname: Config.connections.web.host,
+    port: Config.connections.web.port,
+};
+
 internals.webTlsUrl = {
     protocol: 'https',
     slashes: true,
@@ -148,6 +155,25 @@ describe('Plugin: redirect', function() {
             var web = server.select('web');
             expect(err).to.not.exist();
             web.inject('/login', function(response) {
+
+                expect(response.statusCode).to.equal(301);
+                expect(response.statusMessage).to.equal('Moved Permanently');
+                expect(response.headers.location).to.equal(redirectUrl);
+                server.stop(done); // done() callback is required to end the test.
+
+            });
+
+        });
+    });
+
+    it('http root request redirected to home', function(done) {
+
+        var redirectUrl = Url.format(internals.webUrl) + '/home';
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            var web = server.select('web');
+            expect(err).to.not.exist();
+            web.inject('/', function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');

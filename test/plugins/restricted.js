@@ -90,7 +90,6 @@ describe('Plugin: restricted', function() {
                 }
             }, function(response) {
 
-                console.log(response.payload);
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
             });
