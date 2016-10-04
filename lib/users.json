@@ -1,16 +1,19 @@
 [
     {
         "id": 0,
+        "username": "test",
         "email": "test@gmail.com",
         "password": "test",
         "scope": ["user", "guest"]
     }, {
         "id": 1,
+        "username": "admin",
         "email": "admin@gmail.com",
 		"password": "admin",
         "scope": ["admin", "user", "guest"]
 	}, {
         "id": 2,
+        "username": "guest",
         "email": "guest@gmail.com",
 		"password": "guest",
         "scope": "guest"

@@ -33,28 +33,23 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
-internals.users = [{
-    'id': 0,
-    'email': 'test@gmail.com',
-    'password': 'test',
-    'scope': 'user'
-}, {
-    'id': 1,
-    'email': 'admin@gmail.com',
-    'password': 'admin',
-    'scope': 'admin'
-}];
+internals.user = {
+    id: 0,
+    username: 'test',
+    email: 'test@gmail.com',
+    password: 'test',
+    scope: 'user'
+};
 
 describe('Plugin: auth', function() {
 
     before(function(done) {
-        UserService.setUsers(internals.users);
+        UserService.setUsers([internals.user]);
         done();
     });
 
     // a test ID that should not exist
     var ID_INVALID = 2;
-    var ID_VALID = 1;
 
     // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
     var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
@@ -195,6 +190,32 @@ describe('Plugin: auth', function() {
             });
 
         });
+    });
+
+    it('invalid scope', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject({
+                method: 'GET',
+                url: '/admin',
+                headers: {
+                    authorization: Auth.getToken(internals.user.id)
+                }
+            }, function(response) {
+
+                var payload = JSON.parse(response.payload);
+
+                expect(response.statusCode, 'Status code').to.equal(403);
+                expect(payload.error).to.equals('Forbidden');
+                expect(payload.message).to.equals('Insufficient scope');
+                server.stop(done);
+
+            });
+
+        });
 
     });
 
@@ -206,17 +227,17 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: '/account',
                 headers: {
-                    authorization: Auth.getToken(ID_VALID)
+                    authorization: Auth.getToken(internals.user.id)
                 }
             }, function(response) {
 
-                console.log(response.payload);
-
                 expect(response.statusCode, 'Status code').to.equal(200);
+                expect(response.request.auth.credentials.id).to.equal(internals.user.id);
+                expect(response.request.auth.credentials.username).to.equal(internals.user.username);
+                expect(response.request.auth.credentials.email).to.equal(internals.user.email);
                 server.stop(done);
-
             });
 
         });
