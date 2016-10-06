@@ -75,7 +75,7 @@ describe('Plugin: views', function() {
 
             expect(err).to.not.exist();
 
-            server.inject('/home', function(response) {
+            server.inject(Config.paths.home, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
@@ -91,7 +91,7 @@ describe('Plugin: views', function() {
 
             expect(err).to.not.exist();
 
-            server.inject('/login', function(response) {
+            server.inject(Config.paths.login, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();

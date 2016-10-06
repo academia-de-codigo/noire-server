@@ -9,7 +9,15 @@
                 <li><a href="#">Two</a></li>
                 <li><a href="#">Three</a></li>
                 <li><a href="#">Four</a></li>
-                <li><a class="button" onclick="window.location.href='/login'">Login</a></li>
+                {{#if user}}
+                    {{#if user.admin}}
+                        <li><a href="/account">Admin</a></li>
+                    {{/if}}
+                    <li><a href="/account">Account</a></li>
+                    <li><a class="button" onclick="window.location.href='/logout'">Logout</a></li>
+                {{else}}
+                    <li><a class="button" onclick="window.location.href='/login'">Login</a></li>
+                {{/if}}
             </ul>
         </div>
     </div>

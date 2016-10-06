@@ -100,7 +100,7 @@ describe('Controller: login', function() {
             redirect: function(url) {
 
                 expect(url).to.exist();
-                expect(url).to.equals(Url.format(internals.accountUrl) + Config.prefixes.account);
+                expect(url).to.equals(Url.format(internals.accountUrl) + Config.paths.home);
                 return {
                     header: function(header, token) {
                         expect(header).to.equal('Authorization');
@@ -132,7 +132,7 @@ describe('Controller: login', function() {
 
             redirect: function(url) {
                 expect(url).to.exist();
-                expect(url).to.equals(Url.format(internals.webUrl) + '/login');
+                expect(url).to.equals(Url.format(internals.webUrl) + Config.paths.home);
 
                 return {
                     unstate: function(name, options) {
