@@ -13,6 +13,9 @@ var lab = exports.lab = Lab.script(); // export the test script
 // make lab feel like jasmine
 var describe = lab.experiment;
 var before = lab.before;
+var beforeEach = lab.beforeEach;
+var after = lab.after;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -25,7 +28,7 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/auth'
     }, {
-        plugin: './plugins/restricted'
+        plugin: './plugins/views'
     }]
 };
 
@@ -44,24 +47,40 @@ internals.user = {
 describe('Plugin: auth', function() {
 
     before(function(done) {
+
+        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
+        internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+        internals.ID_INVALID = 2;
+
+        internals.originalUsers = UserService.getUsers();
         UserService.setUsers([internals.user]);
+
+        done();
+
+    });
+
+    after(function(done) {
+        UserService.setUsers(internals.originalUsers);
         done();
     });
 
-    // a test ID that should not exist
-    var ID_INVALID = 2;
+    beforeEach(function(done) {
+        process.env.JWT_SECRET = internals.secret;
+        done();
+    });
 
-    // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-    var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
-    process.env.JWT_SECRET = secret;
-    var jwt = Auth.getToken(ID_INVALID);
+    afterEach(function(done) {
+        process.env.JWT_SECRET = '';
+        done();
+    });
 
     it('get token and validate with correct secret', function(done) {
 
+        var jwt = Auth.getToken(internals.ID_INVALID);
         JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
 
             expect(err).not.to.exist();
-            expect(decoded.id).to.equals(ID_INVALID);
+            expect(decoded.id).to.equals(internals.ID_INVALID);
 
             done();
         });
@@ -70,6 +89,7 @@ describe('Plugin: auth', function() {
 
     it('get token and validate with incorrect secret', function(done) {
 
+        var jwt = Auth.getToken(internals.ID_INVALID);
         JWT.verify(jwt, 'invalid secret', function(err, decoded) {
 
             expect(err).to.exist();
@@ -105,15 +125,11 @@ describe('Plugin: auth', function() {
     it('secret not present', function(done) {
 
         var PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
-
-        var secret = process.env.JWT_SECRET;
         process.env.JWT_SECRET = '';
-
         Auth.register(null, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
-            process.env.JWT_SECRET = secret;
             done();
         });
 
@@ -177,7 +193,7 @@ describe('Plugin: auth', function() {
                 method: 'GET',
                 url: '/admin',
                 headers: {
-                    authorization: Auth.getToken(ID_INVALID)
+                    authorization: Auth.getToken(internals.ID_INVALID)
                 }
             }, function(response) {
 
