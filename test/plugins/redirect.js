@@ -39,7 +39,7 @@ internals.manifest = {
             select: ['web', 'web-tls']
         }
     }, {
-        plugin: './plugins/views',
+        plugin: './plugins/routes',
         options: {
             select: ['web', 'web-tls'],
         }

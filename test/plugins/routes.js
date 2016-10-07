@@ -5,7 +5,7 @@ var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Config = require('../../lib/config');
 var Server = require('../../lib/server');
-var Views = require('../../lib/plugins/views');
+var Routes = require('../../lib/plugins/routes');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -25,7 +25,7 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/auth'
     }, {
-        plugin: './plugins/views'
+        plugin: './plugins/routes'
     }]
 };
 
@@ -72,7 +72,7 @@ describe('Plugin: views', function() {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Views.register(fakeServer, null, function(error) {
+        Routes.register(fakeServer, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
