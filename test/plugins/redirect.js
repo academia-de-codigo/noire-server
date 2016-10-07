@@ -46,7 +46,7 @@ internals.manifest = {
     }, {
         plugin: './plugins/redirect',
         options: {
-            select: ['web']
+            select: ['web', 'web-tls']
         }
     }]
 };
@@ -176,6 +176,25 @@ describe('Plugin: redirect', function() {
             expect(err).to.not.exist();
             var web = server.select('web');
             web.inject('/', function(response) {
+
+                expect(response.statusCode).to.equal(301);
+                expect(response.statusMessage).to.equal('Moved Permanently');
+                expect(response.headers.location).to.equal(redirectUrl);
+                server.stop(done); // done() callback is required to end the test.
+
+            });
+
+        });
+    });
+
+    it('https root request redirected to home', function(done) {
+
+        var redirectUrl = Url.format(internals.webTlsUrl) + Config.paths.home;
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            var webTls = server.select('web-tls');
+            webTls.inject('/', function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
