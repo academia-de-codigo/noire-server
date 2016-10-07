@@ -7,6 +7,7 @@ var Path = require('path');
 var Auth = require('../../lib/plugins/auth');
 var Server = require('../../lib/server');
 var UserService = require('../../lib/services/user');
+var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -141,7 +142,7 @@ describe('Plugin: auth', function() {
 
             expect(err).to.not.exist();
 
-            server.inject('/admin', function(response) {
+            server.inject(Config.prefixes.admin, function(response) {
 
                 var payload = JSON.parse(response.payload);
 
@@ -165,7 +166,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: Config.prefixes.admin,
                 headers: {
                     authorization: invalidJwt
                 }
@@ -191,7 +192,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: Config.prefixes.admin,
                 headers: {
                     authorization: Auth.getToken(internals.ID_INVALID)
                 }
@@ -216,7 +217,7 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/admin',
+                url: Config.prefixes.admin,
                 headers: {
                     authorization: Auth.getToken(internals.user.id)
                 }
@@ -250,9 +251,11 @@ describe('Plugin: auth', function() {
             }, function(response) {
 
                 expect(response.statusCode, 'Status code').to.equal(200);
+                expect(response.request.auth.isAuthenticated).to.be.true();
                 expect(response.request.auth.credentials.id).to.equal(internals.user.id);
                 expect(response.request.auth.credentials.username).to.equal(internals.user.username);
                 expect(response.request.auth.credentials.email).to.equal(internals.user.email);
+                expect(response.request.auth.credentials.scope).to.equal(internals.user.scope);
                 server.stop(done);
             });
 

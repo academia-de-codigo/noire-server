@@ -33,6 +33,19 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
+internals.users = [{
+    'id': 0,
+    'username': 'test',
+    'email': 'test@gmail.com',
+    'scope': 'user'
+}, {
+    'id': 1,
+    'username': 'admin',
+    'email': 'admin@gmail.com',
+    'scope': 'admin'
+}];
+
+
 describe('Plugin: views', function() {
 
     before(function(done) {
@@ -69,7 +82,7 @@ describe('Plugin: views', function() {
 
     });
 
-    it('returns the home view', function(done) {
+    it('returns the home view for non authenticaded users', function(done) {
 
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -79,6 +92,59 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+                expect(response.request.auth.isAuthenticated).to.be.false();
+            });
+
+            server.stop(done);
+        });
+    });
+
+    it('returns the home view for authenticaded users', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject({
+                method: 'GET',
+                url: Config.paths.home,
+                credentials: internals.users[0]
+            }, function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+                expect(response.request.auth.isAuthenticated).to.be.true();
+                expect(response.request.auth.credentials.id).to.equal(internals.users[0].id);
+                expect(response.request.auth.credentials.username).to.equal(internals.users[0].username);
+                expect(response.request.auth.credentials.email).to.equal(internals.users[0].email);
+                expect(response.request.auth.credentials.scope).to.equal(internals.users[0].scope);
+
+            });
+
+            server.stop(done);
+        });
+    });
+
+    it('returns the home view for admin users', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject({
+                method: 'GET',
+                url: Config.paths.home,
+                credentials: internals.users[1]
+            }, function(response) {
+
+                expect(internals.users[1].scope).to.equal('admin');
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+                expect(response.request.auth.isAuthenticated).to.be.true();
+                expect(response.request.auth.credentials.id).to.equal(internals.users[1].id);
+                expect(response.request.auth.credentials.username).to.equal(internals.users[1].username);
+                expect(response.request.auth.credentials.email).to.equal(internals.users[1].email);
+                expect(response.request.auth.credentials.scope).to.equal(internals.users[1].scope);
             });
 
             server.stop(done);

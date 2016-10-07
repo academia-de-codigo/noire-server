@@ -15,12 +15,16 @@ var expect = Code.expect;
 var internals = {};
 internals.users = [{
     'id': 0,
+    'username': 'test',
     'email': 'test@gmail.com',
-    'password': 'test'
+    'password': 'test',
+    'scope': 'user'
 }, {
     'id': 1,
+    'username': 'admin',
     'email': 'admin@gmail.com',
-    'password': 'admin'
+    'password': 'admin',
+    'scope': ['user', 'admin']
 }];
 
 describe('Service: user', function() {
