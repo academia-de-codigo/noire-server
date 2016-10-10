@@ -50,6 +50,22 @@ describe('Plugin: assets', function() {
 
     });
 
+    it('returns the app images', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject('/img/low_contrast_linen.png', function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+            });
+
+            server.stop(done);
+        });
+    });
+
     it('returns the app css', function(done) {
 
         Server.init(internals.manifest, internals.composeOptions, function(err, server) {

@@ -29,6 +29,8 @@ internals.manifest = {
         plugin: './plugins/errors'
     }, {
         plugin: './plugins/routes'
+    }, {
+        plugin: './plugins/assets'
     }]
 };
 
@@ -146,6 +148,21 @@ describe('Plugin: errors', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+                server.stop(done); // done() callback is required to end the test.
+            });
+
+        });
+    });
+
+    it('should not redirect assets', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            server.inject('/img/invalid', function(response) {
+
+                expect(response.statusCode).to.equal(404);
+                expect(response.statusMessage).to.equal('Not Found');
                 server.stop(done); // done() callback is required to end the test.
             });
 
