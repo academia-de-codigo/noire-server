@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hapi Starter {{version}}</title>
     <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/foundation-icons.css" />
     <link rel="stylesheet" href="css/app.css">
 </head>
 
@@ -15,16 +16,25 @@
     <div class="wrap login">
         <div class="row column">
             <div class="medium-6 medium-centered large-4 large-centered columns">
-                <form action="login" method="post">
+                <form id="login-form" data-abide="ajax" novalidate>
                     <div class="row column" id="log-in-form">
-                        <h4 class="text-center">Log in with you email account</h4>
-                        <label>Email<input name="email" type="text" placeholder="somebody@example.com"></label>
-                        <label>Password<input name="password" type="password" placeholder="Password"></label>
+                        <h4 class="text-center">Log in with your email account</h4>
+                        <label>Email
+                            <input id="form-email" name="email" type="email" placeholder="somebody@example.com" required>
+                            <small class="form-error">A valid email address is required.</small>
+                        </label>
+                        <label>Password
+                            <input id="form-password" name="password" type="password" placeholder="Password" required pattern="password">
+                            <small class="form-error">Your password must match the requirements</small>
+                        </label>
                         <input id="show-password" type="checkbox"><label for="show-password">Show password</label>
-                        <p><input type="submit" class="button expanded" value="Log In"></p>
+                        <button id="submit" class="button expanded" type="submit" value="Login" disabled>Login</button>
                         <p class="text-center"><a href="#">Forgot your password?</a></p>
                     </div>
                 </form>
+                <div id="form-error" data-abide-error class="alert callout" style="margin-top: 20px; display: none;">
+                    <p><i class="fi-alert"></i> Invalid user email or password</p>
+                </div>
             </div>
         </div>
     </div>
@@ -33,6 +43,7 @@
     <script src="js/vendor/what-input.js"></script>
     <script src="js/vendor/foundation.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/login.js"></script>
 </body>
 
 </html>

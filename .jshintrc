@@ -1,6 +1,9 @@
 {
     "globals": {
+        "$": true,
+        "Foundation": true
     },
+    "browser" : true,
     "node": true,
     "boss": false,
     "curly": false,
