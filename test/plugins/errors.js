@@ -27,6 +27,8 @@ internals.manifest = {
         plugin: './plugins/login'
     }, {
         plugin: './plugins/errors'
+    }, {
+        plugin: './plugins/routes'
     }]
 };
 
@@ -103,14 +105,51 @@ describe('Plugin: errors', function() {
                 },
             }, function(response) {
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
+                expect(response.statusCode).to.equal(302);
+                expect(response.statusMessage).to.equal('Found');
                 expect(response.headers.location).to.equal(response.request.connection.info.uri);
                 server.stop(done); // done() callback is required to end the test.
             });
 
         });
+    });
 
+    it('invalid password', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            server.inject({
+                method: 'POST',
+                url: Config.paths.login,
+                payload: {
+                    email: 'test@gmail.com',
+                    password: 'invalid'
+                }
+            }, function(response) {
+
+                expect(response.statusCode).to.equal(401);
+                expect(response.statusMessage).to.equal('Unauthorized');
+                server.stop(done); // done() callback is required to end the test.
+            });
+
+        });
+
+    });
+
+    it('valid route with no errors', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            server.inject(Config.paths.login, function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+                server.stop(done); // done() callback is required to end the test.
+            });
+
+        });
     });
 
 });

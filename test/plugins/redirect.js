@@ -206,4 +206,21 @@ describe('Plugin: redirect', function() {
         });
     });
 
+    it('https valid route', function(done) {
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            var webTls = server.select('web-tls');
+            webTls.inject(Config.paths.home, function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+                server.stop(done); // done() callback is required to end the test.
+
+            });
+
+        });
+    });
+
 });
