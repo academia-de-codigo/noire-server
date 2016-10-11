@@ -1,7 +1,7 @@
 <!-- Close button -->
 <button class="close-button" aria-label="Close menu" type="button" data-close>
          <span aria-hidden="true">&times;</span>
-       </button>
+</button>
 
 <!-- Menu -->
 <ul class="vertical menu">
@@ -9,4 +9,13 @@
     <li><a href="#">Link 2</a></li>
     <li><a href="#">Link 3</a></li>
     <li><a href="#">Link 4</a></li>
+    {{#if user}}
+        {{#if user.admin}}
+            <li><a href="/account">Admin</a></li>
+        {{/if}}
+        <li><a href="/account">Account</a></li>
+        <li><a id="logout" class="button">Logout</a></li>
+    {{else}}
+        <li><a id="login" class="button small" onclick="window.location.href='/login'">Login</a></li>
+    {{/if}}
 </ul>
