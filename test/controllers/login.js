@@ -2,9 +2,7 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
-var Url = require('url');
 var JWT = require('jsonwebtoken');
-var Config = require('../../lib/config');
 var LoginCtrl = require('../../lib/controllers/login');
 var UserService = require('../../lib/services/user');
 
@@ -22,20 +20,6 @@ internals.user = {
     'email': 'test@gmail.com',
     'password': 'test'
 };
-internals.accountUrl = {
-    protocol: 'https',
-    slashes: true,
-    hostname: Config.connections.webTls.host,
-    port: Config.connections.webTls.port
-};
-
-internals.webUrl = {
-    protocol: 'http',
-    slashes: true,
-    hostname: Config.connections.web.host,
-    port: Config.connections.web.port
-};
-
 
 describe('Controller: login', function() {
 
@@ -95,54 +79,48 @@ describe('Controller: login', function() {
             }
         };
 
-        LoginCtrl.login(request, {
+        LoginCtrl.login(request, function(userAccount) {
 
-            redirect: function(url) {
+            expect(userAccount).to.exist();
+            expect(userAccount.email).to.equals(internals.user.email);
+            expect(userAccount.password).to.not.exist();
+            return {
+                header: function(header, token) {
+                    expect(header).to.equal('Authorization');
+                    expect(token).to.be.a.string();
 
-                expect(url).to.exist();
-                expect(url).to.equals(Url.format(internals.accountUrl) + Config.paths.home);
-                return {
-                    header: function(header, token) {
-                        expect(header).to.equal('Authorization');
-                        expect(token).to.be.a.string();
+                    JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
 
-                        JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+                        expect(err).not.to.exist();
+                        expect(decoded.id).to.equals(internals.user.id);
+                    });
 
-                            expect(err).not.to.exist();
-                            expect(decoded.id).to.equals(internals.user.id);
-                        });
-
-                        return {
-                            state: function(name, value, options) {
-                                expect(name).to.equals('token');
-                                expect(value).to.equals(token);
-                                expect(options).to.exist();
-                                done();
-                            }
-                        };
-                    }
-                };
-            }
+                    return {
+                        state: function(name, value, options) {
+                            expect(name).to.equals('token');
+                            expect(value).to.equals(token);
+                            expect(options).to.exist();
+                            done();
+                        }
+                    };
+                }
+            };
         });
     });
 
     it('logout', function(done) {
 
-        LoginCtrl.logout(null, {
+        LoginCtrl.logout(null, function(result) {
+            expect(result).to.exist();
+            expect(result.message).to.be.a.string();
 
-            redirect: function(url) {
-                expect(url).to.exist();
-                expect(url).to.equals(Url.format(internals.webUrl) + Config.paths.home);
-
-                return {
-                    unstate: function(name, options) {
-                        expect(name).to.equals('token');
-                        expect(options).to.exist();
-                        done();
-                    }
-                };
-            }
-
+            return {
+                unstate: function(name, options) {
+                    expect(name).to.equals('token');
+                    expect(options).to.exist();
+                    done();
+                }
+            };
         });
 
     });

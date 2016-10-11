@@ -43,11 +43,31 @@ $(document).ready(function() {
             $.ajax({
                 type: 'POST',
                 url: '/login',
+                timeout: 50,
                 data: param,
-                success: function() {
+                success: function(data) {
+
+                    console.log('user account data:', JSON.stringify(data));
                     window.location.href = '/home';
                 },
-                error: function() {
+                error: function(request, error) {
+
+                    var errorMessage;
+
+                    // response is boom
+                    if (request.status !== 0) {
+                        errorMessage = 'Invalid user email or password';
+                    } else {
+
+                        if (error === 'timeout') {
+                            errorMessage = 'Request timed out';
+                        } else {
+                            errorMessage = 'Could not connect to the server';
+                        }
+
+                    }
+
+                    $('#error-message').text(errorMessage);
                     $('#form-error').css('display', 'block').addClass('alert');
                 }
             });
