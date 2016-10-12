@@ -1,6 +1,8 @@
 $(document).ready(function() {
 
-    $('#logout').click(function() {
+    $('#logout').click(function(event) {
+
+        event.preventDefault();
 
         $.ajax({
             type: 'GET',
