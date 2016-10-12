@@ -7,12 +7,14 @@ ES5 Hapi Boilerplate
 ## Features
 
 * HTTP and HTTPS support
-* JWT authentication
-* Testing, code coverage and Travis CI integration
 * Server rendered views using the Foundation front-end framework and Handlebars template engine
 * API routes for rendering on the client side and building SPAs
+* Stateless JWT auth for API endpoints
+* Cookie stored JWT auth for web app with CSRF protection
+* Testing, code coverage and Travis CI integration
 
 ### Desired Features
 
 * Database ORM
+* Log & Monitoring
 * Usage of Promises
