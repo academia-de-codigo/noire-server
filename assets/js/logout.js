@@ -1,13 +1,19 @@
 $(document).ready(function() {
 
-    $('#logout').click(function(event) {
+    var crumb = $('meta[name=crumb]').attr("content");
 
-        event.preventDefault();
+    $('#desktop-logout').click(logoutHandler);
+    $('#mobile-logout').click(logoutHandler);
+
+    function logoutHandler() {
 
         $.ajax({
             type: 'GET',
             url: '/logout',
             timeout: 5000,
+            beforeSend: function(request) {
+                request.setRequestHeader('x-csrf-token', crumb);
+            },
             success: function(data) {
 
                 console.log(JSON.stringify(data));
@@ -27,5 +33,5 @@ $(document).ready(function() {
             }
         });
 
-    });
+    }
 });

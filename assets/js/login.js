@@ -6,6 +6,8 @@ Foundation.Abide.defaults.patterns['password'] = /^(\w{3,30})$/;
 
 $(document).ready(function() {
 
+    var crumb = $('meta[name=crumb]').attr("content");
+
     var control = $('#show-password');
     var field = $('#form-password');
 
@@ -43,8 +45,11 @@ $(document).ready(function() {
             $.ajax({
                 type: 'POST',
                 url: '/login',
-                timeout: 50,
+                timeout: 5000,
                 data: param,
+                beforeSend: function(request) {
+                    request.setRequestHeader('x-csrf-token', crumb);
+                },
                 success: function(data) {
 
                     console.log('user account data:', JSON.stringify(data));
