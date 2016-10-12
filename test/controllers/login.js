@@ -70,12 +70,19 @@ describe('Controller: login', function() {
         });
     });
 
-    it('valid credentials', function(done) {
+    it('web valid credentials', function(done) {
 
         var request = {
             payload: {
                 email: internals.user.email,
                 password: internals.user.password
+            },
+            route: {
+                settings: {
+                    plugins: {
+                        stateless: false
+                    }
+                }
             }
         };
 
@@ -108,9 +115,56 @@ describe('Controller: login', function() {
         });
     });
 
-    it('logout', function(done) {
+    it('api valid credentials', function(done) {
 
-        LoginCtrl.logout(null, function(result) {
+        var request = {
+            payload: {
+                email: internals.user.email,
+                password: internals.user.password
+            },
+            route: {
+                settings: {
+                    plugins: {
+                        stateless: true
+                    }
+                }
+            }
+        };
+
+        LoginCtrl.login(request, function(userAccount) {
+
+            expect(userAccount).to.exist();
+            expect(userAccount.email).to.equals(internals.user.email);
+            expect(userAccount.password).to.not.exist();
+            return {
+                header: function(header, token) {
+                    expect(header).to.equal('Authorization');
+                    expect(token).to.be.a.string();
+
+                    JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+
+                        expect(err).not.to.exist();
+                        expect(decoded.id).to.equals(internals.user.id);
+                        done();
+                    });
+                }
+            };
+        });
+    });
+
+    it('web logout', function(done) {
+
+        var request = {
+            route: {
+                settings: {
+                    plugins: {
+                        stateless: false
+                    }
+                }
+            }
+        };
+
+        LoginCtrl.logout(request, function(result) {
             expect(result).to.exist();
             expect(result.message).to.be.a.string();
 
@@ -121,6 +175,26 @@ describe('Controller: login', function() {
                     done();
                 }
             };
+        });
+
+    });
+
+    it('api logout', function(done) {
+
+        var request = {
+            route: {
+                settings: {
+                    plugins: {
+                        stateless: true
+                    }
+                }
+            }
+        };
+
+        LoginCtrl.logout(request, function(result) {
+            expect(result).to.exist();
+            expect(result.message).to.be.a.string();
+            done();
         });
 
     });

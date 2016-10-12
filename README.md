@@ -11,6 +11,7 @@ ES5 Hapi Boilerplate
 * API routes for rendering on the client side and building SPAs
 * Stateless JWT auth for API endpoints
 * Cookie stored JWT auth for web app with CSRF protection
+* AJAX login form 
 * Testing, code coverage and Travis CI integration
 
 ### Desired Features
