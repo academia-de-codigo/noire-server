@@ -169,9 +169,8 @@ describe('Controller: login', function() {
             expect(result.message).to.be.a.string();
 
             return {
-                unstate: function(name, options) {
+                unstate: function(name) {
                     expect(name).to.equals('token');
-                    expect(options).to.exist();
                     done();
                 }
             };
