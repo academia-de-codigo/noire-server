@@ -16,7 +16,12 @@ var internals = {};
 
 internals.manifest = {
     connections: [{
-        port: 0
+        port: 0,
+        routes: {
+            files: {
+                relativeTo: Path.join(__dirname, '../../assets')
+            }
+        }
     }],
     registrations: [{
         plugin: './plugins/assets'
