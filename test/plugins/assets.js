@@ -34,9 +34,7 @@ internals.composeOptions = {
 
 describe('Plugin: assets', function() {
 
-    it('handles inert plugin registration failure', {
-        parallel: false
-    }, function(done) {
+    it('handles inert plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
         var fakeServer = {};

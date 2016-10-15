@@ -13,10 +13,11 @@ ES5 Hapi Boilerplate
 * Cookie stored JWT auth for web app with CSRF protection
 * AJAX login form
 * Client side caching of assets
+* Logging to console and file - ops, error, auth and access logs
 * Testing, code coverage and Travis CI integration
 
 ### Desired Features
 
 * Database ORM
-* Log & Monitoring
+* Monitoring
 * Usage of Promises

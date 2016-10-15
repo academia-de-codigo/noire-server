@@ -103,9 +103,7 @@ describe('Plugin: auth', function() {
 
     });
 
-    it('handle hapi-auth-jwt2 plugin registration failure', {
-        parallel: false
-    }, function(done) {
+    it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
         var fakeServer = {};

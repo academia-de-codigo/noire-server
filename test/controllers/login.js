@@ -38,7 +38,8 @@ describe('Controller: login', function() {
         var request = {
             payload: {
                 email: 'invalid'
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.login(request, function(response) {
@@ -57,7 +58,8 @@ describe('Controller: login', function() {
             payload: {
                 email: internals.user.email,
                 password: 'invalid'
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.login(request, function(response) {
@@ -83,7 +85,8 @@ describe('Controller: login', function() {
                         stateless: false
                     }
                 }
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.login(request, function(userAccount) {
@@ -128,7 +131,8 @@ describe('Controller: login', function() {
                         stateless: true
                     }
                 }
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.login(request, function(userAccount) {
@@ -161,7 +165,8 @@ describe('Controller: login', function() {
                         stateless: false
                     }
                 }
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.logout(request, function(result) {
@@ -187,7 +192,8 @@ describe('Controller: login', function() {
                         stateless: true
                     }
                 }
-            }
+            },
+            log: function() {}
         };
 
         LoginCtrl.logout(request, function(result) {

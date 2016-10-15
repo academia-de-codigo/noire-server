@@ -61,9 +61,7 @@ describe('Plugin: views', function() {
         done();
     });
 
-    it('handles vision plugin registration failure', {
-        parallel: false
-    }, function(done) {
+    it('handles vision plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
         var fakeServer = {};
