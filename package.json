@@ -38,6 +38,7 @@
     "inert": "^4.0.2",
     "joi": "^9.1.0",
     "jsonwebtoken": "^7.1.9",
+    "lout": "^9.2.0",
     "vision": "^4.1.0"
   },
   "devDependencies": {

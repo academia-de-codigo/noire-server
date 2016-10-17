@@ -19,5 +19,4 @@ ES5 Hapi Boilerplate
 ### Desired Features
 
 * Database ORM
-* Monitoring
 * Usage of Promises
