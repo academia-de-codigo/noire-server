@@ -30,6 +30,8 @@ internals.manifest = {
         plugin: './plugins/auth'
     }, {
         plugin: './plugins/routes'
+    }, {
+        plugin: 'vision'
     }]
 };
 

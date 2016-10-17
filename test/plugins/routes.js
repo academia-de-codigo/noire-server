@@ -5,7 +5,6 @@ var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Config = require('../../lib/config');
 var Server = require('../../lib/server');
-var Routes = require('../../lib/plugins/routes');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -26,6 +25,8 @@ internals.manifest = {
         plugin: './plugins/auth'
     }, {
         plugin: './plugins/routes'
+    }, {
+        plugin: 'vision'
     }]
 };
 
@@ -59,25 +60,6 @@ describe('Plugin: views', function() {
     after(function(done) {
         process.env.JWT_SECRET = '';
         done();
-    });
-
-    it('handles vision plugin registration failure', function(done) {
-
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
-        };
-
-        Routes.register(fakeServer, null, function(error) {
-
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-
-        });
-
     });
 
     it('returns the home view for non authenticaded users', function(done) {

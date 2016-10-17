@@ -31,6 +31,10 @@ internals.manifest = {
         plugin: './plugins/routes'
     }, {
         plugin: './plugins/assets'
+    }, {
+        plugin: 'vision'
+    }, {
+        plugin: 'inert'
     }]
 };
 

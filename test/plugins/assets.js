@@ -3,7 +3,6 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Server = require('../../lib/server');
-var Assets = require('../../lib/plugins/assets');
 var Path = require('path');
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -25,6 +24,8 @@ internals.manifest = {
     }],
     registrations: [{
         plugin: './plugins/assets'
+    }, {
+        plugin: 'inert'
     }]
 };
 
@@ -33,25 +34,6 @@ internals.composeOptions = {
 };
 
 describe('Plugin: assets', function() {
-
-    it('handles inert plugin registration failure', function(done) {
-
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
-        };
-
-        Assets.register(fakeServer, null, function(error) {
-
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-
-        });
-
-    });
 
     it('returns the app images', function(done) {
 

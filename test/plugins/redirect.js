@@ -48,6 +48,8 @@ internals.manifest = {
         options: {
             select: ['web', 'web-tls']
         }
+    }, {
+        plugin: 'vision'
     }]
 };
 
