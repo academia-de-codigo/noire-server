@@ -2,8 +2,10 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Path = require('path');
 var Config = require('../../lib/config');
 var Monitor = require('../../lib/plugins/monitor');
+var Server = require('../../lib/server');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -20,6 +22,10 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/monitor'
     }]
+};
+
+internals.composeOptions = {
+    relativeTo: Path.resolve(__dirname, '../../lib'),
 };
 
 describe('Plugin: monitor', function() {
@@ -42,31 +48,30 @@ describe('Plugin: monitor', function() {
         });
     });
 
-    it('subscribes to route events', function(done) {
+    it('handles request events with debug disabled', function(done) {
 
-        var routeData = {
-            realm: {
-                plugin: 'test'
-            },
-            method: 'get',
-            path: '/'
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = false;
+
+        var eventData = {
+            tags: ['someTag'],
+            data: {
+                info: {}
+            }
         };
 
         var fakeServer = {};
         fakeServer.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
-            if(event === 'route') {
-                next(routeData);
+            if (event === 'request') {
+                next({}, eventData);
             }
         };
 
         fakeServer.log = function(tags, data) {
-            expect(tags).to.be.an.array();
-            expect(tags.indexOf('route')).not.to.equal(-1);
-            expect(data.plugin).to.equals(routeData.realm.plugin);
-            expect(data.method).to.equals(routeData.method);
-            expect(data.path).to.equals(routeData.path);
+            expect(tags).to.equals(eventData.tags);
+            expect(data.info).to.exist();
         };
 
         fakeServer.register = function(plugin, next) {
@@ -76,11 +81,15 @@ describe('Plugin: monitor', function() {
         Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
+            Config.monitor.debug = orig;
             done();
         });
     });
 
-    it('subscribes to request events', function(done) {
+    it('handles request events', function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
 
         var REQ_ID = 'XPTO';
 
@@ -97,14 +106,17 @@ describe('Plugin: monitor', function() {
 
         var eventData = {
             tags: ['someTag'],
-            request: 'xxx:yyy:zzz:' + REQ_ID
+            request: 'xxx:yyy:zzz:' + REQ_ID,
+            data: {
+                info: {}
+            }
         };
 
         var fakeServer = {};
         fakeServer.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
-            if(event === 'request') {
+            if (event === 'request') {
                 next(requestData, eventData);
             }
         };
@@ -114,6 +126,7 @@ describe('Plugin: monitor', function() {
             expect(data.id).to.equals(REQ_ID);
             expect(data.path).to.equals(requestData.url.path);
             expect(data.address).to.equals(requestData.info.remoteAddress);
+            expect(data.info).to.exist();
         };
 
         fakeServer.register = function(plugin, next) {
@@ -123,7 +136,102 @@ describe('Plugin: monitor', function() {
         Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
+            Config.monitor.debug = orig;
             done();
+        });
+    });
+
+    it('logs route events', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = false; // prevents debug logging during tests
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            var route = {
+                method: 'get',
+                path: '/',
+                handler: function() {}
+            };
+
+            server.once('log', function(event, tags) {
+                expect(tags.server).to.be.true();
+                expect(tags.route).to.be.true();
+                expect(tags.debug).to.be.true();
+                expect(event.data.plugin).to.exist();
+                expect(event.data.method).to.equal(route.method);
+                expect(event.data.path).to.equal(route.path);
+                Config.monitor.debug = orig;
+                server.stop(done);
+            });
+
+            server.route(route);
+
+        });
+    });
+
+    it('logs request events', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = false; // prevents debug logging during tests
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            var requestData = {
+                user: 'test'
+            };
+
+            var route = {
+                method: 'get',
+                path: '/',
+                handler: function(request) {
+                    request.log(['debug', 'someTag'], requestData);
+                }
+            };
+
+            server.once('request', function(serverObj, event, tags) {
+                expect(event.data).to.equals(requestData);
+                expect(tags).to.include(['debug', 'someTag']);
+                Config.monitor.debug = orig;
+                server.stop(done);
+            });
+
+            server.route(route);
+            server.inject('/', function() {});
+
+        });
+    });
+
+    it('logs request events with no data', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = false; // prevents debug logging during tests
+
+        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+
+            var route = {
+                method: 'get',
+                path: '/',
+                handler: function(request) {
+                    request.log(['debug', 'someTag']);
+                }
+            };
+
+            server.once('request', function(serverObj, event, tags) {
+                expect(tags).to.include(['debug', 'someTag']);
+                Config.monitor.debug = orig;
+                server.stop(done);
+            });
+
+            server.route(route);
+            server.inject('/', function() {});
+
         });
     });
 
