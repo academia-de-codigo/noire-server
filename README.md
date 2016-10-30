@@ -16,8 +16,10 @@ ES5 Hapi Boilerplate
 * Client side caching of assets
 * Logging to console and file - ops, error, auth and access logs
 * Testing, code coverage and Travis CI integration
+* Graceful server shutdown
 
 ### Desired Features
 
-* Database ORM
-* Usage of Promises
+* Database ORM with Knex and Objection
+* Usage of Promises with Bluebird
+* Jobs with Agenda

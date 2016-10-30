@@ -5,10 +5,10 @@ var Lab = require('lab'); // the test framework
 var Hapi = require('hapi');
 var Http = require('http');
 var Https = require('https');
+var Path = require('path');
 var Server = require('../lib/server');
 var Api = require('../lib/plugins/api');
 var Config = require('../lib/config');
-var Path = require('path');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
