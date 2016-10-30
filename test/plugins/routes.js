@@ -73,9 +73,9 @@ describe('Plugin: views', function() {
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
                 expect(response.request.auth.isAuthenticated).to.be.false();
+                server.stop(done);
             });
 
-            server.stop(done);
         });
     });
 
@@ -98,10 +98,10 @@ describe('Plugin: views', function() {
                 expect(response.request.auth.credentials.username).to.equal(internals.users[0].username);
                 expect(response.request.auth.credentials.email).to.equal(internals.users[0].email);
                 expect(response.request.auth.credentials.scope).to.equal(internals.users[0].scope);
+                server.stop(done);
 
             });
 
-            server.stop(done);
         });
     });
 
@@ -125,9 +125,9 @@ describe('Plugin: views', function() {
                 expect(response.request.auth.credentials.username).to.equal(internals.users[1].username);
                 expect(response.request.auth.credentials.email).to.equal(internals.users[1].email);
                 expect(response.request.auth.credentials.scope).to.equal(internals.users[1].scope);
+                server.stop(done);
             });
 
-            server.stop(done);
         });
     });
 
@@ -141,9 +141,9 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+                server.stop(done);
             });
 
-            server.stop(done);
         });
     });
 
@@ -162,9 +162,9 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+                server.stop(done);
             });
 
-            server.stop(done);
         });
     });
 
@@ -183,9 +183,9 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+                server.stop(done);
             });
 
-            server.stop(done);
         });
     });
 });

@@ -77,6 +77,24 @@ describe('Plugin: auth', function() {
         done();
     });
 
+    it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
+
+        var PLUGIN_ERROR = 'plugin error';
+        var fakeServer = {};
+
+        fakeServer.register = function(plugin, next) {
+            return next(new Error(PLUGIN_ERROR));
+        };
+
+        Auth.register(fakeServer, null, function(error) {
+
+            expect(error).to.exist();
+            expect(error.message).to.equals(PLUGIN_ERROR);
+            done();
+        });
+
+    });
+
     it('get token and validate with correct secret', function(done) {
 
         var jwt = Auth.getToken(internals.ID_INVALID);
@@ -100,24 +118,6 @@ describe('Plugin: auth', function() {
             expect(err.message).to.equals('invalid signature');
             expect(decoded).to.not.exist();
 
-            done();
-        });
-
-    });
-
-    it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
-
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
-        };
-
-        Auth.register(fakeServer, null, function(error) {
-
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
             done();
         });
 
