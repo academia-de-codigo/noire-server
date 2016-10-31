@@ -6,6 +6,7 @@ var Hapi = require('hapi');
 var Http = require('http');
 var Https = require('https');
 var Path = require('path');
+var Exiting = require('exiting');
 var Manager = require('../lib/manager');
 var Api = require('../lib/plugins/api');
 var Config = require('../lib/config');
@@ -45,7 +46,7 @@ internals.composeOptions = {
 
 describe('Manager bootstrap', function() {
 
-    it('start server and return server object', function(done) {
+    it('manager returns server object', function(done) {
 
         var manifest = {
             connections: [{
@@ -62,7 +63,7 @@ describe('Manager bootstrap', function() {
 
     });
 
-    it('start server on specified port', function(done) {
+    it('manager starts server on specified port', function(done) {
 
         var manifest = {
             connections: [{
@@ -79,7 +80,7 @@ describe('Manager bootstrap', function() {
         });
     });
 
-    it('start server with multiple listeners', function(done) {
+    it('manager starts server with multiple listeners', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -95,7 +96,7 @@ describe('Manager bootstrap', function() {
 
     });
 
-    it('should use http for listener web', function(done) {
+    it('server should use http for listener web', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -107,7 +108,7 @@ describe('Manager bootstrap', function() {
 
     });
 
-    it('should use https for listener web-tls', function(done) {
+    it('server should use https for listener web-tls', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -119,7 +120,7 @@ describe('Manager bootstrap', function() {
 
     });
 
-    it('should use https for listener api', function(done) {
+    it('server should use https for listener api', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -165,6 +166,63 @@ describe('Manager bootstrap', function() {
             expect(err.message).to.equal(PLUGIN_ERROR);
 
             done();
+        });
+
+    });
+
+    it('handles manager start errors', {
+        parallel: false
+    }, function(done) {
+
+        var MANAGER_ERROR = 'Exiting module failed';
+        var orig = Exiting.Manager;
+        Exiting.Manager = function() {
+            this.start = function(next) {
+                next(MANAGER_ERROR);
+            };
+        };
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            Exiting.Manager = orig;
+            expect(err).to.equal(MANAGER_ERROR);
+            expect(server).to.be.instanceof(Hapi.Server);
+
+            done();
+
+        });
+
+
+    });
+
+    it('handles manager stop errors', {
+        parallel: false
+    }, function(done) {
+
+        var MANAGER_ERROR = 'Exiting module failed';
+        var orig = Exiting.Manager;
+        Exiting.Manager = function() {
+            this.start = function(next) {
+                return next();
+            };
+            this.stop = function(next) {
+                next(MANAGER_ERROR);
+            };
+        };
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            expect(server).to.be.instanceof(Hapi.Server);
+
+            Manager.stop(function(err) {
+
+                Exiting.Manager = orig;
+                expect(err).to.equal(MANAGER_ERROR);
+
+                done();
+
+            });
         });
 
     });
