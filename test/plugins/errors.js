@@ -3,7 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -59,7 +59,7 @@ describe('Plugin: errors', function() {
 
     it('404 not found errors redirected to root', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject('/invalid-route', function(response) {
@@ -67,7 +67,7 @@ describe('Plugin: errors', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(response.request.connection.info.uri);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -76,7 +76,7 @@ describe('Plugin: errors', function() {
 
     it('malformed data', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
@@ -91,7 +91,7 @@ describe('Plugin: errors', function() {
                 expect(response.statusCode).to.equal(400);
                 expect(response.statusMessage).to.equal('Bad Request');
                 expect(JSON.parse(response.payload).message).to.equal('Malformed Data Entered');
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -100,7 +100,7 @@ describe('Plugin: errors', function() {
 
     it('insufficient scope', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
@@ -114,7 +114,7 @@ describe('Plugin: errors', function() {
                 expect(response.statusCode).to.equal(302);
                 expect(response.statusMessage).to.equal('Found');
                 expect(response.headers.location).to.equal(response.request.connection.info.uri);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -122,7 +122,7 @@ describe('Plugin: errors', function() {
 
     it('invalid password', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
@@ -136,7 +136,7 @@ describe('Plugin: errors', function() {
 
                 expect(response.statusCode).to.equal(401);
                 expect(response.statusMessage).to.equal('Unauthorized');
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -145,14 +145,14 @@ describe('Plugin: errors', function() {
 
     it('valid route with no errors', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject(Config.paths.login, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -160,14 +160,14 @@ describe('Plugin: errors', function() {
 
     it('should not redirect assets', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject('/img/invalid', function(response) {
 
                 expect(response.statusCode).to.equal(404);
                 expect(response.statusMessage).to.equal('Not Found');
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });

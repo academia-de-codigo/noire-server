@@ -3,7 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 var Csrf = require('../../lib/plugins/csrf');
 
@@ -42,13 +42,13 @@ describe('Plugin: csrf', function() {
     it('handle crumb plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
+        var fakeManager = {};
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Csrf.register(fakeServer, null, function(error) {
+        Csrf.register(fakeManager, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -58,7 +58,7 @@ describe('Plugin: csrf', function() {
 
     it('returns valid crumb', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
 
@@ -68,7 +68,7 @@ describe('Plugin: csrf', function() {
                 expect(response.payload).to.be.a.string();
                 expect(JSON.parse(response.payload)).to.be.an.object();
                 expect(JSON.parse(response.payload).crumb).to.be.a.string();
-                done();
+                Manager.stop(done);
 
             });
         });
@@ -77,7 +77,7 @@ describe('Plugin: csrf', function() {
 
     it('errors on missing crumb headers', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
 
@@ -92,7 +92,7 @@ describe('Plugin: csrf', function() {
 
                 expect(response.statusCode).to.equals(403);
                 expect(response.statusMessage).to.equals('Forbidden');
-                done();
+                Manager.stop(done);
 
             });
         });
@@ -100,7 +100,7 @@ describe('Plugin: csrf', function() {
 
     it('success if crumb headers present', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
 
@@ -121,7 +121,7 @@ describe('Plugin: csrf', function() {
                 }, function(response) {
 
                     expect(response.statusCode).to.equals(200);
-                    done();
+                    Manager.stop(done);
                 });
 
             });

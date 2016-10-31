@@ -5,7 +5,7 @@ var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Config = require('../../lib/config');
 var Monitor = require('../../lib/plugins/monitor');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -33,14 +33,14 @@ describe('Plugin: monitor', function() {
     it('handle good plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-        fakeServer.on = function() {};
+        var fakeManager = {};
+        fakeManager.on = function() {};
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Monitor.register(fakeServer, null, function(error) {
+        Monitor.register(fakeManager, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -60,8 +60,8 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeServer = {};
-        fakeServer.on = function(event, next) {
+        var fakeManager = {};
+        fakeManager.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
@@ -69,16 +69,16 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        fakeServer.log = function(tags, data) {
+        fakeManager.log = function(tags, data) {
             expect(tags).to.equals(eventData.tags);
             expect(data.info).to.exist();
         };
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next();
         };
 
-        Monitor.register(fakeServer, null, function(error) {
+        Monitor.register(fakeManager, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = orig;
@@ -112,8 +112,8 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeServer = {};
-        fakeServer.on = function(event, next) {
+        var fakeManager = {};
+        fakeManager.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
@@ -121,7 +121,7 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        fakeServer.log = function(tags, data) {
+        fakeManager.log = function(tags, data) {
             expect(tags).to.equals(eventData.tags);
             expect(data.id).to.equals(REQ_ID);
             expect(data.path).to.equals(requestData.url.path);
@@ -129,11 +129,11 @@ describe('Plugin: monitor', function() {
             expect(data.info).to.exist();
         };
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next();
         };
 
-        Monitor.register(fakeServer, null, function(error) {
+        Monitor.register(fakeManager, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = orig;
@@ -142,13 +142,13 @@ describe('Plugin: monitor', function() {
     });
 
     it('logs route events', {
-        parallel: false
+        parallel: false // required as Config plugin is changed during execution
     }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = false; // prevents debug logging during tests
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             var route = {
                 method: 'get',
@@ -164,7 +164,7 @@ describe('Plugin: monitor', function() {
                 expect(event.data.method).to.equal(route.method);
                 expect(event.data.path).to.equal(route.path);
                 Config.monitor.debug = orig;
-                server.stop(done);
+                Manager.stop(done);
             });
 
             server.route(route);
@@ -173,13 +173,13 @@ describe('Plugin: monitor', function() {
     });
 
     it('logs request events', {
-        parallel: false
+        parallel: false // required as Config plugin is changed during execution
     }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = false; // prevents debug logging during tests
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             var requestData = {
                 user: 'test'
@@ -197,7 +197,7 @@ describe('Plugin: monitor', function() {
                 expect(event.data).to.equals(requestData);
                 expect(tags).to.include(['debug', 'someTag']);
                 Config.monitor.debug = orig;
-                server.stop(done);
+                Manager.stop(done);
             });
 
             server.route(route);
@@ -207,13 +207,13 @@ describe('Plugin: monitor', function() {
     });
 
     it('logs request events with no data', {
-        parallel: false
+        parallel: false // required as Config plugin is changed during execution
     }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = false; // prevents debug logging during tests
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             var route = {
                 method: 'get',
@@ -226,7 +226,7 @@ describe('Plugin: monitor', function() {
             server.once('request', function(serverObj, event, tags) {
                 expect(tags).to.include(['debug', 'someTag']);
                 Config.monitor.debug = orig;
-                server.stop(done);
+                Manager.stop(done);
             });
 
             server.route(route);
@@ -242,9 +242,9 @@ describe('Plugin: monitor', function() {
         var origDebug = Config.monitor.debug;
         Config.monitor.debug = false;
 
-        var fakeServer = {};
-        fakeServer.on = function() {};
-        fakeServer.register = function(plugin, next) {
+        var fakeManager = {};
+        fakeManager.on = function() {};
+        fakeManager.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();
             expect(plugin.options.reporters).to.be.an.object();
@@ -255,7 +255,7 @@ describe('Plugin: monitor', function() {
             return next();
         };
 
-        Monitor.register(fakeServer, null, function(error) {
+        Monitor.register(fakeManager, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = origDebug;
@@ -271,9 +271,9 @@ describe('Plugin: monitor', function() {
         var origDebug = Config.monitor.debug;
         Config.monitor.debug = true;
 
-        var fakeServer = {};
-        fakeServer.on = function() {};
-        fakeServer.register = function(plugin, next) {
+        var fakeManager = {};
+        fakeManager.on = function() {};
+        fakeManager.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();
             expect(plugin.options.reporters).to.be.an.object();
@@ -284,7 +284,7 @@ describe('Plugin: monitor', function() {
             return next();
         };
 
-        Monitor.register(fakeServer, null, function(error) {
+        Monitor.register(fakeManager, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = origDebug;

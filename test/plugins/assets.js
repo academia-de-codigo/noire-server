@@ -2,7 +2,7 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Path = require('path');
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -37,7 +37,7 @@ describe('Plugin: assets', function() {
 
     it('returns the app images', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -47,13 +47,13 @@ describe('Plugin: assets', function() {
                 expect(response.result).to.be.a.string();
             });
 
-            server.stop(done);
+            Manager.stop(done);
         });
     });
 
     it('returns the app css', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -63,13 +63,13 @@ describe('Plugin: assets', function() {
                 expect(response.result).to.be.a.string();
             });
 
-            server.stop(done);
+            Manager.stop(done);
         });
     });
 
     it('returns the app js', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -79,13 +79,13 @@ describe('Plugin: assets', function() {
                 expect(response.result).to.be.a.string();
             });
 
-            server.stop(done);
+            Manager.stop(done);
         });
     });
 
     it('returns the app fonts', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -95,7 +95,7 @@ describe('Plugin: assets', function() {
                 expect(response.result).to.be.a.string();
             });
 
-            server.stop(done);
+            Manager.stop(done);
         });
     });
 

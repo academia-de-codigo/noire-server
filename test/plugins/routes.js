@@ -4,7 +4,7 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Config = require('../../lib/config');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -64,7 +64,7 @@ describe('Plugin: views', function() {
 
     it('returns the home view for non authenticaded users', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -73,7 +73,7 @@ describe('Plugin: views', function() {
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
                 expect(response.request.auth.isAuthenticated).to.be.false();
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -81,7 +81,7 @@ describe('Plugin: views', function() {
 
     it('returns the home view for authenticaded users', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -98,7 +98,7 @@ describe('Plugin: views', function() {
                 expect(response.request.auth.credentials.username).to.equal(internals.users[0].username);
                 expect(response.request.auth.credentials.email).to.equal(internals.users[0].email);
                 expect(response.request.auth.credentials.scope).to.equal(internals.users[0].scope);
-                server.stop(done);
+                Manager.stop(done);
 
             });
 
@@ -107,7 +107,7 @@ describe('Plugin: views', function() {
 
     it('returns the home view for admin users', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -125,7 +125,7 @@ describe('Plugin: views', function() {
                 expect(response.request.auth.credentials.username).to.equal(internals.users[1].username);
                 expect(response.request.auth.credentials.email).to.equal(internals.users[1].email);
                 expect(response.request.auth.credentials.scope).to.equal(internals.users[1].scope);
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -133,7 +133,7 @@ describe('Plugin: views', function() {
 
     it('returns the login view', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -141,7 +141,7 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -149,7 +149,7 @@ describe('Plugin: views', function() {
 
     it('returns the admin page', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
@@ -162,7 +162,7 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -170,7 +170,7 @@ describe('Plugin: views', function() {
 
     it('returns the user account page', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
@@ -183,7 +183,7 @@ describe('Plugin: views', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });

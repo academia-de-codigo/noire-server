@@ -6,7 +6,7 @@ var Hapi = require('hapi');
 var Http = require('http');
 var Https = require('https');
 var Path = require('path');
-var Server = require('../lib/server');
+var Manager = require('../lib/manager');
 var Api = require('../lib/plugins/api');
 var Config = require('../lib/config');
 
@@ -43,7 +43,7 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../lib')
 };
 
-describe('Server bootstrap', function() {
+describe('Manager bootstrap', function() {
 
     it('start server and return server object', function(done) {
 
@@ -53,11 +53,11 @@ describe('Server bootstrap', function() {
             }]
         };
 
-        Server.init(manifest, internals.composeOptions, function(err, server) {
+        Manager.start(manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
-            server.stop(done);
+            Manager.stop(done);
         });
 
     });
@@ -70,18 +70,18 @@ describe('Server bootstrap', function() {
             }]
         };
 
-        Server.init(manifest, internals.composeOptions, function(err, server) {
+        Manager.start(manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server.info.port).to.equal(8080);
 
-            server.stop(done);
+            Manager.stop(done);
         });
     });
 
     it('start server with multiple listeners', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
@@ -90,43 +90,43 @@ describe('Server bootstrap', function() {
             expect(server.select('web-tls').connections.length).to.equal(1);
             expect(server.select('api').connections.length).to.equal(1);
 
-            server.stop(done);
+            Manager.stop(done);
         });
 
     });
 
     it('should use http for listener web', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
             expect(server.select('web').listener instanceof Http.Server).to.equal(true);
-            server.stop(done);
+            Manager.stop(done);
         });
 
     });
 
     it('should use https for listener web-tls', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
             expect(server.select('web-tls').listener instanceof Https.Server).to.equal(true);
-            server.stop(done);
+            Manager.stop(done);
         });
 
     });
 
     it('should use https for listener api', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             expect(server).to.be.instanceof(Hapi.Server);
             expect(server.select('api').listener instanceof Https.Server).to.equal(true);
-            server.stop(done);
+            Manager.stop(done);
         });
 
     });
@@ -158,7 +158,7 @@ describe('Server bootstrap', function() {
             name: 'fake version'
         };
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.exist();
             expect(server).to.not.exist();

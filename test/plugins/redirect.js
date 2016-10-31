@@ -4,7 +4,7 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Url = require('url');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -96,7 +96,7 @@ describe('Plugin: redirect', function() {
     it('http api requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.apiUrl) + Path.resolve(Config.prefixes.api, 'version');
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
@@ -105,7 +105,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
 
             });
 
@@ -116,7 +116,7 @@ describe('Plugin: redirect', function() {
     it('http admin requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.admin;
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
@@ -125,7 +125,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -135,7 +135,7 @@ describe('Plugin: redirect', function() {
     it('http account requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.account;
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
@@ -144,7 +144,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
             });
 
         });
@@ -154,7 +154,7 @@ describe('Plugin: redirect', function() {
     it('http login requests redirected to https', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.paths.login;
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
@@ -163,7 +163,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
 
             });
 
@@ -173,7 +173,7 @@ describe('Plugin: redirect', function() {
     it('http root request redirected to home', function(done) {
 
         var redirectUrl = Url.format(internals.webUrl) + '/home';
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
@@ -182,7 +182,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
 
             });
 
@@ -192,7 +192,7 @@ describe('Plugin: redirect', function() {
     it('https root request redirected to home', function(done) {
 
         var redirectUrl = Url.format(internals.webTlsUrl) + Config.paths.home;
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var webTls = server.select('web-tls');
@@ -201,7 +201,7 @@ describe('Plugin: redirect', function() {
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
 
             });
 
@@ -210,7 +210,7 @@ describe('Plugin: redirect', function() {
 
     it('https valid route', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var webTls = server.select('web-tls');
@@ -218,7 +218,7 @@ describe('Plugin: redirect', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done); // done() callback is required to end the test.
+                Manager.stop(done); // done() callback is required to end the test.
 
             });
 

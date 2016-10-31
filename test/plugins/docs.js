@@ -2,7 +2,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Docs = require('../../lib/plugins/docs');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -33,13 +33,13 @@ describe('Plugin: docs', function() {
 
     it('handle vision and inert plugin registration failures', function(done) {
         var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
+        var fakeManager = {};
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Docs.register(fakeServer, null, function(error) {
+        Docs.register(fakeManager, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -50,7 +50,7 @@ describe('Plugin: docs', function() {
 
     it('returns the docs view', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -58,7 +58,7 @@ describe('Plugin: docs', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
-                server.stop(done);
+                Manager.stop(done);
 
             });
 

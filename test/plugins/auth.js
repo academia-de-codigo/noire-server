@@ -5,7 +5,7 @@ var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
 var Path = require('path');
 var Auth = require('../../lib/plugins/auth');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var UserService = require('../../lib/services/user');
 var Config = require('../../lib/config');
 
@@ -80,13 +80,13 @@ describe('Plugin: auth', function() {
     it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
+        var fakeManager = {};
 
-        fakeServer.register = function(plugin, next) {
+        fakeManager.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Auth.register(fakeServer, null, function(error) {
+        Auth.register(fakeManager, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -138,7 +138,7 @@ describe('Plugin: auth', function() {
 
     it('token not present', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -149,7 +149,7 @@ describe('Plugin: auth', function() {
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
                 expect(payload.message).to.equals('Missing authentication');
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -158,7 +158,7 @@ describe('Plugin: auth', function() {
 
     it('invalid token', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             var invalidJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTkxMjM0MTIzNCwiaWF0IjoxNDczNzA2NzYzLCJleHAiOjE0NzM3MzU1NjN9.xjivOc1Smbf9M8uQHNTBTbcDBavXMjL-0oNxV-yxog0';
 
@@ -177,7 +177,7 @@ describe('Plugin: auth', function() {
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
                 expect(payload.message).to.equals('Invalid token');
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -186,7 +186,7 @@ describe('Plugin: auth', function() {
 
     it('invalid credentials', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -203,7 +203,7 @@ describe('Plugin: auth', function() {
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
                 expect(payload.message).to.equals('Invalid credentials');
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });
@@ -211,7 +211,7 @@ describe('Plugin: auth', function() {
 
     it('invalid scope', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -228,7 +228,7 @@ describe('Plugin: auth', function() {
                 expect(response.statusCode, 'Status code').to.equal(403);
                 expect(payload.error).to.equals('Forbidden');
                 expect(payload.message).to.equals('Insufficient scope');
-                server.stop(done);
+                Manager.stop(done);
 
             });
 
@@ -238,7 +238,7 @@ describe('Plugin: auth', function() {
 
     it('valid credentials', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
@@ -256,7 +256,7 @@ describe('Plugin: auth', function() {
                 expect(response.request.auth.credentials.username).to.equal(internals.user.username);
                 expect(response.request.auth.credentials.email).to.equal(internals.user.email);
                 expect(response.request.auth.credentials.scope).to.equal(internals.user.scope);
-                server.stop(done);
+                Manager.stop(done);
             });
 
         });

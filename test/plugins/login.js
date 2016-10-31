@@ -3,7 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
-var Server = require('../../lib/server');
+var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -55,7 +55,7 @@ describe('Plugin: login', function() {
 
     it('joi validates invalid email', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
             server.inject({
@@ -73,7 +73,7 @@ describe('Plugin: login', function() {
                 expect(JSON.parse(response.payload).validation).to.be.an.object();
                 expect(JSON.parse(response.payload).validation.keys).to.be.an.array();
                 expect(JSON.parse(response.payload).validation.keys[0]).to.equals('email');
-                done();
+                Manager.stop(done);
 
             });
         });
@@ -81,10 +81,9 @@ describe('Plugin: login', function() {
 
     it('joi validates invalid passwrd', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
-
             server.inject({
                 method: 'POST',
                 url: Config.paths.login,
@@ -101,7 +100,7 @@ describe('Plugin: login', function() {
                 expect(JSON.parse(response.payload).validation).to.be.an.object();
                 expect(JSON.parse(response.payload).validation.keys).to.be.an.array();
                 expect(JSON.parse(response.payload).validation.keys[0]).to.equals('password');
-                done();
+                Manager.stop(done);
 
             });
         });
@@ -109,10 +108,9 @@ describe('Plugin: login', function() {
 
     it('login successful', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
-
             server.inject({
                 method: 'POST',
                 url: Config.paths.login,
@@ -125,7 +123,7 @@ describe('Plugin: login', function() {
                 expect(response.request.route.settings.plugins.stateless).to.be.false();
                 expect(response.request.auth.mode).to.be.null();
                 expect(response.statusCode).to.equals(200);
-                done();
+                Manager.stop(done);
 
             });
         });
@@ -133,10 +131,9 @@ describe('Plugin: login', function() {
 
     it('logout successful', function(done) {
 
-        Server.init(internals.manifest, internals.composeOptions, function(err, server) {
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
-
             server.inject({
                 method: 'GET',
                 url: Config.paths.logout,
@@ -146,7 +143,7 @@ describe('Plugin: login', function() {
                 expect(response.request.route.settings.plugins.stateless).to.be.false();
                 expect(response.request.auth.mode).not.to.be.null();
                 expect(response.statusCode).to.equals(200);
-                done();
+                Manager.stop(done);
 
             });
         });
