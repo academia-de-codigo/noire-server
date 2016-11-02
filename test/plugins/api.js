@@ -5,6 +5,8 @@ var Lab = require('lab'); // the test framework
 var Manager = require('../../lib/manager');
 var Package = require('../../package.json');
 var Path = require('path');
+var Config = require('../../lib/config');
+var LoginCtrl = require('../../lib/controllers/login');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -28,6 +30,17 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
+internals.user = {
+    'id': 0,
+    'username': 'test',
+    'email': 'test@gmail.com',
+    'scope': 'user'
+};
+
+internals.logout = {
+    message: 'logout'
+};
+
 describe('Plugin: api', function() {
 
     it('returns the version from package.json', function(done) {
@@ -46,7 +59,64 @@ describe('Plugin: api', function() {
             });
 
         });
+    });
 
+    it('authenticates user credentials', {
+        paralell: false
+    }, function(done) {
+
+        var orig = LoginCtrl.login;
+        LoginCtrl.login = function(request, reply) {
+
+            return reply(internals.user);
+
+        };
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject({
+                method: 'POST',
+                url: Config.paths.login,
+                payload: {
+                    email: 'test@gmail.com',
+                    password: 'password'
+                }
+            }, function(response) {
+
+                LoginCtrl.login = orig;
+                expect(response.statusCode).to.equal(200);
+                expect(JSON.parse(response.payload)).to.equal(internals.user);
+                Manager.stop(done);
+            });
+
+        });
+    });
+
+    it('destroys authenticated session', {
+        parallel: true
+    }, function(done) {
+
+        var orig = LoginCtrl.logout;
+        LoginCtrl.logout = function(request, reply) {
+            return reply(internals.logout);
+        };
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject(Config.paths.logout, function(response) {
+
+                LoginCtrl.logout = orig;
+                expect(response.statusCode).to.equal(200);
+                expect(JSON.parse(response.payload)).to.equal(internals.logout);
+                Manager.stop(done);
+            });
+
+        });
 
     });
+
 });
