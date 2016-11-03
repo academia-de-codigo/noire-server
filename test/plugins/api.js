@@ -44,6 +44,7 @@ internals.logout = {
 describe('Plugin: api', function() {
 
     it('returns the version from package.json', function(done) {
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();

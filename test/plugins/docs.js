@@ -33,13 +33,13 @@ describe('Plugin: docs', function() {
 
     it('handle vision and inert plugin registration failures', function(done) {
         var PLUGIN_ERROR = 'plugin error';
-        var fakeManager = {};
+        var fakeServer = {};
 
-        fakeManager.register = function(plugin, next) {
+        fakeServer.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Docs.register(fakeManager, null, function(error) {
+        Docs.register(fakeServer, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);

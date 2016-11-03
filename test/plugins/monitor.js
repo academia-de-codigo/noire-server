@@ -33,14 +33,14 @@ describe('Plugin: monitor', function() {
     it('handle good plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
-        var fakeManager = {};
-        fakeManager.on = function() {};
+        var fakeServer = {};
+        fakeServer.on = function() {};
 
-        fakeManager.register = function(plugin, next) {
+        fakeServer.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
 
-        Monitor.register(fakeManager, null, function(error) {
+        Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.exist();
             expect(error.message).to.equals(PLUGIN_ERROR);
@@ -60,8 +60,8 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeManager = {};
-        fakeManager.on = function(event, next) {
+        var fakeServer = {};
+        fakeServer.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
@@ -69,16 +69,16 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        fakeManager.log = function(tags, data) {
+        fakeServer.log = function(tags, data) {
             expect(tags).to.equals(eventData.tags);
             expect(data.info).to.exist();
         };
 
-        fakeManager.register = function(plugin, next) {
+        fakeServer.register = function(plugin, next) {
             return next();
         };
 
-        Monitor.register(fakeManager, null, function(error) {
+        Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = orig;
@@ -112,8 +112,8 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeManager = {};
-        fakeManager.on = function(event, next) {
+        var fakeServer = {};
+        fakeServer.on = function(event, next) {
             expect(event).to.match(/(route|request)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
@@ -121,7 +121,7 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        fakeManager.log = function(tags, data) {
+        fakeServer.log = function(tags, data) {
             expect(tags).to.equals(eventData.tags);
             expect(data.id).to.equals(REQ_ID);
             expect(data.path).to.equals(requestData.url.path);
@@ -129,11 +129,11 @@ describe('Plugin: monitor', function() {
             expect(data.info).to.exist();
         };
 
-        fakeManager.register = function(plugin, next) {
+        fakeServer.register = function(plugin, next) {
             return next();
         };
 
-        Monitor.register(fakeManager, null, function(error) {
+        Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = orig;
@@ -242,9 +242,9 @@ describe('Plugin: monitor', function() {
         var origDebug = Config.monitor.debug;
         Config.monitor.debug = false;
 
-        var fakeManager = {};
-        fakeManager.on = function() {};
-        fakeManager.register = function(plugin, next) {
+        var fakeServer = {};
+        fakeServer.on = function() {};
+        fakeServer.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();
             expect(plugin.options.reporters).to.be.an.object();
@@ -255,7 +255,7 @@ describe('Plugin: monitor', function() {
             return next();
         };
 
-        Monitor.register(fakeManager, null, function(error) {
+        Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = origDebug;
@@ -271,9 +271,9 @@ describe('Plugin: monitor', function() {
         var origDebug = Config.monitor.debug;
         Config.monitor.debug = true;
 
-        var fakeManager = {};
-        fakeManager.on = function() {};
-        fakeManager.register = function(plugin, next) {
+        var fakeServer = {};
+        fakeServer.on = function() {};
+        fakeServer.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();
             expect(plugin.options.reporters).to.be.an.object();
@@ -284,7 +284,7 @@ describe('Plugin: monitor', function() {
             return next();
         };
 
-        Monitor.register(fakeManager, null, function(error) {
+        Monitor.register(fakeServer, null, function(error) {
 
             expect(error).to.not.exist();
             Config.monitor.debug = origDebug;

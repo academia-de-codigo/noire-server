@@ -20,6 +20,6 @@ ES5 Hapi Boilerplate
 
 ### Desired Features
 
-* Database ORM with Knex and Objection
+* Database ORM (Objection) with migrations (Knex) support
 * Usage of Promises with Bluebird
 * Jobs with Agenda
