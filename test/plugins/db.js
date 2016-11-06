@@ -30,6 +30,9 @@ describe('Plugin: db', function() {
 
     var mockConfig, mockKnexConfig, mockKnex, mockObjection, mockKnexInstance;
     var dbTestResult = 2;
+    var mockError = null;
+    var ENV_DEV = 'development';
+    var ENV_STAGING = 'staging';
 
     before(function(done) {
 
@@ -39,7 +42,7 @@ describe('Plugin: db', function() {
         });
 
         mockConfig = {
-            environment: 'development'
+            environment: ENV_DEV
         };
 
         mockKnexConfig = {};
@@ -49,10 +52,27 @@ describe('Plugin: db', function() {
             raw: function(query) {
                 expect(query).to.startWith('select');
                 return {
-                    then: function(next) {
-                        next([{
-                            result: dbTestResult
-                        }]);
+                    then: function(next, nextErr) {
+
+                        if (mockError) {
+                            return nextErr({
+                                message: mockError
+                            });
+                        }
+
+                        var dbResponse;
+                        if (mockConfig.environment === ENV_DEV) {
+                            dbResponse = [{
+                                result: dbTestResult
+                            }];
+                        } else {
+                            dbResponse = {
+                                rows: [{
+                                    result: dbTestResult
+                                }]
+                            };
+                        }
+                        next(dbResponse);
                     }
                 };
             },
@@ -86,10 +106,11 @@ describe('Plugin: db', function() {
         done();
     });
 
-    it('initializes the knex db library', {
+    it('initializes the knex db library with sqlite', {
         parallel: false
     }, function(done) {
 
+        mockConfig.environment = ENV_DEV;
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
@@ -98,7 +119,48 @@ describe('Plugin: db', function() {
         });
     });
 
-    it('handles db connection test errors', {
+    it('initializes the knex db library with postgresql', {
+        parallel: false
+    }, function(done) {
+
+        mockConfig.environment = ENV_STAGING;
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            mockConfig.environment = ENV_DEV;
+            expect(err).to.not.exist();
+            expect(server).to.be.instanceof(Hapi.Server);
+            Manager.stop(done);
+        });
+    });
+
+    it('handles db connection error', {
+        parallel: false
+    }, function(done) {
+
+        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
+
+        var fakeServer = {};
+        fakeServer.log = function(tags, data) {
+            expect(tags).to.contains('db');
+            expect(tags).to.contains('error');
+            expect(data).to.equals(mockError);
+        };
+
+        fakeServer.register = function(plugin, next) {
+            return next();
+        };
+
+        mockConfig.environment = ENV_DEV;
+        mockError = 'database pool connection error';
+        Db.register(fakeServer, null, function(err) {
+
+            mockError = null;
+            expect(err).to.not.exist();
+            done();
+        });
+    });
+
+    it('handles db connection test unexpected result with sqlite', {
         parallel: false
     }, function(done) {
 
@@ -115,10 +177,40 @@ describe('Plugin: db', function() {
             return next();
         };
 
+        mockConfig.environment = ENV_DEV;
         dbTestResult = 3;
         Db.register(fakeServer, null, function(err) {
+
             expect(err).to.not.exist();
             dbTestResult = 2;
+            done();
+        });
+    });
+
+    it('handles db connection test unexpected result with postgresql', {
+        parallel: false
+    }, function(done) {
+
+        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
+
+        var fakeServer = {};
+        fakeServer.log = function(tags, data) {
+            expect(tags).to.contains('db');
+            expect(tags).to.contains('error');
+            expect(data).to.equals('database connection test returned wrong result');
+        };
+
+        fakeServer.register = function(plugin, next) {
+            return next();
+        };
+
+        mockConfig.environment = ENV_STAGING;
+        dbTestResult = 3;
+        Db.register(fakeServer, null, function(err) {
+
+            mockConfig.environment = ENV_DEV;
+            dbTestResult = 2;
+            expect(err).to.not.exist();
             done();
         });
     });
@@ -143,6 +235,7 @@ describe('Plugin: db', function() {
         };
 
         Db.register(fakeServer, null, function(err) {
+
             expect(err).to.not.exist();
             done();
         });
@@ -170,6 +263,7 @@ describe('Plugin: db', function() {
         fakeServer.ext = fakeServer.log = function() {};
 
         Db.register(fakeServer, null, function(err) {
+
             expect(err).to.not.exist();
             done();
         });
@@ -213,7 +307,6 @@ describe('Plugin: db', function() {
             expect(server).to.be.instanceof(Hapi.Server);
             Manager.stop(done);
         });
-
     });
 
 });
