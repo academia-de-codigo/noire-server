@@ -13,7 +13,7 @@ module.exports = {
             directory: './db/migrations'
         },
         seeds: {
-            directory: '.db/seeds/development'
+            directory: './db/seeds/development'
         },
         useNullAsDefault: true,
         acquireConnectionTimeout: 500,
@@ -33,10 +33,10 @@ module.exports = {
             max: 10
         },
         migrations: {
-            tableName: 'migrations'
+            directory: './db/migrations'
         },
         seeds: {
-            directory: '.db/seeds/staging'
+            directory: './db/seeds/staging'
         },
         acquireConnectionTimeout: 1000,
         debug: false
@@ -55,10 +55,10 @@ module.exports = {
             max: 10
         },
         migrations: {
-            tableName: 'migrations'
+            directory: './db/migrations'
         },
         seeds: {
-            directory: '.db/seeds/prod'
+            directory: './db/seeds/prod'
         },
         acquireConnectionTimeout: 5000,
         debug: false
