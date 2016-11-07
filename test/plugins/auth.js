@@ -44,7 +44,7 @@ internals.user = {
     username: 'test',
     email: 'test@gmail.com',
     password: 'test',
-    scope: 'user'
+    roles: 'user'
 };
 
 describe('Plugin: auth', function() {
@@ -255,7 +255,7 @@ describe('Plugin: auth', function() {
                 expect(response.request.auth.credentials.id).to.equal(internals.user.id);
                 expect(response.request.auth.credentials.username).to.equal(internals.user.username);
                 expect(response.request.auth.credentials.email).to.equal(internals.user.email);
-                expect(response.request.auth.credentials.scope).to.equal(internals.user.scope);
+                expect(response.request.auth.credentials.scope).to.equal(internals.user.roles);
                 Manager.stop(done);
             });
 

@@ -34,7 +34,7 @@ internals.user = {
     'id': 0,
     'username': 'test',
     'email': 'test@gmail.com',
-    'scope': 'user'
+    'roles': 'user'
 };
 
 internals.logout = {

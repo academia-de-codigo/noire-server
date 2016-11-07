@@ -18,13 +18,13 @@ internals.users = [{
     'username': 'test',
     'email': 'test@gmail.com',
     'password': 'test',
-    'scope': 'user'
+    'roles': 'user'
 }, {
     'id': 1,
     'username': 'admin',
     'email': 'admin@gmail.com',
     'password': 'admin',
-    'scope': ['user', 'admin']
+    'roles': ['user', 'admin']
 }];
 
 describe('Service: user', function() {
