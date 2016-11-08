@@ -28,7 +28,7 @@ internals.composeOptions = {
 
 describe('Plugin: db', function() {
 
-    var mockConfig, mockRepository;
+    var mockConfig;
     var mockKnexConfig, mockKnex, mockObjection, mockKnexInstance;
     var dbTestResult = 2;
     var mockError = null;
@@ -93,15 +93,10 @@ describe('Plugin: db', function() {
             }
         };
 
-        mockRepository = {
-            registerModels: function() {}
-        };
-
         Mockery.registerMock('../config', mockConfig);
         Mockery.registerMock('../../knexfile', mockKnexConfig);
         Mockery.registerMock('knex', mockKnex);
         Mockery.registerMock('objection', mockObjection);
-        Mockery.registerMock('../repository', mockRepository);
         done();
     });
 
