@@ -9,6 +9,10 @@ module.exports = {
         connection: {
             filename: Path.resolve(__dirname, 'db/dev.sqlite3')
         },
+        pool: {
+            min: 1,
+            max: 4
+        },
         migrations: {
             directory: './db/migrations'
         },
@@ -17,7 +21,13 @@ module.exports = {
         },
         useNullAsDefault: true,
         acquireConnectionTimeout: 500,
-        debug: true
+        debug: {
+            query: true,
+            tx: true,
+            pool: false,
+            client: false,
+            bindings: false
+        }
     },
 
     staging: {
@@ -39,7 +49,6 @@ module.exports = {
             directory: './db/seeds/staging'
         },
         acquireConnectionTimeout: 1000,
-        debug: false
     },
 
     production: {
@@ -61,7 +70,6 @@ module.exports = {
             directory: './db/seeds/prod'
         },
         acquireConnectionTimeout: 5000,
-        debug: false
     }
 
 };
