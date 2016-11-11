@@ -10,7 +10,7 @@ exports.seed = function(knex, Promise) {
                     id: 1,
                     username: 'admin',
                     email: 'admin@gmail.com',
-                    password: 'test'
+                    password: 'admin'
                 }),
                 knex('user').insert({
                     id: 2,
