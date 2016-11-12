@@ -3,15 +3,17 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
+var Exiting = require('exiting');
 var Config = require('../../lib/config');
 var Manager = require('../../lib/manager');
+var MockAuth = require('../fixtures/auth');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
 var describe = lab.experiment;
 var before = lab.before;
-var after = lab.after;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -22,7 +24,7 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
-        plugin: './plugins/auth'
+        plugin: '../test/fixtures/auth'
     }, {
         plugin: './plugins/routes'
     }, {
@@ -47,35 +49,39 @@ internals.users = [{
 }];
 
 
-describe('Plugin: views', function() {
+describe('Plugin: routes', function() {
 
     before(function(done) {
-
-        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        process.env.JWT_SECRET = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+        Exiting.reset();
         done();
-
     });
 
-    after(function(done) {
-        process.env.JWT_SECRET = '';
-        done();
+    afterEach(function(done) {
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
+
     });
 
     it('returns the home view for non authenticaded users', function(done) {
 
+        MockAuth.authenticate = false;
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
             server.inject(Config.paths.home, function(response) {
 
+                MockAuth.authenticate = true;
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
                 expect(response.request.auth.isAuthenticated).to.be.false();
                 Manager.stop(done);
             });
-
         });
     });
 
