@@ -6,7 +6,7 @@ var Path = require('path');
 var Exiting = require('exiting');
 var Config = require('../../lib/config');
 var Manager = require('../../lib/manager');
-var MockAuth = require('../fixtures/auth');
+var MockAuth = require('../fixtures/auth-plugin');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -24,7 +24,7 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
-        plugin: '../test/fixtures/auth'
+        plugin: '../test/fixtures/auth-plugin'
     }, {
         plugin: './plugins/routes'
     }, {
