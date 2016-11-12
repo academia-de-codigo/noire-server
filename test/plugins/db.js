@@ -43,11 +43,13 @@ describe('Plugin: db', function() {
         });
 
         mockConfig = {
-            environment: ENV_DEV
+            environment: ENV_DEV,
         };
 
         mockKnexConfig = {};
-        mockKnexConfig[mockConfig.environment] = {};
+        mockKnexConfig[mockConfig.environment] = {
+            debug: {}
+        };
 
         mockKnexInstance = {
             raw: function(query) {

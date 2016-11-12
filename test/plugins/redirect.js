@@ -4,6 +4,7 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Url = require('url');
+var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 
@@ -12,7 +13,7 @@ var lab = exports.lab = Lab.script(); // export the test script
 // make lab feel like jasmine
 var describe = lab.experiment;
 var before = lab.before;
-var after = lab.after;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -34,7 +35,7 @@ internals.manifest = {
         tls: Config.tls
     }],
     registrations: [{
-        plugin: './plugins/auth',
+        plugin: '../test/fixtures/auth-plugin',
         options: {
             select: ['web', 'web-tls']
         }
@@ -81,16 +82,19 @@ internals.composeOptions = {
 describe('Plugin: redirect', function() {
 
     before(function(done) {
-
-        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        process.env.JWT_SECRET = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+        Exiting.reset();
         done();
-
     });
 
-    after(function(done) {
-        process.env.JWT_SECRET = '';
-        done();
+    afterEach(function(done) {
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
+
     });
 
     it('http api requests redirected to https', function(done) {
