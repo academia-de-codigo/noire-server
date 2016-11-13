@@ -8,7 +8,7 @@ var Https = require('https');
 var Path = require('path');
 var Exiting = require('exiting');
 var Manager = require('../lib/manager');
-var Api = require('../lib/plugins/api');
+var Errors = require('../lib/plugins/errors');
 var Config = require('../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -36,7 +36,9 @@ internals.manifest = {
         tls: Config.tls
     }],
     registrations: [{
-        plugin: './plugins/api'
+        plugin: '../test/fixtures/auth-plugin'
+    }, {
+        plugin: './plugins/errors'
     }]
 };
 
@@ -140,14 +142,14 @@ describe('Manager bootstrap', function() {
 
         // save the original version plugin register function, as we will
         // monkey patch it to test how server handles plugin registration errors
-        var orig = Api.register;
+        var orig = Errors.register;
 
         // crate a new fake version plugin register function
         // parallel testing is not safe with monkey patching like this
-        Api.register = function(server, options, next) {
+        Errors.register = function(server, options, next) {
 
             // restore the original version plugin register function
-            Api.register = orig;
+            Errors.register = orig;
 
             // force plugin registration to fail
             return next(new Error(PLUGIN_ERROR));
@@ -155,7 +157,7 @@ describe('Manager bootstrap', function() {
         };
 
         // registration function needs a version
-        Api.register.attributes = {
+        Errors.register.attributes = {
             name: 'fake version'
         };
 

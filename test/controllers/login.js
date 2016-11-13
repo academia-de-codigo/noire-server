@@ -1,10 +1,12 @@
 'use strict';
 
+var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
-var LoginCtrl = require('../../lib/controllers/login');
-var UserService = require('../../lib/services/user');
+var MockUserService = require('../fixtures/user-service');
+var HSError = require('../../lib/error');
+
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -23,21 +25,29 @@ internals.user = {
 
 describe('Controller: login', function() {
 
+    var LoginCtrl;
+
     before(function(done) {
 
-        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
-        process.env.JWT_SECRET = secret;
+        Mockery.enable({
+            warnOnReplace: false,
+            warnOnUnregistered: false
+        });
 
-        UserService.setUsers([internals.user]);
+        Mockery.registerMock('../services/user', MockUserService);
+        MockUserService.setUsers([internals.user]);
+
+        LoginCtrl = require('../../lib/controllers/login');
         done();
+
     });
 
     it('invalid email address', function(done) {
 
         var request = {
             payload: {
-                email: 'invalid'
+                email: 'invalid',
+                password: internals.user.password
             },
             log: function() {}
         };
@@ -47,7 +57,7 @@ describe('Controller: login', function() {
             expect(response.isBoom).to.equal(true);
             expect(response.output.statusCode).to.equal(401);
             expect(response.output.payload.error).to.equal('Unauthorized');
-            expect(response.output.payload.message).to.equal('Invalid email address');
+            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_EMAIL);
             done();
         });
     });
@@ -67,7 +77,7 @@ describe('Controller: login', function() {
             expect(response.isBoom).to.equal(true);
             expect(response.output.statusCode).to.equal(401);
             expect(response.output.payload.error).to.equal('Unauthorized');
-            expect(response.output.payload.message).to.equal('Bad password');
+            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_PASSWORD);
             done();
         });
     });
@@ -89,11 +99,9 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
-        LoginCtrl.login(request, function(userAccount) {
+        LoginCtrl.login(request, function(response) {
 
-            expect(userAccount).to.exist();
-            expect(userAccount.email).to.equals(internals.user.email);
-            expect(userAccount.password).to.not.exist();
+            expect(response).to.not.exist();
             return {
                 header: function(header, token) {
                     expect(header).to.equal('Authorization');
@@ -135,11 +143,9 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
-        LoginCtrl.login(request, function(userAccount) {
+        LoginCtrl.login(request, function(response) {
 
-            expect(userAccount).to.exist();
-            expect(userAccount.email).to.equals(internals.user.email);
-            expect(userAccount.password).to.not.exist();
+            expect(response).to.not.exist();
             return {
                 header: function(header, token) {
                     expect(header).to.equal('Authorization');

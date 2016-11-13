@@ -7,6 +7,9 @@ var Users = require('../../lib/users.json');
 var internals = {};
 internals.users = Users;
 
+// created using npm run token
+internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc4OTk1ODEyLCJleHAiOjE0NzkwMjQ2MTJ9.Jed6SqmlRYfPTwEWEvb3B73Q9AkFekpbXYi0nkHREgo';
+
 exports.setUsers = function(users) {
     internals.users = users;
 };
@@ -40,15 +43,25 @@ exports.list = function() {
 };
 
 exports.authenticate = function(email, password) {
-    var user = exports.findByEmail(email);
 
-    if (!user) {
+    return exports.findByEmail(email).then(function(user) {
+
+        if (!user) {
+            return Promise.reject(HSError.AUTH_INVALID_EMAIL);
+        }
+
+        if (user.password !== password) {
+            console.log('rejecting promise 1');
+            return Promise.reject(HSError.AUTH_INVALID_PASSWORD);
+        }
+
+        return Promise.resolve(internals.token);
+    }).catch(function(err) {
+
+        if (err === HSError.AUTH_INVALID_PASSWORD) {
+            return Promise.reject(err);
+        }
+
         return Promise.reject(HSError.AUTH_INVALID_EMAIL);
-    }
-
-    if (user.password !== password) {
-        return Promise.reject(HSError.AUTH_INVALID_PASSWORD);
-    }
-
-    return Promise.accept('token');
+    });
 };
