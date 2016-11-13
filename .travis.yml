@@ -3,6 +3,6 @@ node_js:
     - "6"
     - "5"
     - "4"
- branches:
-     only:
-         - master
+branches:
+    only:
+        - master
