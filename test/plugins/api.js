@@ -1,17 +1,21 @@
 'use strict';
 
+var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Package = require('../../package.json');
 var Path = require('path');
 var Config = require('../../lib/config');
-var LoginCtrl = require('../../lib/controllers/login');
+var MockUserService = require('../fixtures/user-service');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
 var describe = lab.experiment;
+var before = lab.before;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -22,6 +26,8 @@ internals.manifest = {
         port: 0
     }],
     registrations: [{
+        plugin: '../test/fixtures/auth-plugin'
+    }, {
         plugin: './plugins/api'
     }]
 };
@@ -42,6 +48,33 @@ internals.logout = {
 };
 
 describe('Plugin: api', function() {
+
+    var LoginCtrl;
+
+    before(function(done) {
+
+        Mockery.enable({
+            warnOnReplace: false,
+            warnOnUnregistered: false
+        });
+
+        Mockery.registerMock('../services/user', MockUserService);
+        LoginCtrl = require('../../lib/controllers/login');
+
+        Exiting.reset();
+        done();
+    });
+
+    afterEach(function(done) {
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
+
+    });
 
     it('returns the version from package.json', function(done) {
 
@@ -88,7 +121,7 @@ describe('Plugin: api', function() {
 
                 LoginCtrl.login = orig;
                 expect(response.statusCode).to.equal(200);
-                expect(JSON.parse(response.payload)).to.equal(internals.user);
+                expect(response.result).to.equal(internals.user);
                 Manager.stop(done);
             });
 
@@ -112,7 +145,7 @@ describe('Plugin: api', function() {
 
                 LoginCtrl.logout = orig;
                 expect(response.statusCode).to.equal(200);
-                expect(JSON.parse(response.payload)).to.equal(internals.logout);
+                expect(response.result).to.equal(internals.logout);
                 Manager.stop(done);
             });
 
