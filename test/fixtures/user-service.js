@@ -7,8 +7,11 @@ var Users = require('../../lib/users.json');
 var internals = {};
 internals.users = Users;
 
+// created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
+internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+
 // created using npm run token
-internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc4OTk1ODEyLCJleHAiOjE0NzkwMjQ2MTJ9.Jed6SqmlRYfPTwEWEvb3B73Q9AkFekpbXYi0nkHREgo';
+internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDAyNjg2LCJleHAiOjE0NzkwMzE0ODZ9.5nQXtuZcenBYEjOVt1u7LcTuZsIEKSOgIHKntz3UhLM';
 
 exports.setUsers = function(users) {
     internals.users = users;
