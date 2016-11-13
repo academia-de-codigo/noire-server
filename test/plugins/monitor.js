@@ -34,8 +34,10 @@ describe('Plugin: monitor', function() {
 
         var PLUGIN_ERROR = 'plugin error';
         var fakeServer = {};
-        fakeServer.on = function() {};
-
+        fakeServer.on = fakeServer.ext = function() {};
+        fakeServer.select = function() {
+            return fakeServer;
+        };
         fakeServer.register = function(plugin, next) {
             return next(new Error(PLUGIN_ERROR));
         };
@@ -61,8 +63,12 @@ describe('Plugin: monitor', function() {
         };
 
         var fakeServer = {};
+        fakeServer.ext = function() {};
+        fakeServer.select = function() {
+            return fakeServer;
+        };
         fakeServer.on = function(event, next) {
-            expect(event).to.match(/(route|request)/);
+            expect(event).to.match(/(route|request|response)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
                 next({}, eventData);
@@ -113,8 +119,12 @@ describe('Plugin: monitor', function() {
         };
 
         var fakeServer = {};
+        fakeServer.ext = function() {};
+        fakeServer.select = function() {
+            return fakeServer;
+        };
         fakeServer.on = function(event, next) {
-            expect(event).to.match(/(route|request)/);
+            expect(event).to.match(/(route|request|response)/);
             expect(next).to.be.a.function();
             if (event === 'request') {
                 next(requestData, eventData);
@@ -122,8 +132,9 @@ describe('Plugin: monitor', function() {
         };
 
         fakeServer.log = function(tags, data) {
+
             expect(tags).to.equals(eventData.tags);
-            expect(data.id).to.equals(REQ_ID);
+            expect(data.request).to.equals(REQ_ID);
             expect(data.path).to.equals(requestData.url.path);
             expect(data.address).to.equals(requestData.info.remoteAddress);
             expect(data.info).to.exist();
@@ -243,7 +254,10 @@ describe('Plugin: monitor', function() {
         Config.monitor.debug = false;
 
         var fakeServer = {};
-        fakeServer.on = function() {};
+        fakeServer.on = fakeServer.ext = function() {};
+        fakeServer.select = function() {
+            return fakeServer;
+        };
         fakeServer.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();
@@ -272,7 +286,10 @@ describe('Plugin: monitor', function() {
         Config.monitor.debug = true;
 
         var fakeServer = {};
-        fakeServer.on = function() {};
+        fakeServer.on = fakeServer.ext = function() {};
+        fakeServer.select = function() {
+            return fakeServer;
+        };
         fakeServer.register = function(plugin, next) {
             expect(plugin).to.exist();
             expect(plugin.options).to.be.an.object();

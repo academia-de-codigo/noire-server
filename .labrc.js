@@ -11,12 +11,14 @@ module.exports = {
     paths: ['test/manager.js',
             'test/controllers/login.js',
             'test/plugins/api.js',
+            'test/plugins/csrf.js',
             'test/plugins/auth.js',
             'test/plugins/assets.js',
             'test/plugins/docs.js',
             'test/plugins/db.js',
             'test/plugins/redirect.js',
             'test/plugins/errors.js',
+            'test/plugins/monitor.js',
             'test/plugins/routes.js'],
     globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };

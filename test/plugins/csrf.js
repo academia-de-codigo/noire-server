@@ -1,16 +1,21 @@
 'use strict';
 
+var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
+var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 var Csrf = require('../../lib/plugins/csrf');
+var MockUserService = require('../fixtures/user-service');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
 var describe = lab.experiment;
+var before = lab.before;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -38,6 +43,31 @@ internals.composeOptions = {
 };
 
 describe('Plugin: csrf', function() {
+
+    before(function(done) {
+
+        Mockery.enable({
+            warnOnReplace: false,
+            warnOnUnregistered: false
+        });
+
+        Mockery.registerMock('../services/user', MockUserService);
+        MockUserService.setUsers([internals.user]);
+
+        Exiting.reset();
+        done();
+    });
+
+    afterEach(function(done) {
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
+
+    });
 
     it('handle crumb plugin registration failure', function(done) {
 
