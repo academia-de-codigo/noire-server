@@ -1,12 +1,13 @@
 'use strict';
 
+var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
+var Exiting = require('exiting');
 var Path = require('path');
-var Auth = require('../../lib/plugins/auth');
 var Manager = require('../../lib/manager');
-var UserService = require('../../lib/services/user');
+var MockUserService = require('../fixtures/user-service');
 var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -15,7 +16,6 @@ var lab = exports.lab = Lab.script(); // export the test script
 var describe = lab.experiment;
 var before = lab.before;
 var beforeEach = lab.beforeEach;
-var after = lab.after;
 var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
@@ -44,27 +44,33 @@ internals.user = {
     username: 'test',
     email: 'test@gmail.com',
     password: 'test',
-    roles: 'user'
+    roles: [{
+        name: 'user'
+    }]
 };
 
 describe('Plugin: auth', function() {
 
+    var Auth;
+
     before(function(done) {
+
+        Mockery.enable({
+            warnOnReplace: false,
+            warnOnUnregistered: false
+        });
+
+        Mockery.registerMock('../services/user', MockUserService);
+        Auth = require('../../lib/plugins/auth');
 
         // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
         internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
         internals.ID_INVALID = 2;
 
-        internals.originalUsers = UserService.getUsers();
-        UserService.setUsers([internals.user]);
-
+        MockUserService.setUsers([internals.user]);
+        Exiting.reset();
         done();
 
-    });
-
-    after(function(done) {
-        UserService.setUsers(internals.originalUsers);
-        done();
     });
 
     beforeEach(function(done) {
@@ -74,7 +80,13 @@ describe('Plugin: auth', function() {
 
     afterEach(function(done) {
         process.env.JWT_SECRET = '';
-        done();
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
     });
 
     it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
@@ -144,7 +156,7 @@ describe('Plugin: auth', function() {
 
             server.inject(Config.prefixes.admin, function(response) {
 
-                var payload = JSON.parse(response.payload);
+                var payload = response.result;
 
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
@@ -172,7 +184,7 @@ describe('Plugin: auth', function() {
                 }
             }, function(response) {
 
-                var payload = JSON.parse(response.payload);
+                var payload = response.result;
 
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
@@ -198,7 +210,7 @@ describe('Plugin: auth', function() {
                 }
             }, function(response) {
 
-                var payload = JSON.parse(response.payload);
+                var payload = response.result;
 
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
@@ -208,6 +220,7 @@ describe('Plugin: auth', function() {
 
         });
     });
+
 
     it('invalid scope', function(done) {
 
@@ -223,7 +236,7 @@ describe('Plugin: auth', function() {
                 }
             }, function(response) {
 
-                var payload = JSON.parse(response.payload);
+                var payload = response.result;
 
                 expect(response.statusCode, 'Status code').to.equal(403);
                 expect(payload.error).to.equals('Forbidden');
@@ -255,12 +268,13 @@ describe('Plugin: auth', function() {
                 expect(response.request.auth.credentials.id).to.equal(internals.user.id);
                 expect(response.request.auth.credentials.username).to.equal(internals.user.username);
                 expect(response.request.auth.credentials.email).to.equal(internals.user.email);
-                expect(response.request.auth.credentials.scope).to.equal(internals.user.roles);
+                expect(response.request.auth.credentials.scope[0]).to.equal(internals.user.roles[0].name);
                 Manager.stop(done);
             });
 
         });
 
     });
+
 
 });

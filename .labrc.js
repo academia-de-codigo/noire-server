@@ -10,6 +10,7 @@ module.exports = {
     //paths: ['test'],
     paths: ['test/manager.js',
             'test/controllers/login.js',
+            'test/plugins/auth.js',
             'test/plugins/assets.js',
             'test/plugins/docs.js',
             'test/plugins/db.js',

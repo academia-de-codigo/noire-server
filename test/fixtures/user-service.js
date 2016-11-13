@@ -51,7 +51,6 @@ exports.authenticate = function(email, password) {
         }
 
         if (user.password !== password) {
-            console.log('rejecting promise 1');
             return Promise.reject(HSError.AUTH_INVALID_PASSWORD);
         }
 
