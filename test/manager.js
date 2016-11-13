@@ -15,6 +15,7 @@ var lab = exports.lab = Lab.script(); // export the test script
 
 // make lab feel like jasmine
 var describe = lab.experiment;
+var afterEach = lab.afterEach;
 var it = lab.test;
 var expect = Code.expect;
 
@@ -46,7 +47,18 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../lib')
 };
 
-describe('Manager bootstrap', function() {
+describe('Manager', function() {
+
+    afterEach(function(done) {
+
+        // Manager might not be properly stopped when tests fail
+        if (Manager.getState() === 'started') {
+            Manager.stop(done);
+        } else {
+            done();
+        }
+
+    });
 
     it('manager returns server object', function(done) {
 
@@ -226,7 +238,19 @@ describe('Manager bootstrap', function() {
 
             });
         });
-
     });
 
+    it('returns manager state', function(done) {
+
+        expect(Manager.getState()).to.not.exists();
+        Manager.start(internals.manifest, internals.composeOptions, function() {
+
+            expect(Manager.getState()).to.exists();
+            expect(Manager.getState()).to.equals('started');
+            Manager.stop(function() {
+                expect(Manager.getState()).to.equals('stopped');
+                done();
+            });
+        });
+    });
 });
