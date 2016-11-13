@@ -1,8 +1,34 @@
 [![Build Status](https://travis-ci.org/ferrao/hapi-starter.svg?branch=master)](https://travis-ci.org/ferrao/hapi-starter)
+[![Dependencies Status](https://david-dm.org/ferrao/hapi-starter.svg)](https://david-dm.org/ferrao/hapi-starter)
+[![DevDependencies Status](https://david-dm.org/ferrao/hapi-starter/dev-status.svg)](https://david-dm.org/ferrao/hapi-starter?type=dev)
+[![NSP Status](https://nodesecurity.io/orgs/rui-ferrao/projects/7f53cba3-6d6c-4e35-8fc8-c7ec79f55ffe/badge)](https://nodesecurity.io/orgs/rui-ferrao/projects/7f53cba3-6d6c-4e35-8fc8-c7ec79f55ffe)
+[![Known Vulnerabilities](https://snyk.io/test/github/ferrao/hapi-starter/badge.svg)](https://snyk.io/test/github/ferrao/hapi-starter)
+
+Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 # Hapi Starter
 
-ES5 Hapi Boilerplate
+Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
+
+### View Layer
+* Accept data
+* Apply style and formatting
+* Rendering
+
+### Controllers
+* Map routes
+* Extract route parameters
+* Kick off some work
+* Send the result to a View for rendering
+
+### Service Layer
+* Perform work for the Controller
+* Return the result for the Controller
+
+### Data Access Layer
+* Repository pattern for data entities
+* Thin models
+* ORM with transactional capabilities
 
 ## Features
 
@@ -17,9 +43,9 @@ ES5 Hapi Boilerplate
 * Logging to console and file - ops, error, auth and access logs
 * Testing, code coverage and Travis CI integration
 * Graceful server shutdown
+* Database ORM (Objection) with migrations (Knex) support
+* Usage of Promises with Bluebird
 
 ### Desired Features
 
-* Database ORM (Objection) with migrations (Knex) support
-* Usage of Promises with Bluebird
 * Jobs with Agenda
