@@ -1,14 +1,15 @@
 'use strict';
 
-var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Sinon = require('sinon');
+var Promise = require('bluebird');
 var Path = require('path');
 var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 var Csrf = require('../../lib/plugins/csrf');
-var MockUserService = require('../fixtures/user-service');
+var UserService = require('../../lib/services/user');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -46,13 +47,8 @@ describe('Plugin: csrf', function() {
 
     before(function(done) {
 
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-
-        Mockery.registerMock('../services/user', MockUserService);
-        MockUserService.setUsers([internals.user]);
+        // created using npm run token
+        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
 
         Exiting.reset();
         done();
@@ -130,6 +126,9 @@ describe('Plugin: csrf', function() {
 
     it('success if crumb headers present', function(done) {
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(internals.user.email, internals.user.password).returns(Promise.resolve(internals.token));
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
@@ -150,7 +149,10 @@ describe('Plugin: csrf', function() {
                     }
                 }, function(response) {
 
+                    expect(UserService.authenticate.calledOnce).to.be.true();
                     expect(response.statusCode).to.equals(200);
+
+                    authenticateStub.restore();
                     Manager.stop(done);
                 });
 

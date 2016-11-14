@@ -51,6 +51,7 @@
   "devDependencies": {
     "code": "^4.0.0",
     "lab": "^11.0.1",
-    "mockery": "^2.0.0"
+    "mockery": "^2.0.0",
+    "sinon": "^1.17.6"
   }
 }

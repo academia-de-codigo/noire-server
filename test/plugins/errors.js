@@ -1,13 +1,15 @@
 'use strict';
 
-var Mockery = require('mockery'); // mock global node require
+var Promise = require('bluebird'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Sinon = require('sinon');
 var Path = require('path');
 var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
-var MockUserService = require('../fixtures/user-service');
+var UserService = require('../../lib/services/user');
+var HSError = require('../../lib/error');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -48,13 +50,6 @@ internals.composeOptions = {
 describe('Plugin: errors', function() {
 
     before(function(done) {
-
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-
-        Mockery.registerMock('../services/user', MockUserService);
 
         Exiting.reset();
         done();
@@ -136,6 +131,21 @@ describe('Plugin: errors', function() {
 
     it('invalid password', function(done) {
 
+        var mockUserData = {
+            email: 'test@gmail.com',
+            password: 'invalid'
+        };
+
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        var promise = Promise.reject(HSError.AUTH_INVALID_PASSWORD);
+        authenticateStub.withArgs(mockUserData.email, mockUserData.password).returns(promise);
+
+        // for some reason i can not explain the auth plugin is not
+        // catching this..
+        promise.catch(function(err) {
+            expect(err).to.equals(HSError.AUTH_INVALID_PASSWORD);
+        });
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
@@ -143,13 +153,15 @@ describe('Plugin: errors', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: 'test@gmail.com',
-                    password: 'invalid'
+                    email: mockUserData.email,
+                    password: mockUserData.password
                 }
             }, function(response) {
 
+                expect(UserService.authenticate.calledOnce).to.be.true();
                 expect(response.statusCode).to.equal(401);
                 expect(response.statusMessage).to.equal('Unauthorized');
+                authenticateStub.restore();
                 Manager.stop(done); // done() callback is required to end the test.
             });
 

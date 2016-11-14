@@ -1,14 +1,14 @@
 'use strict';
 
-var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Sinon = require('sinon');
 var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Package = require('../../package.json');
 var Path = require('path');
 var Config = require('../../lib/config');
-var MockUserService = require('../fixtures/user-service');
+var LoginCtrl = require('../../lib/controllers/login');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -49,17 +49,10 @@ internals.logout = {
 
 describe('Plugin: api', function() {
 
-    var LoginCtrl;
-
     before(function(done) {
 
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-
-        Mockery.registerMock('../services/user', MockUserService);
-        LoginCtrl = require('../../lib/controllers/login');
+        // created using npm run token
+        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
 
         Exiting.reset();
         done();
@@ -95,16 +88,11 @@ describe('Plugin: api', function() {
         });
     });
 
-    it('authenticates user credentials', {
-        paralell: false
-    }, function(done) {
+    it('authenticates user credentials', function(done) {
 
-        var orig = LoginCtrl.login;
-        LoginCtrl.login = function(request, reply) {
-
+        var loginCtrlStub = Sinon.stub(LoginCtrl, 'login', function(request, reply) {
             return reply(internals.user);
-
-        };
+        });
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -119,9 +107,10 @@ describe('Plugin: api', function() {
                 }
             }, function(response) {
 
-                LoginCtrl.login = orig;
+                expect(LoginCtrl.login.calledOnce).to.be.true();
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.equal(internals.user);
+                loginCtrlStub.restore();
                 Manager.stop(done);
             });
 

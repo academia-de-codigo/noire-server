@@ -2,7 +2,10 @@
 
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Sinon = require('sinon');
+var Promise = require('bluebird');
 var Path = require('path');
+var UserService = require('../../lib/services/user');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 
@@ -44,6 +47,9 @@ describe('Plugin: login', function() {
 
         // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
         process.env.JWT_SECRET = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+
+        // created using npm run token
+        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
         done();
 
     });
@@ -108,6 +114,9 @@ describe('Plugin: login', function() {
 
     it('login successful', function(done) {
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(internals.user.email, internals.user.password).returns(Promise.resolve(internals.token));
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exists();
@@ -120,9 +129,11 @@ describe('Plugin: login', function() {
                 }
             }, function(response) {
 
+                expect(UserService.authenticate.calledOnce).to.be.true();
                 expect(response.request.route.settings.plugins.stateless).to.be.false();
                 expect(response.request.auth.mode).to.be.null();
                 expect(response.statusCode).to.equals(200);
+                authenticateStub.restore();
                 Manager.stop(done);
 
             });

@@ -1,13 +1,16 @@
 'use strict';
 
-var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
+var Sinon = require('sinon');
 var JWT = require('jsonwebtoken');
+var Promise = require('bluebird');
 var Exiting = require('exiting');
 var Path = require('path');
+var HSError = require('../../lib/error');
 var Manager = require('../../lib/manager');
-var MockUserService = require('../fixtures/user-service');
+var UserService = require('../../lib/services/user');
+var Auth = require('../../lib/plugins/auth');
 var Config = require('../../lib/config');
 
 var lab = exports.lab = Lab.script(); // export the test script
@@ -51,23 +54,13 @@ internals.user = {
 
 describe('Plugin: auth', function() {
 
-    var Auth;
-
     before(function(done) {
 
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
-
-        Mockery.registerMock('../services/user', MockUserService);
-        Auth = require('../../lib/plugins/auth');
 
         // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
         internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
         internals.ID_INVALID = 2;
 
-        MockUserService.setUsers([internals.user]);
         Exiting.reset();
         done();
 
@@ -198,6 +191,16 @@ describe('Plugin: auth', function() {
 
     it('invalid credentials', function(done) {
 
+        var promise = Promise.reject(HSError.RESOURCE_NOT_FOUND);
+        var findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.returns(promise);
+
+        // for some reason i can not explain the auth plugin is not
+        // catching this..
+        promise.catch(function(err) {
+            expect(err).to.equals(HSError.RESOURCE_NOT_FOUND);
+        });
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
@@ -212,17 +215,21 @@ describe('Plugin: auth', function() {
 
                 var payload = response.result;
 
+                expect(UserService.findById.calledOnce).to.be.true();
                 expect(response.statusCode, 'Status code').to.equal(401);
                 expect(payload.error).to.equals('Unauthorized');
                 expect(payload.message).to.equals('Invalid credentials');
+                findByIdStub.restore();
                 Manager.stop(done);
             });
-
         });
     });
 
 
     it('invalid scope', function(done) {
+
+        var findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -238,9 +245,11 @@ describe('Plugin: auth', function() {
 
                 var payload = response.result;
 
+                expect(UserService.findById.calledOnce).to.be.true();
                 expect(response.statusCode, 'Status code').to.equal(403);
                 expect(payload.error).to.equals('Forbidden');
                 expect(payload.message).to.equals('Insufficient scope');
+                findByIdStub.restore();
                 Manager.stop(done);
 
             });
@@ -250,6 +259,9 @@ describe('Plugin: auth', function() {
     });
 
     it('valid credentials', function(done) {
+
+        var findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -263,18 +275,18 @@ describe('Plugin: auth', function() {
                 }
             }, function(response) {
 
+                expect(UserService.findById.calledOnce).to.be.true();
                 expect(response.statusCode, 'Status code').to.equal(200);
                 expect(response.request.auth.isAuthenticated).to.be.true();
                 expect(response.request.auth.credentials.id).to.equal(internals.user.id);
                 expect(response.request.auth.credentials.username).to.equal(internals.user.username);
                 expect(response.request.auth.credentials.email).to.equal(internals.user.email);
                 expect(response.request.auth.credentials.scope[0]).to.equal(internals.user.roles[0].name);
+                findByIdStub.restore();
                 Manager.stop(done);
             });
 
         });
 
     });
-
-
 });

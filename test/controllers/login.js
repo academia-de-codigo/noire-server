@@ -1,10 +1,12 @@
 'use strict';
 
-var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
-var MockUserService = require('../fixtures/user-service');
+var Promise = require('bluebird');
+var UserService = require('../../lib/services/user');
+var LoginCtrl = require('../../lib/controllers/login');
+var Sinon = require('sinon');
 var HSError = require('../../lib/error');
 
 
@@ -25,23 +27,15 @@ internals.user = {
 
 describe('Controller: login', function() {
 
-    var LoginCtrl;
-
     before(function(done) {
 
         // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        var secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
-        process.env.JWT_SECRET = secret;
+        internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+        process.env.JWT_SECRET = internals.secret;
 
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
+        // created using npm run token
+        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
 
-        Mockery.registerMock('../services/user', MockUserService);
-        MockUserService.setUsers([internals.user]);
-
-        LoginCtrl = require('../../lib/controllers/login');
         done();
 
     });
@@ -56,12 +50,18 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_EMAIL));
+
         LoginCtrl.login(request, function(response) {
 
+            expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response.isBoom).to.equal(true);
             expect(response.output.statusCode).to.equal(401);
             expect(response.output.payload.error).to.equal('Unauthorized');
             expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_EMAIL);
+
+            authenticateStub.restore();
             done();
         });
     });
@@ -76,12 +76,44 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_PASSWORD));
+
         LoginCtrl.login(request, function(response) {
 
+            expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response.isBoom).to.equal(true);
             expect(response.output.statusCode).to.equal(401);
             expect(response.output.payload.error).to.equal('Unauthorized');
             expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_PASSWORD);
+
+            authenticateStub.restore();
+            done();
+        });
+    });
+
+    it('handles internal server errors', function(done) {
+
+        var request = {
+            payload: {
+                email: internals.user.email,
+                password: internals.user.password
+            },
+            log: function() {}
+        };
+
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_ERROR));
+
+        LoginCtrl.login(request, function(response) {
+
+            expect(UserService.authenticate.calledOnce).to.be.true();
+            expect(response.isBoom).to.equal(true);
+            expect(response.output.statusCode).to.equal(500);
+            expect(response.output.payload.error).to.equal('Internal Server Error');
+            expect(response.output.payload.message).to.equal('An internal server error occurred');
+
+            authenticateStub.restore();
             done();
         });
     });
@@ -103,9 +135,16 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.resolve(internals.token));
+
         LoginCtrl.login(request, function(response) {
 
+            expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response).to.not.exist();
+
+            authenticateStub.restore();
+
             return {
                 header: function(header, token) {
                     expect(header).to.equal('Authorization');
@@ -147,9 +186,16 @@ describe('Controller: login', function() {
             log: function() {}
         };
 
+        var authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.resolve(internals.token));
+
         LoginCtrl.login(request, function(response) {
 
+            expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response).to.not.exist();
+
+            authenticateStub.restore();
+
             return {
                 header: function(header, token) {
                     expect(header).to.equal('Authorization');
