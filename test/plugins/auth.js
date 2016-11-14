@@ -102,11 +102,25 @@ describe('Plugin: auth', function() {
 
     it('get token and validate with correct secret', function(done) {
 
-        var jwt = Auth.getToken(internals.ID_INVALID);
+        var jwt = Auth.getToken(internals.user.id);
         JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
 
             expect(err).not.to.exist();
-            expect(decoded.id).to.equals(internals.ID_INVALID);
+            expect(decoded.id).to.equals(internals.user.id);
+            expect(decoded.exp).to.exist();
+
+            done();
+        });
+    });
+
+    it('get token without expiration date', function(done) {
+
+        var jwt = Auth.getToken(internals.user.id, true);
+        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+
+            expect(err).not.to.exist();
+            expect(decoded.id).to.equals(internals.user.id);
+            expect(decoded.exp).to.not.exist();
 
             done();
         });

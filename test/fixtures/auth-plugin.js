@@ -29,7 +29,7 @@ exports.register = function(server, options, next) {
         };
     });
 
-    server.auth.strategy('jwt', 'mock', true);
+    server.auth.strategy('jwt', 'mock', 'try');
     next();
 };
 
