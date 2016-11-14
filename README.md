@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/ferrao/hapi-starter.svg?branch=master)](https://travis-ci.org/ferrao/hapi-starter)
 
-[![Dependencies Status](https://david-dm.org/ferrao/hapi-starter.svg)](https://david-dm.org/ferrao/hapi-starter)
+[![Dependencies Status](https://david-dm.org/ferrao/hapi-starter/status.svg)](https://david-dm.org/ferrao/hapi-starter)
 [![DevDependencies Status](https://david-dm.org/ferrao/hapi-starter/dev-status.svg)](https://david-dm.org/ferrao/hapi-starter?type=dev)
 
 [![NSP Status](https://nodesecurity.io/orgs/rui-ferrao/projects/7f53cba3-6d6c-4e35-8fc8-c7ec79f55ffe/badge)](https://nodesecurity.io/orgs/rui-ferrao/projects/7f53cba3-6d6c-4e35-8fc8-c7ec79f55ffe)
