@@ -28,6 +28,8 @@ internals.composeOptions = {
 
 describe('Plugin: db', function() {
 
+    //TODO: Replace mockery with Sinon and get rid of this mocking mess..
+
     var mockConfig;
     var mockKnexConfig, mockKnex, mockObjection, mockKnexInstance;
     var dbTestResult = 2;

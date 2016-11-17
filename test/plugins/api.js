@@ -49,10 +49,20 @@ internals.logout = {
 
 describe('Plugin: api', function() {
 
+    var loginCtrlStub, logoutCtrlStub;
+
     before(function(done) {
 
         // created using npm run token
         internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
+
+        loginCtrlStub = Sinon.stub(LoginCtrl, 'login', function(request, reply) {
+            return reply(internals.user);
+        });
+
+        logoutCtrlStub = Sinon.stub(LoginCtrl, 'logout', function(request, reply) {
+            return reply(internals.logout);
+        });
 
         Exiting.reset();
         done();
@@ -84,15 +94,12 @@ describe('Plugin: api', function() {
 
                 Manager.stop(done); // done() callback is required to end the test.
             });
-
         });
     });
 
     it('authenticates user credentials', function(done) {
 
-        var loginCtrlStub = Sinon.stub(LoginCtrl, 'login', function(request, reply) {
-            return reply(internals.user);
-        });
+
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -113,18 +120,10 @@ describe('Plugin: api', function() {
                 loginCtrlStub.restore();
                 Manager.stop(done);
             });
-
         });
     });
 
-    it('destroys authenticated session', {
-        parallel: true
-    }, function(done) {
-
-        var orig = LoginCtrl.logout;
-        LoginCtrl.logout = function(request, reply) {
-            return reply(internals.logout);
-        };
+    it('destroys authenticated session', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -132,14 +131,13 @@ describe('Plugin: api', function() {
 
             server.inject(Config.paths.logout, function(response) {
 
-                LoginCtrl.logout = orig;
+                expect(LoginCtrl.logout.calledOnce).to.be.true();
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.equal(internals.logout);
+
+                logoutCtrlStub.restore();
                 Manager.stop(done);
             });
-
         });
-
     });
-
 });
