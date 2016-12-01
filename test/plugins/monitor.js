@@ -13,6 +13,7 @@ var lab = exports.lab = Lab.script(); // export the test script
 var describe = lab.experiment;
 var it = lab.test;
 var expect = Code.expect;
+var fail = Code.fail;
 
 var internals = {};
 internals.manifest = {
@@ -33,13 +34,15 @@ describe('Plugin: monitor', function() {
     it('handle good plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-        fakeServer.on = fakeServer.ext = function() {};
-        fakeServer.select = function() {
-            return fakeServer;
-        };
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
+        var fakeServer = {
+            on: function() {},
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next(new Error(PLUGIN_ERROR));
+            }
         };
 
         Monitor.register(fakeServer, null, function(error) {
@@ -50,7 +53,9 @@ describe('Plugin: monitor', function() {
         });
     });
 
-    it('handles request events with debug disabled', function(done) {
+    it('handles request events with debug disabled', {
+        parallel: false
+    }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = false;
@@ -62,26 +67,25 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeServer = {};
-        fakeServer.ext = function() {};
-        fakeServer.select = function() {
-            return fakeServer;
-        };
-        fakeServer.on = function(event, next) {
-            expect(event).to.match(/(route|request|response)/);
-            expect(next).to.be.a.function();
-            if (event === 'request') {
-                next({}, eventData);
+        var fakeServer = {
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'request') {
+                    next({}, eventData);
+                }
+            },
+            log: function(tags, data) {
+                expect(tags).to.equals(eventData.tags);
+                expect(data.info).to.exist();
+            },
+            register: function(plugin, next) {
+                return next();
             }
-        };
-
-        fakeServer.log = function(tags, data) {
-            expect(tags).to.equals(eventData.tags);
-            expect(data.info).to.exist();
-        };
-
-        fakeServer.register = function(plugin, next) {
-            return next();
         };
 
         Monitor.register(fakeServer, null, function(error) {
@@ -92,7 +96,7 @@ describe('Plugin: monitor', function() {
         });
     });
 
-    it('handles request events', function(done) {
+    it('handles request events with data object', function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = true;
@@ -118,30 +122,218 @@ describe('Plugin: monitor', function() {
             }
         };
 
-        var fakeServer = {};
-        fakeServer.ext = function() {};
-        fakeServer.select = function() {
-            return fakeServer;
-        };
-        fakeServer.on = function(event, next) {
-            expect(event).to.match(/(route|request|response)/);
-            expect(next).to.be.a.function();
-            if (event === 'request') {
-                next(requestData, eventData);
+        var fakeServer = {
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'request') {
+                    next(requestData, eventData);
+                }
+            },
+            log: function(tags, data) {
+
+                expect(tags).to.equals(eventData.tags);
+                expect(data.request).to.equals(REQ_ID);
+                expect(data.path).to.equals(requestData.url.path);
+                expect(data.address).to.equals(requestData.info.remoteAddress);
+                expect(data.info).to.exist();
+            },
+            register: function(plugin, next) {
+                return next();
             }
         };
 
-        fakeServer.log = function(tags, data) {
+        Monitor.register(fakeServer, null, function(error) {
 
-            expect(tags).to.equals(eventData.tags);
-            expect(data.request).to.equals(REQ_ID);
-            expect(data.path).to.equals(requestData.url.path);
-            expect(data.address).to.equals(requestData.info.remoteAddress);
-            expect(data.info).to.exist();
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('handles request events with data string', function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var REQ_ID = 'XPTO';
+
+        var requestData = {
+            url: {
+                path: '/'
+            },
+            info: {
+                remoteAddress: '127.0.0.1'
+            },
+            headers: {}
+        };
+        requestData.headers['x-forwarded-for'] = requestData.info.remoteAddress;
+
+        var eventData = {
+            tags: ['someTag'],
+            request: 'xxx:yyy:zzz:' + REQ_ID,
+            data: 'some string'
         };
 
-        fakeServer.register = function(plugin, next) {
-            return next();
+        var fakeServer = {
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'request') {
+                    next(requestData, eventData);
+                }
+            },
+            log: function(tags, data) {
+
+                expect(tags).to.equals(eventData.tags);
+                expect(data.request).to.equals(REQ_ID);
+                expect(data.path).to.equals(requestData.url.path);
+                expect(data.address).to.equals(requestData.info.remoteAddress);
+                expect(data.message).to.equals(eventData.data);
+            },
+            register: function(plugin, next) {
+                return next();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('handles error logging of internal server errors', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var fakeRequest = {
+            response: {
+                isServer: true,
+                isBoom: true,
+                data: 'error'
+            },
+            log: function(tags, data) {
+                expect(tags[0]).to.equals('error');
+                expect(data).to.equals(this.response.data);
+            }
+        };
+
+        var fakeServer = {
+            on: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next();
+            },
+            ext: function(event, handler) {
+                expect(event).to.equals('onPreResponse');
+                handler(fakeRequest, {
+                    continue: function() {}
+                });
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('does not handle error logging for non error responses', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var fakeRequest = {
+            response: {
+                isServer: false,
+                isBoom: false
+            }
+        };
+
+        var fakeServer = {
+            on: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next();
+            },
+            ext: function(event, handler) {
+                expect(event).to.equals('onPreResponse');
+                handler(fakeRequest, {
+                    continue: function() {}
+                });
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('handles response events for api server', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var fakeResponse = {};
+        var fakeServer = {
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'response') {
+                    next({
+                        response: fakeResponse
+                    });
+
+                    fakeResponse.source = {};
+
+                    next({
+                        response: fakeResponse
+                    });
+                }
+            },
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next();
+            },
+            log: function(tags, data) {
+
+                if (!fakeResponse.source) {
+                    fail('response should not be logged if source is not available');
+                }
+                expect(tags).to.be.an.array();
+                expect(tags).to.contains('response');
+                expect(tags).to.contains('debug');
+                expect(data).to.equals(fakeResponse.source);
+            }
         };
 
         Monitor.register(fakeServer, null, function(error) {
