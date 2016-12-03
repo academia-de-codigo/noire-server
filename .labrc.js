@@ -11,6 +11,7 @@ module.exports = {
         'test/error.js',
         'test/manager.js',
         'test/controllers',
+        'test/models',
         'test/plugins'
     ],
     globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
