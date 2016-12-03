@@ -64,6 +64,7 @@ describe('Service: user', function() {
                 expect(user).to.be.instanceof(UserModel);
                 expect(user.id).to.exists();
                 expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
                 expect(user.password).to.not.exists();
             });
             done();
@@ -75,8 +76,9 @@ describe('Service: user', function() {
         UserService.findById(1).then(function(result) {
             expect(result).to.be.an.object();
             expect(result).to.be.instanceof(UserModel);
-            expect(result.id).to.exists();
-            expect(result.username).to.be.a.string();
+            expect(result.id).to.equals(1);
+            expect(result.username).to.equals('admin');
+            expect(result.email).to.be.equals('admin@gmail.com');
             expect(result.password).to.not.exists();
             done();
         });
@@ -110,14 +112,15 @@ describe('Service: user', function() {
 
     it('fetch valid user by name', function(done) {
 
-        UserService.findByName('admin').then(function(result) {
-            expect(result).to.be.an.array();
-            expect(result.length).to.equals(1);
-            expect(result[0]).to.be.instanceof(UserModel);
-            expect(result[0].roles).to.not.exists();
-            expect(result[0].id).to.exists();
-            expect(result[0].username).to.be.a.string();
-            expect(result[0].password).to.not.exists();
+        UserService.findByName('admin').then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results[0]).to.be.instanceof(UserModel);
+            expect(results[0].roles).to.not.exists();
+            expect(results[0].id).to.equals(1);
+            expect(results[0].username).to.equals('admin');
+            expect(results[0].email).to.be.equals('admin@gmail.com');
+            expect(results[0].password).to.not.exists();
             done();
         });
     });
@@ -134,14 +137,15 @@ describe('Service: user', function() {
 
     it('fetch valid user by email', function(done) {
 
-        UserService.findByEmail('admin@gmail.com').then(function(result) {
-            expect(result).to.be.an.array();
-            expect(result.length).to.equals(1);
-            expect(result[0]).to.be.instanceof(UserModel);
-            expect(result[0].roles).to.not.exists();
-            expect(result[0].id).to.exists();
-            expect(result[0].username).to.be.a.string();
-            expect(result[0].password).to.not.exists();
+        UserService.findByEmail('admin@gmail.com').then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results[0]).to.be.instanceof(UserModel);
+            expect(results[0].roles).to.not.exists();
+            expect(results[0].id).to.exists();
+            expect(results[0].username).to.be.a.string();
+            expect(results[0].email).to.be.equals('admin@gmail.com');
+            expect(results[0].password).to.not.exists();
             done();
         });
     });
