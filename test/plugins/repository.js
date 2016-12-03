@@ -118,6 +118,7 @@ describe('Plugin: repository', function() {
         });
     });
 
+
     it('should return a specific record', function(done) {
 
         var options = {

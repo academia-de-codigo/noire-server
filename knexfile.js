@@ -4,6 +4,18 @@ var Path = require('path');
 
 module.exports = {
 
+    testing: {
+        client: 'sqlite3',
+        connection: ':memory:',
+        migrations: {
+            directory: __dirname + '/db/migrations'
+        },
+        seeds: {
+            directory: __dirname + '/db/seeds/testing'
+        },
+        useNullAsDefault: true
+    },
+
     development: {
         client: 'sqlite3',
         connection: {
