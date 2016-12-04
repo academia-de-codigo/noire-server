@@ -38,6 +38,11 @@ exports.seed = function(knex, Promise) {
                     name: 'guest'
                 }),
 
+                knex('role').insert({
+                    id: 4,
+                    name: 'guest2'
+                }),
+
                 knex('user_role').insert({
                     user_id: 1,
                     role_id: 1
