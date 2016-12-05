@@ -23,7 +23,7 @@ module.exports = {
         },
         pool: {
             min: 1,
-            max: 4
+            max: 1
         },
         migrations: {
             directory: './db/migrations'

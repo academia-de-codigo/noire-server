@@ -10,19 +10,19 @@ exports.seed = function(knex, Promise) {
                     id: 1,
                     username: 'admin',
                     email: 'admin@gmail.com',
-                    password: 'admin'
+                    password: '$2a$10$VAVGq0cwRzsHWRLq9wexk.vE9AJlvE0IOoXt7Ru/J/hQVxgJz7ZG.' // admin
                 }),
                 knex('user').insert({
                     id: 2,
                     username: 'test',
                     email: 'test@gmail.com',
-                    password: 'test'
+                    password: '$2a$10$t7TOeE4Xqwadu3rCzcqsPuFO60UkG0ertEHwEgaXkEY8tMQnJBgHe' // test
                 }),
                 knex('user').insert({
                     id: 3,
                     username: 'guest',
                     email: 'guest@gmail.com',
-                    password: 'guest'
+                    password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW' // guest
                 }),
 
                 knex('role').insert({
