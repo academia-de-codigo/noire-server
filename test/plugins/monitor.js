@@ -63,8 +63,12 @@ describe('Plugin: monitor', function() {
         var eventData = {
             tags: ['someTag'],
             data: {
-                info: {}
+                info: {},
             }
+        };
+
+        var requestData = {
+            payload: {}
         };
 
         var fakeServer = {
@@ -76,7 +80,7 @@ describe('Plugin: monitor', function() {
                 expect(event).to.match(/(route|request|response)/);
                 expect(next).to.be.a.function();
                 if (event === 'request') {
-                    next({}, eventData);
+                    next(requestData, eventData);
                 }
             },
             log: function(tags, data) {
@@ -110,7 +114,8 @@ describe('Plugin: monitor', function() {
             info: {
                 remoteAddress: '127.0.0.1'
             },
-            headers: {}
+            headers: {},
+            payload: {}
         };
         requestData.headers['x-forwarded-for'] = requestData.info.remoteAddress;
 
@@ -169,7 +174,8 @@ describe('Plugin: monitor', function() {
             info: {
                 remoteAddress: '127.0.0.1'
             },
-            headers: {}
+            headers: {},
+            payload: {}
         };
         requestData.headers['x-forwarded-for'] = requestData.info.remoteAddress;
 
@@ -385,7 +391,8 @@ describe('Plugin: monitor', function() {
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             var requestData = {
-                user: 'test'
+                user: 'test',
+                payload: {}
             };
 
             var route = {

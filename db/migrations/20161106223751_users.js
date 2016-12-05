@@ -4,12 +4,14 @@ exports.up = function(knex, Promise) {
             table.increments().primary();
             table.string('username');
             table.string('email');
+            table.unique('email');
             table.string('password');
             table.timestamps();
         }),
         knex.schema.createTable('role', function(table) {
             table.increments().primary();
             table.string('name');
+            table.unique('name');
             table.timestamps();
         }),
         knex.schema.createTable('user_role', function(table) {
