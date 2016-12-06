@@ -141,4 +141,66 @@ describe('Controller: user', function() {
             done();
         });
     });
+
+    it('adds a new user', function(done) {
+
+        var request = {
+            payload: {
+                username: 'test2',
+                email: 'test2@gmail.com',
+                password: 'test2'
+            },
+            log: function() {}
+        };
+
+        var fakeResponseData = {
+            id: 1,
+            username: request.payload.username,
+            email: request.payload.email,
+            password: request.payload.email
+        };
+
+        var addStub = Sinon.stub(UserService, 'add');
+        addStub.withArgs(request.payload).returns(Promise.resolve(fakeResponseData));
+
+        UserCtrl.create(request, function(response) {
+
+            expect(addStub.calledOnce).to.be.true();
+            expect(response).to.exists();
+            expect(response.id).to.exists();
+            expect(response.username).to.equals(fakeResponseData.username);
+            expect(response.email).to.equals(fakeResponseData.email);
+            expect(response.password).to.not.exists();
+
+            return {
+                created: function(location) {
+
+                    expect(location).to.equals('/user/' + response.id);
+                    addStub.restore();
+                    done();
+                }
+            };
+        });
+    });
+
+    it('handles server errors while adding a new user', function(done) {
+
+        var request = {
+            payload: {},
+            log: function() {}
+        };
+
+        var addStub = Sinon.stub(UserService, 'add').returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
+        UserCtrl.create(request, function(response) {
+
+            expect(UserService.add.calledOnce).to.be.true();
+            expect(response.isBoom).to.be.true();
+            expect(response.output.statusCode).to.equals(409);
+            expect(response.output.payload.error).to.equals('Conflict');
+            expect(response.output.payload.message).to.equals('resource already exists');
+
+            addStub.restore();
+            done();
+        });
+    });
 });

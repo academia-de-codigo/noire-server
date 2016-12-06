@@ -199,4 +199,51 @@ describe('Service: user', function() {
         });
     });
 
+    it('add a new user', function(done) {
+
+        var newUser = {
+            username: 'test2',
+            email: 'test2@gmail.com',
+            password: 'test2'
+        };
+
+        var cryptSpy = Sinon.spy(Auth, 'crypt').withArgs(newUser.password);
+        var txSpy = Sinon.spy(Repository, 'tx');
+
+        UserService.add(newUser).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(cryptSpy.calledOnce).to.be.true();
+            expect(result).to.exists();
+            expect(result.id).to.exists();
+            expect(result.username).to.equals(newUser.username);
+            expect(result.email).to.equals(newUser.email);
+            expect(result.password).to.exists();
+            txSpy.restore();
+            Auth.crypt.restore();
+            done();
+        });
+    });
+
+    it('does not add an existing user', function(done) {
+
+        var newUser = {
+            username: 'test',
+            email: 'test@gmail.com',
+            password: 'test'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.add(newUser).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
 });

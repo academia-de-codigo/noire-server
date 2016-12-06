@@ -5,6 +5,7 @@ var Lab = require('lab'); // the test framework
 var Sinon = require('sinon');
 var JWT = require('jsonwebtoken');
 var Promise = require('bluebird');
+var Bcrypt = require('bcrypt');
 var Exiting = require('exiting');
 var Path = require('path');
 var HSError = require('../../lib/error');
@@ -12,6 +13,7 @@ var Manager = require('../../lib/manager');
 var UserService = require('../../lib/services/user');
 var Auth = require('../../lib/plugins/auth');
 var Config = require('../../lib/config');
+
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -98,6 +100,61 @@ describe('Plugin: auth', function() {
             done();
         });
 
+    });
+
+    it('encrypts passwords', function(done) {
+
+        var password = 'password';
+        Auth.crypt(password).then(function(hash) {
+
+            expect(Bcrypt.compareSync(password, hash)).to.be.true();
+            done();
+        });
+    });
+
+    it('handles password encryption errors', function(done) {
+
+        Sinon.stub(Bcrypt, 'hash', function(password, rounds, next) {
+            next();
+        });
+        Auth.crypt('password').then(function(hash) {
+
+            expect(hash).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
+            Bcrypt.hash.restore();
+            done();
+        });
+    });
+
+    it('compares password against hash', function(done) {
+
+        var password = 'password';
+        var hash = Bcrypt.hashSync(password, 10);
+        Auth.compare(password, hash).then(function(result) {
+
+            expect(result).to.be.true();
+            done();
+        });
+    });
+
+    it('handles password compare errors', function(done) {
+
+        Sinon.stub(Bcrypt, 'compare', function(password, rounds, next) {
+            next();
+        });
+        Auth.compare().then(function(hash) {
+
+            expect(hash).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
+            Bcrypt.compare.restore();
+            done();
+        });
     });
 
     it('get token and validate with correct secret', function(done) {
