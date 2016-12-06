@@ -17,5 +17,3 @@ addons:
 sudo: false
 before_install:
   - $CXX --version
-install: true
-script: npm test
