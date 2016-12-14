@@ -66,10 +66,10 @@ module.exports = {
     production: {
         client: 'postgresql',
         connection: {
-            host: '',
+            host: '127.0.0.1',
             database: '',
-            user: '',
-            password: ''
+            user: 'hapi_starter',
+            password: 'hapi_starter'
         },
         pool: {
             min: 2,
