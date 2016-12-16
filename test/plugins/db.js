@@ -48,6 +48,7 @@ describe('Plugin: db', function() {
 
         mockKnexConfig = {};
         mockKnexConfig[mockConfig.environment] = mockKnexConfig[ENV_STAGING] = {
+            client: 'mock',
             connection: {
                 database: 'mock'
             },

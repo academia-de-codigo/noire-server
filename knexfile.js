@@ -67,7 +67,7 @@ module.exports = {
         client: 'postgresql',
         connection: {
             host: '127.0.0.1',
-            database: '',
+            database: 'hapi_starter',
             user: 'hapi_starter',
             password: 'hapi_starter'
         },
