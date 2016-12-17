@@ -52,3 +52,30 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 * Jobs with Agenda
 * User management
+
+## Get it Running
+
+### Clone the repo
+
+`git clone https://github.com/ferrao/hapi-starter.git`
+
+### Adjust the configuration files to suit your environment
+
+* Edit files in `lib/config`
+
+### Setup environment variables
+
+* `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
+* `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
+
+### Run the unit tests
+
+* `npm test`
+
+### Setup the database to it's original state
+
+* `npm run reset`
+
+### Launch the server
+
+* `npm start`
