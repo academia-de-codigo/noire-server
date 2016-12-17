@@ -3,6 +3,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
+var Mockery = require('mockery'); // mock global node require
 var Config = require('../../lib/config');
 var Monitor = require('../../lib/plugins/monitor');
 var Manager = require('../../lib/manager');
@@ -12,6 +13,7 @@ var lab = exports.lab = Lab.script(); // export the test script
 // make lab feel like jasmine
 var describe = lab.experiment;
 var it = lab.test;
+var before = lab.before;
 var expect = Code.expect;
 var fail = Code.fail;
 
@@ -30,6 +32,29 @@ internals.composeOptions = {
 };
 
 describe('Plugin: monitor', function() {
+
+    before(function(done) {
+
+        Mockery.enable({
+            warnOnReplace: false,
+            warnOnUnregistered: false
+        });
+
+        Mockery.registerMock('rotating-file-stream', function() {
+
+            // mock node stream
+            return {
+                on: function() {},
+                once: function() {},
+                end: function() {},
+                emit: function() {},
+                pipe: function() {}
+            };
+        });
+
+        done();
+
+    });
 
     it('handle good plugin registration failure', function(done) {
 
