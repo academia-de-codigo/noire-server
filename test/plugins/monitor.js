@@ -56,6 +56,28 @@ describe('Plugin: monitor', function() {
 
     });
 
+    it('should register the good plugin', function(done) {
+
+        var fakeServer = {
+            on: function() {},
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                expect(plugin).to.be.an.object();
+                expect(plugin.register.register.attributes.pkg.name).to.equals('good');
+                return next();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            done();
+        });
+    });
+
     it('handle good plugin registration failure', function(done) {
 
         var PLUGIN_ERROR = 'plugin error';
@@ -77,6 +99,55 @@ describe('Plugin: monitor', function() {
             done();
         });
     });
+
+    it('should register the console reporter', function(done) {
+
+        var fakeServer = {
+            on: function() {},
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                expect(plugin.options.reporters).to.exist();
+                expect(plugin.options.reporters.console).to.be.an.array();
+                expect(plugin.options.reporters.console).to.contain('stdout');
+                return next();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            done();
+        });
+    });
+
+    it('should register the file reporters', function(done) {
+
+        var fakeServer = {
+            on: function() {},
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                expect(plugin.options.reporters).to.exist();
+                expect(plugin.options.reporters.ops).to.be.an.array();
+                expect(plugin.options.reporters.access).to.be.an.array();
+                expect(plugin.options.reporters.auth).to.be.an.array();
+                expect(plugin.options.reporters.error).to.be.an.array();
+                return next();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            done();
+        });
+    });
+
 
     it('handles request events with debug disabled', {
         parallel: false
@@ -125,7 +196,9 @@ describe('Plugin: monitor', function() {
         });
     });
 
-    it('handles request events with data object', function(done) {
+    it('handles request events with data object', {
+        parallel: false
+    }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = true;
@@ -185,7 +258,9 @@ describe('Plugin: monitor', function() {
         });
     });
 
-    it('handles request events with data string', function(done) {
+    it('handles request events with data string', {
+        parallel: false
+    }, function(done) {
 
         var orig = Config.monitor.debug;
         Config.monitor.debug = true;
