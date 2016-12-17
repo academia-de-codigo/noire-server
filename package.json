@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node lib/index.js",
     "test": "lab",
+    "reset": "knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token"
   },
