@@ -59,6 +59,10 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 `git clone https://github.com/ferrao/hapi-starter.git`
 
+### Install the required Dependencies
+
+`npm install`
+
 ### Adjust the configuration files to suit your environment
 
 * Edit files in `lib/config`
@@ -72,7 +76,7 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 * `npm test`
 
-### Setup the database to it's original state
+### Reset the database to it's original state
 
 * `npm run reset`
 
