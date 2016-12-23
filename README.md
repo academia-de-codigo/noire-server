@@ -65,7 +65,7 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 ### Adjust the configuration files to suit your environment
 
-* Edit files in `lib/config`
+Edit files in `lib/config`
 
 ### Setup environment variables
 
@@ -74,12 +74,12 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 ### Run the unit tests
 
-* `npm test`
+`npm test`
 
 ### Reset the database to it's original state
 
-* `npm run reset`
+`npm run reset`
 
 ### Launch the server
 
-* `npm start`
+`npm start`

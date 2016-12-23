@@ -54,7 +54,7 @@ exports.seed = function(knex, Promise) {
 
         knex('user_role').del().then(function() {
 
-            Promise.all([
+            return Promise.all([
 
                 knex('user_role').insert({
                     user_id: 1,
