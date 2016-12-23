@@ -47,6 +47,13 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
+internals.user = {
+    'id': 0,
+    'username': 'test',
+    'email': 'test@gmail.com',
+    'scope': 'user'
+};
+
 describe('Plugin: errors', function() {
 
     before(function(done) {
@@ -193,6 +200,40 @@ describe('Plugin: errors', function() {
 
                 expect(response.statusCode).to.equal(404);
                 expect(response.statusMessage).to.equal('Not Found');
+                Manager.stop(done); // done() callback is required to end the test.
+            });
+
+        });
+    });
+
+    it('should not redirect on route errors with redirect set to false', function(done) {
+
+        var path = '/somepath';
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+            server.route({
+                method: 'GET',
+                path: path,
+                config: {
+                    auth: {
+                        scope: 'admin'
+                    },
+                    app: {
+                        redirect: false
+                    }
+                },
+                handler: function() {}
+            });
+
+            server.inject({
+                method: 'GET',
+                url: path,
+                credentials: internals.user
+            }, function(response) {
+
+                expect(response.statusCode).to.equal(403);
+                expect(response.statusMessage).to.equal('Forbidden');
                 Manager.stop(done); // done() callback is required to end the test.
             });
 
