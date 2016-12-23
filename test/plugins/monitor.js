@@ -20,9 +20,12 @@ var fail = Code.fail;
 var internals = {};
 internals.manifest = {
     connections: [{
-        port: 0
+        port: 0,
+        labels: ['web-tls', 'web', 'api']
     }],
     registrations: [{
+        plugin: '../test/fixtures/auth-plugin'
+    }, {
         plugin: './plugins/monitor'
     }]
 };
@@ -64,9 +67,37 @@ describe('Plugin: monitor', function() {
             select: function() {
                 return this;
             },
-            register: function(plugin, next) {
-                expect(plugin).to.be.an.object();
-                expect(plugin.register.register.attributes.pkg.name).to.equals('good');
+            register: function(plugins, next) {
+                expect(plugins).to.satisfy(function(value) {
+                    return value.some(function(plugin) {
+                        return plugin.register.register.attributes.pkg.name === 'good';
+                    });
+                });
+                return next();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            done();
+        });
+    });
+
+    it('should register the hapijs-status-monitor plugin', function(done) {
+
+        var fakeServer = {
+            on: function() {},
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugins, next) {
+                expect(plugins).to.satisfy(function(value) {
+                    return value.some(function(plugin) {
+                        return plugin.register.register.attributes.pkg.name === 'hapijs-status-monitor';
+                    });
+                });
                 return next();
             }
         };
@@ -108,10 +139,18 @@ describe('Plugin: monitor', function() {
             select: function() {
                 return this;
             },
-            register: function(plugin, next) {
-                expect(plugin.options.reporters).to.exist();
-                expect(plugin.options.reporters.console).to.be.an.array();
-                expect(plugin.options.reporters.console).to.contain('stdout');
+            register: function(plugins, next) {
+                expect(plugins).to.satisfy(function(value) {
+                    return value.some(function(plugin) {
+
+                        if (!plugin.options.reporters || !plugin.options.reporters.console) {
+                            return false;
+                        }
+
+                        return true;
+
+                    });
+                });
                 return next();
             }
         };
@@ -131,12 +170,20 @@ describe('Plugin: monitor', function() {
             select: function() {
                 return this;
             },
-            register: function(plugin, next) {
-                expect(plugin.options.reporters).to.exist();
-                expect(plugin.options.reporters.ops).to.be.an.array();
-                expect(plugin.options.reporters.access).to.be.an.array();
-                expect(plugin.options.reporters.auth).to.be.an.array();
-                expect(plugin.options.reporters.error).to.be.an.array();
+            register: function(plugins, next) {
+                expect(plugins).to.satisfy(function(value) {
+                    return value.some(function(plugin) {
+                        if (!plugin.options.reporters ||
+                            !plugin.options.reporters.ops ||
+                            !plugin.options.reporters.access ||
+                            !plugin.options.reporters.auth ||
+                            !plugin.options.reporters.error) {
+                            return false;
+                        }
+
+                        return true;
+                    });
+                });
                 return next();
             }
         };
@@ -557,14 +604,25 @@ describe('Plugin: monitor', function() {
         fakeServer.select = function() {
             return fakeServer;
         };
-        fakeServer.register = function(plugin, next) {
-            expect(plugin).to.exist();
-            expect(plugin.options).to.be.an.object();
-            expect(plugin.options.reporters).to.be.an.object();
-            expect(plugin.options.reporters.console).to.be.an.array();
-            expect(plugin.options.reporters.console[0].args).to.be.an.array();
-            expect(plugin.options.reporters.console[0].args[0].response).to.not.exist();
-            expect(plugin.options.reporters.console[0].args[0].route).to.not.exist();
+        fakeServer.register = function(plugins, next) {
+            expect(plugins).to.satisfy(function(value) {
+                return value.some(function(plugin) {
+                    if (!plugin.options || !plugin.options.reporters || !plugin.options.reporters.console) {
+                        return false;
+                    }
+
+                    if (!plugin.options.reporters.console[0] || !plugin.options.reporters.console[0].args) {
+                        return false;
+                    }
+
+                    if (plugin.options.reporters.console[0].args[0].response || plugin.options.reporters.console[0].args[0].route) {
+                        return false;
+                    }
+
+                    return true;
+
+                });
+            });
             return next();
         };
 
@@ -589,14 +647,26 @@ describe('Plugin: monitor', function() {
         fakeServer.select = function() {
             return fakeServer;
         };
-        fakeServer.register = function(plugin, next) {
-            expect(plugin).to.exist();
-            expect(plugin.options).to.be.an.object();
-            expect(plugin.options.reporters).to.be.an.object();
-            expect(plugin.options.reporters.console).to.be.an.array();
-            expect(plugin.options.reporters.console[0].args).to.be.an.array();
-            expect(plugin.options.reporters.console[0].args[0].response).to.exist();
-            expect(plugin.options.reporters.console[0].args[0].route).to.exist();
+
+        fakeServer.register = function(plugins, next) {
+            expect(plugins).to.satisfy(function(value) {
+                return value.some(function(plugin) {
+                    if (!plugin.options || !plugin.options.reporters || !plugin.options.reporters.console) {
+                        return false;
+                    }
+
+                    if (!plugin.options.reporters.console[0] || !plugin.options.reporters.console[0].args) {
+                        return false;
+                    }
+
+                    if (!plugin.options.reporters.console[0].args[0].response || !plugin.options.reporters.console[0].args[0].route) {
+                        return false;
+                    }
+
+                    return true;
+
+                });
+            });
             return next();
         };
 

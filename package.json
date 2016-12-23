@@ -48,7 +48,8 @@
     "pg": "^6.1.0",
     "rotating-file-stream": "^1.1.1",
     "sqlite3": "^3.1.8",
-    "vision": "^4.1.0"
+    "vision": "^4.1.0",
+    "hapijs-status-monitor": "ziyasal/hapijs-status-monitor#multiple-connections"
   },
   "devDependencies": {
     "code": "^4.0.0",
