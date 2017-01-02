@@ -27,7 +27,7 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
-        plugin: './plugins/login'
+        plugin: './plugins/web-tls'
     }, {
         plugin: './plugins/csrf'
     }]
@@ -35,6 +35,7 @@ internals.manifest = {
 
 internals.user = {
     'id': 0,
+    'username': 'test',
     'email': 'test@gmail.com',
     'password': 'test'
 };
@@ -111,7 +112,7 @@ describe('Plugin: csrf', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: internals.user.email,
+                    username: internals.user.username,
                     password: internals.user.password
                 }
             }, function(response) {
@@ -127,7 +128,7 @@ describe('Plugin: csrf', function() {
     it('success if crumb headers present', function(done) {
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(internals.user.email, internals.user.password).returns(Promise.resolve(internals.token));
+        authenticateStub.withArgs(internals.user.username, internals.user.password).returns(Promise.resolve(internals.token));
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -140,7 +141,7 @@ describe('Plugin: csrf', function() {
                     method: 'POST',
                     url: Config.paths.login,
                     payload: {
-                        email: internals.user.email,
+                        username: internals.user.username,
                         password: internals.user.password
                     },
                     headers: {

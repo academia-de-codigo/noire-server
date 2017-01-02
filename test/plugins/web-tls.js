@@ -27,12 +27,13 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/auth'
     }, {
-        plugin: './plugins/login'
+        plugin: './plugins/web-tls'
     }]
 };
 
 internals.user = {
     'id': 0,
+    'username': 'test',
     'email': 'test@gmail.com',
     'password': 'test'
 };
@@ -41,7 +42,7 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
-describe('Plugin: login', function() {
+describe('Plugin: web-tls', function() {
 
     before(function(done) {
 
@@ -59,7 +60,7 @@ describe('Plugin: login', function() {
         done();
     });
 
-    it('joi validates invalid email', function(done) {
+    it('joi validates invalid username', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -68,7 +69,7 @@ describe('Plugin: login', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: 'invalid'
+                    username: 'x'
                 }
             }, function(response) {
 
@@ -78,14 +79,14 @@ describe('Plugin: login', function() {
                 expect(JSON.parse(response.payload)).to.be.an.object();
                 expect(JSON.parse(response.payload).validation).to.be.an.object();
                 expect(JSON.parse(response.payload).validation.keys).to.be.an.array();
-                expect(JSON.parse(response.payload).validation.keys[0]).to.equals('email');
+                expect(JSON.parse(response.payload).validation.keys[0]).to.equals('username');
                 Manager.stop(done);
 
             });
         });
     });
 
-    it('joi validates invalid passwrd', function(done) {
+    it('joi validates invalid password', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -94,7 +95,7 @@ describe('Plugin: login', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: internals.user.email,
+                    username: internals.user.username,
                     password: 'x'
                 }
             }, function(response) {
@@ -115,7 +116,7 @@ describe('Plugin: login', function() {
     it('login successful', function(done) {
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(internals.user.email, internals.user.password).returns(Promise.resolve(internals.token));
+        authenticateStub.withArgs(internals.user.username, internals.user.password).returns(Promise.resolve(internals.token));
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
@@ -124,7 +125,7 @@ describe('Plugin: login', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: internals.user.email,
+                    username: internals.user.username,
                     password: internals.user.password
                 }
             }, function(response) {

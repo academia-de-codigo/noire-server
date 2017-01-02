@@ -34,7 +34,7 @@ internals.manifest = {
     registrations: [{
         plugin: './plugins/auth'
     }, {
-        plugin: './plugins/routes'
+        plugin: './plugins/web'
     }, {
         plugin: 'vision'
     }]

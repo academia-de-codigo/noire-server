@@ -37,7 +37,7 @@ describe('hapi-starter errors', function() {
 
     it('wrap auth errors with 401 boom', function(done) {
 
-        expect(HSError.toBoom(HSError.AUTH_INVALID_EMAIL).output.statusCode).to.equals(401);
+        expect(HSError.toBoom(HSError.AUTH_INVALID_USERNAME).output.statusCode).to.equals(401);
         expect(HSError.toBoom(HSError.AUTH_INVALID_PASSWORD).output.statusCode).to.equals(401);
         done();
     });

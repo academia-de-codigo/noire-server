@@ -110,9 +110,9 @@ describe('Service: user', function() {
         });
     });
 
-    it('fetch valid user by name', function(done) {
+    it('fetch valid user by username', function(done) {
 
-        UserService.findByName('admin').then(function(results) {
+        UserService.findByUserName('admin').then(function(results) {
             expect(results).to.be.an.array();
             expect(results.length).to.equals(1);
             expect(results[0]).to.be.instanceof(UserModel);
@@ -127,7 +127,7 @@ describe('Service: user', function() {
 
     it('fetch invalid user by name', function(done) {
 
-        UserService.findByName('invalid user name').then(function(result) {
+        UserService.findByUserName('invalid user name').then(function(result) {
 
             expect(result).to.be.an.array();
             expect(result).to.be.empty();
@@ -165,7 +165,7 @@ describe('Service: user', function() {
         var fakeToken = 'fake token';
         Sinon.stub(Auth, 'getToken').withArgs(1).returns(fakeToken);
 
-        UserService.authenticate('admin@gmail.com', 'admin').then(function(result) {
+        UserService.authenticate('admin', 'admin').then(function(result) {
 
             expect(result).to.equals(fakeToken);
             Auth.getToken.restore();
@@ -173,22 +173,22 @@ describe('Service: user', function() {
         });
     });
 
-    it('should not authenticate invalid email', function(done) {
+    it('should not authenticate invalid username', function(done) {
 
-        UserService.authenticate('invalid user email', 'admin').then(function(result) {
+        UserService.authenticate('x', 'admin').then(function(result) {
 
             expect(result).to.not.exists();
 
         }).catch(function(error) {
 
-            expect(error).to.equals(HSError.AUTH_INVALID_EMAIL);
+            expect(error).to.equals(HSError.AUTH_INVALID_USERNAME);
             done();
         });
     });
 
     it('should not authenticate invalid password', function(done) {
 
-        UserService.authenticate('admin@gmail.com', 'invalid password').then(function(result) {
+        UserService.authenticate('admin', 'invalid password').then(function(result) {
 
             expect(result).to.not.exists();
 

@@ -26,7 +26,7 @@ internals.manifest = {
     registrations: [{
         plugin: '../test/fixtures/auth-plugin'
     }, {
-        plugin: './plugins/routes'
+        plugin: './plugins/web'
     }, {
         plugin: 'vision'
     }]
@@ -49,7 +49,7 @@ internals.users = [{
 }];
 
 
-describe('Plugin: routes', function() {
+describe('Plugin: web', function() {
 
     before(function(done) {
         Exiting.reset();

@@ -3,6 +3,7 @@ if (!Foundation) {
 }
 
 Foundation.Abide.defaults.patterns['password'] = /^(\w{3,30})$/;
+Foundation.Abide.defaults.patterns['username'] = /^(\w{3,30})$/;
 
 $(document).ready(function() {
 
@@ -61,7 +62,7 @@ $(document).ready(function() {
 
                     // response is boom
                     if (request.status !== 0) {
-                        errorMessage = 'Invalid user email or password';
+                        errorMessage = 'Invalid username or password';
                     } else {
 
                         if (error === 'timeout') {
@@ -80,7 +81,7 @@ $(document).ready(function() {
         });
 
     // Validate form everytime a field changes
-    $('#form-email, #form-password').on('change', function() {
+    $('#form-username, #form-password').on('change', function() {
         $('#login-form').foundation('validateForm');
     });
 

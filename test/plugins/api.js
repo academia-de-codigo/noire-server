@@ -99,8 +99,6 @@ describe('Plugin: api', function() {
 
     it('authenticates user credentials', function(done) {
 
-
-
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
@@ -109,7 +107,7 @@ describe('Plugin: api', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: 'test@gmail.com',
+                    username: 'test',
                     password: 'password'
                 }
             }, function(response) {

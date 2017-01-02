@@ -21,6 +21,7 @@ var expect = Code.expect;
 var internals = {};
 internals.user = {
     'id': 0,
+    'username': 'test',
     'email': 'test@gmail.com',
     'password': 'test'
 };
@@ -40,18 +41,18 @@ describe('Controller: login', function() {
 
     });
 
-    it('invalid email address', function(done) {
+    it('invalid username', function(done) {
 
         var request = {
             payload: {
-                email: 'invalid',
+                username: 'invalid',
                 password: internals.user.password
             },
             log: function() {}
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_EMAIL));
+        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_USERNAME));
 
         LoginCtrl.login(request, function(response) {
 
@@ -59,7 +60,7 @@ describe('Controller: login', function() {
             expect(response.isBoom).to.equal(true);
             expect(response.output.statusCode).to.equal(401);
             expect(response.output.payload.error).to.equal('Unauthorized');
-            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_EMAIL);
+            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_USERNAME);
 
             authenticateStub.restore();
             done();
@@ -77,7 +78,7 @@ describe('Controller: login', function() {
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_PASSWORD));
+        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_PASSWORD));
 
         LoginCtrl.login(request, function(response) {
 
@@ -96,14 +97,14 @@ describe('Controller: login', function() {
 
         var request = {
             payload: {
-                email: internals.user.email,
+                username: internals.user.username,
                 password: internals.user.password
             },
             log: function() {}
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.reject(HSError.AUTH_ERROR));
+        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_ERROR));
 
         LoginCtrl.login(request, function(response) {
 
@@ -122,7 +123,7 @@ describe('Controller: login', function() {
 
         var request = {
             payload: {
-                email: internals.user.email,
+                username: internals.user.username,
                 password: internals.user.password
             },
             route: {
@@ -136,7 +137,7 @@ describe('Controller: login', function() {
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.resolve(internals.token));
+        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.resolve(internals.token));
 
         LoginCtrl.login(request, function(response) {
 
@@ -173,7 +174,7 @@ describe('Controller: login', function() {
 
         var request = {
             payload: {
-                email: internals.user.email,
+                username: internals.user.username,
                 password: internals.user.password
             },
             route: {
@@ -187,7 +188,7 @@ describe('Controller: login', function() {
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.email, request.payload.password).returns(Promise.resolve(internals.token));
+        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.resolve(internals.token));
 
         LoginCtrl.login(request, function(response) {
 

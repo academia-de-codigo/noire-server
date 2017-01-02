@@ -29,11 +29,11 @@ internals.manifest = {
     registrations: [{
         plugin: '../test/fixtures/auth-plugin'
     }, {
-        plugin: './plugins/login'
+        plugin: './plugins/web-tls'
     }, {
         plugin: './plugins/errors'
     }, {
-        plugin: './plugins/routes'
+        plugin: './plugins/web'
     }, {
         plugin: './plugins/assets'
     }, {
@@ -139,13 +139,13 @@ describe('Plugin: errors', function() {
     it('invalid password', function(done) {
 
         var mockUserData = {
-            email: 'test@gmail.com',
+            username: 'test',
             password: 'invalid'
         };
 
         var authenticateStub = Sinon.stub(UserService, 'authenticate');
         var promise = Promise.reject(HSError.AUTH_INVALID_PASSWORD);
-        authenticateStub.withArgs(mockUserData.email, mockUserData.password).returns(promise);
+        authenticateStub.withArgs(mockUserData.username, mockUserData.password).returns(promise);
 
         // for some reason i can not explain the auth plugin is not
         // catching this..
@@ -160,7 +160,7 @@ describe('Plugin: errors', function() {
                 method: 'POST',
                 url: Config.paths.login,
                 payload: {
-                    email: mockUserData.email,
+                    username: mockUserData.username,
                     password: mockUserData.password
                 }
             }, function(response) {
