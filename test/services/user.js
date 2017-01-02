@@ -125,7 +125,7 @@ describe('Service: user', function() {
         });
     });
 
-    it('fetch invalid user by name', function(done) {
+    it('fetch invalid user by username', function(done) {
 
         UserService.findByUserName('invalid user name').then(function(result) {
 
@@ -165,11 +165,35 @@ describe('Service: user', function() {
         var fakeToken = 'fake token';
         Sinon.stub(Auth, 'getToken').withArgs(1).returns(fakeToken);
 
-        UserService.authenticate('admin', 'admin').then(function(result) {
+        UserService.findByUserName('admin').then(function(result) {
 
-            expect(result).to.equals(fakeToken);
-            Auth.getToken.restore();
-            done();
+            expect(result[0].username).to.equals('admin');
+            expect(result[0].active).to.equals(1); //sqlite for true
+            UserService.authenticate('admin', 'admin').then(function(result) {
+
+                expect(result).to.equals(fakeToken);
+                Auth.getToken.restore();
+                done();
+            });
+
+        });
+    });
+
+    it('should not authenticate inactive user', function(done) {
+
+        UserService.findByUserName('guest').then(function(result) {
+
+            expect(result[0].username).to.equals('guest');
+            expect(result[0].active).to.equals(0); // sqlite for false
+            UserService.authenticate('guest', 'guest').then(function(result) {
+
+                expect(result).to.not.exists();
+            }).catch(function(error) {
+
+                expect(error).to.equals(HSError.AUTH_INVALID_USERNAME);
+                done();
+            });
+
         });
     });
 

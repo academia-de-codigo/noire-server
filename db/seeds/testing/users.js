@@ -24,7 +24,7 @@ exports.seed = function(knex, Promise) {
                 }),
                 knex('user').insert({
                     id: 3,
-                    active: true,
+                    active: false,
                     name: 'Guest User',
                     username: 'guest',
                     email: 'guest@gmail.com',
