@@ -1,7 +1,7 @@
 {
-  "name": "hapi-starter",
+  "name": "noire-server",
   "version": "0.1.1",
-  "description": "Hapi Starter",
+  "description": "Noire Server",
   "main": "lib/index.js",
   "keywords": [
     "hapi",
@@ -17,14 +17,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:ferrao/hapi-starter.git"
+    "url": "git@github.com:academia-de-codigo/noire-server.git"
   },
-  "author": "Rui Ferrao",
+  "author": "Academia de Código",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ferrao/hapi-starter/issues"
+    "url": "https://github.com/academia-de-codigo/noire-server/issues"
   },
-  "homepage": "https://github.com/ferrao/hapi-starter",
+  "homepage": "https://github.com/academia-de-codigo/noire-server/issues",
   "dependencies": {
     "bcrypt": "^1.0.0",
     "bluebird": "^3.4.6",
