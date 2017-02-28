@@ -1,7 +1,7 @@
 {
   "name": "noire-server",
   "version": "0.1.1",
-  "description": "Hapi Starter",
+  "description": "Noire Server",
   "main": "lib/index.js",
   "keywords": [
     "hapi",
