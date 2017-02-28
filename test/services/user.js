@@ -135,6 +135,30 @@ describe('Service: user', function() {
         });
     });
 
+    it('fetch valid user by name', function(done) {
+
+        UserService.findByName('Admin User').then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results[0]).to.be.instanceof(UserModel);
+            expect(results[0].roles).to.not.exists();
+            expect(results[0].id).to.equals(1);
+            expect(results[0].name).to.equals('Admin User');
+            expect(results[0].password).to.not.exists();
+            done();
+        });
+    });
+
+    it('fetch invalid user by name', function(done) {
+
+        UserService.findByName('invalid user name').then(function(result) {
+
+            expect(result).to.be.an.array();
+            expect(result).to.be.empty();
+            done();
+        });
+    });
+
     it('fetch valid user by email', function(done) {
 
         UserService.findByEmail('admin@gmail.com').then(function(results) {
