@@ -44,7 +44,7 @@
     "jsonwebtoken": "^7.1.9",
     "knex": "^0.12.6",
     "lout": "^9.2.0",
-    "objection": "^0.6.1",
+    "objection": "^0.6.2",
     "pg": "^6.1.0",
     "rotating-file-stream": "^1.1.1",
     "sqlite3": "^3.1.8",
@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "code": "^4.0.0",
-    "lab": "^11.0.1",
+    "lab": "^12.1.0",
     "mockery": "^2.0.0",
     "sinon": "^1.17.6"
   }
