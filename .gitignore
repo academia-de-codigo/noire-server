@@ -3,3 +3,6 @@ node_modules
 npm-debug.log
 log
 db/dev.sqlite3
+assets/css/semantic*
+assets/js/semantic*
+semantic/dist
