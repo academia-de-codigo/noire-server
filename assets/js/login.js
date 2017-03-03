@@ -2,10 +2,26 @@
     Login form using ajax
  */
 
-//TODO: handle form submission timeout
+// TODO: Would be nice to provide user with timeout error instead of a generic one
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
+var XHR_TIMEOUT = 5000;
 
 var formElement, checkBoxElement, passwordElement, errorElement;
+
+var api = {
+    action: 'login',
+    method: 'post',
+    timeout: XHR_TIMEOUT,
+    serializeForm: true,
+    verbose: true,
+    debug: true,
+    beforeXHR: setCsrfTokenHeader,
+    onSuccess: redirectHome,
+    successTest: isSuccess,
+    onFailure: showFailure,
+    onError: showError,
+    onAbort: addShowError
+};
 
 var validation = {
     on: 'blur', // validate form when user changes field
@@ -68,20 +84,7 @@ function setupCheckBoxBehaviour() {
 }
 
 function setupFormBehaviour() {
-
-    formElement.api({
-        action: 'login',
-        method: 'post',
-        serializeForm: true,
-        verbose: true,
-        debug: true,
-        beforeXHR: setCsrfTokenHeader,
-        onSuccess: redirectHome,
-        successTest: isSuccess,
-        onFailure: showFailure,
-        onError: showError,
-        onAbort: addShowError
-    }).form(validation);
+    formElement.api(api).form(validation);
 }
 
 function updateUI() {
