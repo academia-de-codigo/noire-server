@@ -143,6 +143,7 @@ describe('Controller: login', function() {
 
             expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response).to.exist();
+            expect(response.success).to.be.true();
             expect(response.message).to.be.a.string();
 
             authenticateStub.restore();
@@ -195,6 +196,7 @@ describe('Controller: login', function() {
 
             expect(UserService.authenticate.calledOnce).to.be.true();
             expect(response).to.exist();
+            expect(response.success).to.be.true();
             expect(response.message).to.be.a.string();
 
             authenticateStub.restore();

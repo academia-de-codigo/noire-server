@@ -2,7 +2,10 @@
     Login form using ajax
  */
 
-var formElement, checkBoxElement, passwordElement;
+//TODO: handle form submission timeout
+// https://github.com/Semantic-Org/Semantic-UI/issues/5121
+
+var formElement, checkBoxElement, passwordElement, errorElement;
 
 var validation = {
     on: 'blur', // validate form when user changes field
@@ -34,8 +37,8 @@ var validation = {
             }]
         }
     },
-    onValid: updateSubmitButton,
-    onInvalid: updateSubmitButton
+    onValid: updateUI,
+    onInvalid: updateUI
 };
 
 $(document).ready(function() {
@@ -44,6 +47,7 @@ $(document).ready(function() {
     formElement = $('.ui.form');
     checkBoxElement = $('.ui.checkbox');
     passwordElement = $('#form-password');
+    errorElement = $('.ui.message.error');
 
     // setup API endpoints
     $.fn.api.settings.api = {
@@ -72,8 +76,17 @@ function setupFormBehaviour() {
         verbose: true,
         debug: true,
         beforeXHR: setCsrfTokenHeader,
-        onSuccess: redirectHome
+        onSuccess: redirectHome,
+        successTest: isSuccess,
+        onFailure: showFailure,
+        onError: showError,
+        onAbort: addShowError
     }).form(validation);
+}
+
+function updateUI() {
+    clearError();
+    updateSubmitButton();
 }
 
 function updateSubmitButton() {
@@ -99,7 +112,30 @@ function setCsrfTokenHeader(xhr) {
     xhr.setRequestHeader('x-csrf-token', crumbToken);
 }
 
-function redirectHome(response) {
-    console.log(response);
+function redirectHome() {
     window.location.href = '/home';
+}
+
+function isSuccess(response) {
+    return response.success || false;
+}
+
+function showFailure(response) {
+    if (response && response.message) {
+        showError(response.message);
+    }
+}
+
+function addShowError(errorMessage) {
+    // error element is not displayed if form does not contain errors
+    formElement.form('add errors', [errorMessage]);
+    showError('Could not connect to the server');
+}
+
+function showError(errorMessage) {
+    errorElement.text(errorMessage);
+}
+
+function clearError() {
+    errorElement.text('');
 }
