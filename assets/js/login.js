@@ -1,88 +1,105 @@
-if (!Foundation) {
-    throw 'Foundation not present';
-}
+/*
+    Login form using ajax
+ */
 
-Foundation.Abide.defaults.patterns['password'] = /^(\w{3,30})$/;
-Foundation.Abide.defaults.patterns['username'] = /^(\w{3,30})$/;
+var formElement, checkBoxElement, passwordElement;
+
+var validation = {
+    on: 'blur', // validate form when user changes field
+    fields: {
+        username: {
+            identifier: 'username',
+            rules: [{
+                type: 'empty',
+                prompt: 'Please enter a username'
+            }, {
+                type: 'minLength[3]',
+                prompt: 'Your username needs at least {ruleValue} characters'
+            }, {
+                type: 'maxLength[30]',
+                prompt: 'Your username can not have more than {ruleValue} characters'
+            }]
+        },
+        password: {
+            identifier: 'password',
+            rules: [{
+                type: 'empty',
+                prompt: 'Please enter a password'
+            }, {
+                type: 'minLength[3]',
+                prompt: 'Your password needs at least {ruleValue} characters'
+            }, {
+                type: 'maxLength[30]',
+                prompt: 'Your password can not have more than {ruleValue} characters'
+            }]
+        }
+    },
+    onValid: updateSubmitButton,
+    onInvalid: updateSubmitButton
+};
 
 $(document).ready(function() {
 
-    var crumb = $('meta[name=crumb]').attr("content");
+    // grab DOM elements
+    formElement = $('.ui.form');
+    checkBoxElement = $('.ui.checkbox');
+    passwordElement = $('#form-password');
 
-    var control = $('#show-password');
-    var field = $('#form-password');
+    // setup API endpoints
+    $.fn.api.settings.api = {
+        'login': '/login',
+    };
 
-    control.bind('click', function() {
-        if (control.is(':checked')) {
-            field.attr('type', 'text');
-        } else {
-            field.attr('type', 'password');
-        }
-    });
-
-    $('#login-form')
-        .on('formvalid.zf.abide', function() {
-
-            // enable submit button if form is valid
-            $('#submit').attr('disabled', false);
-
-        })
-        .on('forminvalid.zf.abide', function() {
-
-            // disable submit button if form is valid
-            $('#submit').attr('disabled', true);
-
-        })
-        .on('submit', function(event) {
-
-            // prevent default browser behaviour
-            event.preventDefault();
-
-            // disable form submit button to prevent
-            $('#submit').attr('disabled', false);
-
-            // ajax post form
-            var param = $("#login-form").serialize();
-            $.ajax({
-                type: 'POST',
-                url: '/login',
-                timeout: 5000,
-                data: param,
-                beforeSend: function(request) {
-                    request.setRequestHeader('x-csrf-token', crumb);
-                },
-                success: function(data) {
-
-                    console.log('user account data:', JSON.stringify(data));
-                    window.location.href = '/home';
-                },
-                error: function(request, error) {
-
-                    var errorMessage;
-
-                    // response is boom
-                    if (request.status !== 0) {
-                        errorMessage = 'Invalid username or password';
-                    } else {
-
-                        if (error === 'timeout') {
-                            errorMessage = 'Request timed out';
-                        } else {
-                            errorMessage = 'Could not connect to the server';
-                        }
-
-                    }
-
-                    $('#error-message').text(errorMessage);
-                    $('#form-error').css('display', 'block').addClass('alert');
-                }
-            });
-
-        });
-
-    // Validate form everytime a field changes
-    $('#form-username, #form-password').on('change', function() {
-        $('#login-form').foundation('validateForm');
-    });
+    setupCheckBoxBehaviour();
+    setupFormBehaviour();
 
 });
+
+function setupCheckBoxBehaviour() {
+
+    checkBoxElement.checkbox({
+        onChecked: showPassword,
+        onUnchecked: hidePassword
+    });
+}
+
+function setupFormBehaviour() {
+
+    formElement.api({
+        action: 'login',
+        method: 'post',
+        serializeForm: true,
+        verbose: true,
+        debug: true,
+        beforeXHR: setCsrfTokenHeader,
+        onSuccess: redirectHome
+    }).form(validation);
+}
+
+function updateSubmitButton() {
+
+    // enable submit button only if form is valid
+    if (formElement.form('is valid')) {
+        $('form .submit.button').attr('disabled', false);
+    } else {
+        $('form .submit.button').attr('disabled', true);
+    }
+}
+
+function showPassword() {
+    passwordElement.attr('type', 'text');
+}
+
+function hidePassword() {
+    passwordElement.attr('type', 'password');
+}
+
+function setCsrfTokenHeader(xhr) {
+    var crumbToken = $('meta[name=crumb]').attr("content");
+    xhr.setRequestHeader('x-csrf-token', crumbToken);
+}
+
+function redirectHome(response) {
+    console.log(response);
+    window.location.href = '/home';
+}

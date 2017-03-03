@@ -1,49 +1,59 @@
-<!doctype html>
-<html class="no-js" lang="en" dir="ltr">
+<!DOCTYPE html>
+<html>
 
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="crumb" content="{{crumb}}" value="{{crumb}}">
     <title>Noire Server {{version}}</title>
-    <link rel="stylesheet" href="css/foundation.css">
-    <link rel="stylesheet" href="css/foundation-icons.css" />
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
 </head>
 
 <body>
-
-    <div class="wrap login">
-        <div class="row column">
-            <div class="medium-6 medium-centered large-4 large-centered columns">
-                <form id="login-form" data-abide="ajax" novalidate>
-                    <div class="row column" id="log-in-form">
-                        <h4 class="text-center">Sign In</h4>
-                        <label>Username
-                            <input id="form-username" name="username" type="text" placeholder="somebody" required pattern="username">
-                            <small class="form-error">A valid username is required</small>
-                        </label>
-                        <label>Password
-                            <input id="form-password" name="password" type="password" placeholder="Password" required pattern="password">
-                            <small class="form-error">Your password must match the requirements</small>
-                        </label>
-                        <input id="show-password" type="checkbox"><label for="show-password">Show password</label>
-                        <button id="submit" class="button expanded" type="submit" value="Login" disabled>Login</button>
-                        <p class="text-center"><a href="#">Forgot your password?</a></p>
+    <div class="login">
+        <div class="ui centered grid container">
+            <div class="six wide computer eight wide tablet sixteen wide phone column">
+                <div class="ui segment">
+                    <div class="content">
+                        <div class="ui centered large header">Login Form</div>
+                        <form class="ui large form" novalidate>
+                            <div class="required field">
+                                <div class="ui left icon input">
+                                    <input id="form-username" name="username" type="text" placeholder="username">
+                                    <i class="user icon"></i>
+                                </div>
+                            </div>
+                            <div class="required field">
+                                <div class="ui left icon input">
+                                    <input id="form-password" name="password" type="password" placeholder="password">
+                                    <i class="lock icon"></i>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="ui toggle checkbox">
+                                    <input id="show-password" type="checkbox">
+                                    <label for="show-password">Show Password</label>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <input type="submit" value="Login" class="ui submit button large fluid primary" disabled>
+                            </div>
+                        <div class="login-forgot">
+                            <a href="#">Forgot your password?</a>
+                        </div>
+                        <div class="ui message error"></div>
+                        </form>
                     </div>
-                </form>
-                <div id="form-error" data-abide-error class="alert callout" style="margin-top: 20px; display: none;">
-                    <p><i class="fi-alert"></i>&nbsp;&nbsp;<span id="error-message"/></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="js/vendor/jquery-3.1.1.min.js"></script>
-    <script src="js/vendor/what-input.js"></script>
-    <script src="js/vendor/foundation.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/vendor/jquery.serialize-object.min.js"></script>
+    <script src="js/vendor/semantic.js"></script>
     <script src="js/login.js"></script>
 </body>
 
