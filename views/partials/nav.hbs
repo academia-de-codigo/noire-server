@@ -1,0 +1,24 @@
+<div class="ui vertical segment inverted">
+    <nav class="ui large secondary inverted menu">
+        <div class="ui container">
+            <h3 class="header item">Noire</h3>
+            <a class="item" href="#">One</a>
+            <a class="item" href="#">Two</a>
+            <a class="item" href="#">Three</a>
+            <a class="item" href="#">Four</a>
+            <div class="right item">
+                {{#if user}}
+                    {{#if user.admin}}
+                        <a class="ui button secondary inverted" href="/admin">Admin</a>
+                    {{/if}}
+                    <a class="ui button secondary inverted" href="/logout">Logout</a>
+                    <a href="/account">
+                        <img class="ui mini circular image" src="/img/avatar.png">
+                    </a>
+                {{else}}
+                    <a class="ui button secondary inverted" href="/login">Login</a>
+                {{/if}}
+            </div>
+        </div>
+    </nav>
+</div>

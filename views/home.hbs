@@ -1,56 +1,29 @@
-<!doctype html>
-<html class="no-js" lang="en" dir="ltr">
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noire Server {{version}}</title>
-    <link rel="stylesheet" href="css/foundation.css">
-    <link rel="stylesheet" href="css/app.css">
-</head>
+        <title>Noire Server {{version}}</title>
 
-<body>
+        <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+        <link rel="stylesheet" href="css/app.css">
 
-    <div class="off-canvas-wrapper">
-        <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+    </head>
+    <body>
 
-            <!-- Mobile Navigation -->
-            <div class="off-canvas position-left" id="mobile-nav" data-off-canvas>
-                {{> mobile-nav}}
-            </div>
+        {{> nav}}
 
-            <div class="off-canvas-content" data-off-canvas-content>
+        {{> hero}}
 
-                <div class="title-bar show-for-small-only">
-                    <div class="title-bar-left">
-                        <button class="menu-icon" type="button" data-open="mobile-nav"></button>
-                        <span class="title-bar-title">Menu</span>
-                    </div>
-                </div>
+        {{> main}}
 
-                <!-- Desktop Navigation -->
-                {{> desktop-nav}}
+        {{> footer}}
 
-                <!-- Hero -->
-                {{> hero}}
-
-                <!-- Main Content -->
-                {{> main}}
-
-                <!-- Footer -->
-                {{> footer}}
-            </div>
-
-        </div>
-    </div>
-
-    <script src="js/vendor/jquery-3.1.1.min.js"></script>
-    <script src="js/vendor/what-input.js"></script>
-    <script src="js/vendor/foundation.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/logout.js"></script>
-
-</body>
-
+        <script src="js/vendor/jquery-3.1.1.min.js"></script>
+        <script src="js/vendor/jquery.serialize-object.min.js"></script>
+        <script src="js/vendor/semantic.js"></script>
+        <script src="js/app.js"></script>
+    </body>
 </html>
