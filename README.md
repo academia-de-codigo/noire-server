@@ -34,7 +34,7 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 ## Features
 
 * HTTP and HTTPS support
-* Server rendered views using the Foundation front-end framework and Handlebars template engine
+* Server rendered views using the Semantic-UI front-end framework and Handlebars template engine
 * API routes for rendering on the client side and building SPAs
 * Automated API documentation generation
 * Stateless JWT auth for API endpoints
@@ -56,7 +56,7 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 
 ### Clone the repo
 
-`git clone https://github.com/ferrao/hapi-starter.git`
+`git clone git@github.com:academia-de-codigo/noire-server.git`
 
 ### Install the required Dependencies
 
@@ -78,6 +78,9 @@ Edit files in `lib/config`
 ### Reset the database to it's original state
 
 `npm run reset`
+
+### Build Semantic-UI
+`npm run semantic`
 
 ### Launch the server
 
