@@ -13,7 +13,7 @@
     "reset": "knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
-    "semantic": "gulp --gulpfile semantic/gulpfile.js build; cp semantic/dist/*.min.css assets/css; cp semantic/dist/*.min.js assets/js/vendor"
+    "semantic": "gulp --gulpfile semantic/gulpfile.js build; cp -R semantic/dist/themes/default assets/css/themes; cp semantic/dist/*.min.css assets/css; cp semantic/dist/*.min.js assets/js/vendor"
   },
   "repository": {
     "type": "git",
