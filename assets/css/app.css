@@ -1,3 +1,6 @@
+/*
+    Computer and Table Navigation
+ */
 .ui.menu {
     padding: 1em;
     margin: 0;
@@ -12,6 +15,20 @@
   margin-left: 1em;
 }
 
+/*
+    Mobile Navigation
+ */
+.sidebar.toggle {
+    margin-left: 2em;
+}
+
+img#account {
+    margin-right: 2em;
+}
+
+/*
+    Hero Section
+ */
 .hero h1.ui.header {
     font-size: 4em;
     font-weight: normal;
@@ -28,6 +45,9 @@
     background-image: url("../img/low_contrast_linen.png");
 }
 
+/*
+    Main Content
+*/
 .ui.stripe {
     padding: 8em 0em;
 }
@@ -40,6 +60,9 @@
   font-size: 1.33em;
 }
 
+/*
+    Footer
+ */
 .ui.footer {
     border-radius: 0;
     margin-bottom: 0;

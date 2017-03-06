@@ -7,4 +7,9 @@ function setupNav() {
         $('.item').removeClass('active');
         $(this).addClass('active');
     });
+
+    $('.ui.sidebar')
+        .sidebar('setting', 'transition', 'overlay')
+        .sidebar('attach events', '.sidebar.toggle');
+    $('.ui.sidebar').removeClass('disabled');
 }
