@@ -1,21 +1,13 @@
-<!-- Close button -->
-<button class="close-button" aria-label="Close menu" type="button" data-close>
-         <span aria-hidden="true">&times;</span>
-</button>
-
-<!-- Menu -->
-<ul class="vertical menu">
-    <li><a href="#">Link 1</a></li>
-    <li><a href="#">Link 2</a></li>
-    <li><a href="#">Link 3</a></li>
-    <li><a href="#">Link 4</a></li>
-    {{#if user}}
-        {{#if user.admin}}
-            <li><a href="/account">Admin</a></li>
-        {{/if}}
-        <li><a href="/account">Account</a></li>
-        <li><a id="mobile-logout" class="button">Logout</a></li>
-    {{else}}
-        <li><a id="mobile-login" class="button small" onclick="window.location.href='/login'">Login</a></li>
+<h3 class="header item">Noire</h3>
+<a class="item" href="#">One</a>
+<a class="item" href="#">Two</a>
+<a class="item" href="#">Three</a>
+<a class="item" href="#">Four</a>
+{{#if user}}
+    {{#if user.admin}}
+        <a class="item" href="/admin">Admin</a>
     {{/if}}
-</ul>
+    <a class="item" href="/logout">Logout</a>
+{{else}}
+    <a class="item" href="/login">Login</a>
+{{/if}}

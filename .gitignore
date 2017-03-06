@@ -4,5 +4,6 @@ npm-debug.log
 log
 db/dev.sqlite3
 assets/css/semantic*
-assets/js/semantic*
+assets/css/themes
+assets/js/vendor/semantic*
 semantic/dist
