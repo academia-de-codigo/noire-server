@@ -2,7 +2,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var UserModel = require('../../lib/models/user');
-var BaseModel = require('../../lib/models/base');
+var Model = require('../../lib/models/base');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -16,7 +16,7 @@ describe('Model: user', function() {
     it('extends from base model', function(done) {
 
         var userModel = new UserModel();
-        expect(userModel).to.be.an.instanceof(BaseModel);
+        expect(userModel).to.be.an.instanceof(Model);
         done();
     });
 
@@ -30,9 +30,10 @@ describe('Model: user', function() {
         done();
     });
 
-    it('should contain relation mappings to role model', function(done) {
+    it('should contain many-to-many relation mappings to role model', function(done) {
         expect(UserModel.relationMappings).to.be.an.object();
         expect(UserModel.relationMappings.roles).to.exist();
+        expect(UserModel.relationMappings.roles.relation).to.equals(Model.ManyToManyRelation);
         done();
     });
 });
