@@ -5,13 +5,15 @@
             <div class="column">
                 <div class="ui two column grid ">
                     <div class="column">
-                        <a class="item sidebar toggle"><i class="sidebar large icon"></i></a>
+                        <div class="item sidebar toggle"><i class="sidebar large icon"></i></div>
                     </div>
+                    {{#if user}}
                     <div class="column">
                         <a href="/account">
                             <img id="account" class="ui mini circular right floated image" src="/img/avatar.png">
                         </a>
                     </div>
+                    {{/if}}
                 </div>
             </div>
         </div>
@@ -29,7 +31,7 @@
                             {{#if user.admin}}
                                 <a class="ui button secondary inverted" href="/admin">Admin</a>
                             {{/if}}
-                            <a class="ui button secondary inverted" href="/logout">Logout</a>
+                            <button class="ui logout button secondary inverted">Logout</button>
                             <a href="/account">
                                 <img class="ui mini circular image" src="/img/avatar.png">
                             </a>

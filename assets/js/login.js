@@ -5,22 +5,35 @@
 // TODO: Would be nice to provide user with timeout error instead of a generic one
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
 var XHR_TIMEOUT = 5000;
+var XHR_VERBOSE = true;
+var XHR_DEBUG = true;
 
-var formElement, checkBoxElement, passwordElement, errorElement;
+var formElement, checkBoxElement, passwordElement, logoutButton, logoutLink, errorElement;
 
-var api = {
-    action: 'login',
-    method: 'post',
-    timeout: XHR_TIMEOUT,
-    serializeForm: true,
-    verbose: true,
-    debug: true,
-    beforeXHR: setCsrfTokenHeader,
-    onSuccess: redirectHome,
-    successTest: isSuccess,
-    onFailure: showFailure,
-    onError: showError,
-    onAbort: addShowError
+var apiSettings = {
+    login: {
+        action: 'login',
+        method: 'post',
+        timeout: XHR_TIMEOUT,
+        serializeForm: true,
+        verbose: XHR_VERBOSE,
+        debug: XHR_DEBUG,
+        beforeXHR: setCsrfTokenHeader,
+        onSuccess: redirectHome,
+        successTest: isSuccess,
+        onFailure: showFailure,
+        onError: showError,
+        onAbort: addShowError
+    },
+    logout: {
+        action: 'logout',
+        method: 'get',
+        timeout: XHR_TIMEOUT,
+        verbose: XHR_VERBOSE,
+        debug: XHR_DEBUG,
+        beforeXHR: setCsrfTokenHeader,
+        onComplete: redirectHome
+    }
 };
 
 var validation = {
@@ -59,21 +72,27 @@ var validation = {
 
 $(document).ready(function() {
 
-    // grab DOM elements
+    // setup API endpoints
+    $.fn.api.settings.api = {
+        'login': '/login',
+        'logout': '/logout'
+    };
+
+    grabDomElements();
+    setupCheckBoxBehaviour();
+    setupLoginFormBehaviour();
+    setupLogoutButtonBehaviour();
+
+});
+
+function grabDomElements() {
     formElement = $('.ui.form');
     checkBoxElement = $('.ui.checkbox');
     passwordElement = $('#form-password');
     errorElement = $('.ui.message.error');
-
-    // setup API endpoints
-    $.fn.api.settings.api = {
-        'login': '/login',
-    };
-
-    setupCheckBoxBehaviour();
-    setupFormBehaviour();
-
-});
+    logoutButton = $('.ui.logout.button');
+    logoutLink = $('a.logout');
+}
 
 function setupCheckBoxBehaviour() {
 
@@ -83,8 +102,13 @@ function setupCheckBoxBehaviour() {
     });
 }
 
-function setupFormBehaviour() {
-    formElement.api(api).form(validation);
+function setupLoginFormBehaviour() {
+    formElement.api(apiSettings.login).form(validation);
+}
+
+function setupLogoutButtonBehaviour() {
+    logoutButton.api(apiSettings.logout);
+    logoutLink.api(apiSettings.logout);
 }
 
 function updateUI() {
