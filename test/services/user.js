@@ -252,7 +252,8 @@ describe('Service: user', function() {
         var newUser = {
             username: 'test2',
             email: 'test2@gmail.com',
-            password: 'test2'
+            password: 'test2',
+            active: true
         };
 
         var cryptSpy = Sinon.spy(Auth, 'crypt').withArgs(newUser.password);
@@ -278,7 +279,8 @@ describe('Service: user', function() {
         var newUser = {
             username: 'test',
             email: 'test@gmail.com',
-            password: 'test'
+            password: 'test',
+            active: true
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
