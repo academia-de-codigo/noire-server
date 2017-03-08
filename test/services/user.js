@@ -58,7 +58,7 @@ describe('Service: user', function() {
         UserService.list().then(function(results) {
 
             expect(results).to.be.an.array();
-            expect(results.length).to.equals(3);
+            expect(results.length).to.equals(4);
             expect(results.roles).to.not.exists();
             results.forEach(function(user) {
                 expect(user).to.be.instanceof(UserModel);

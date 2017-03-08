@@ -7,6 +7,7 @@ var Objection = require('objection');
 var KnexConfig = require('../../knexfile');
 var Repository = require('../../lib/plugins/repository');
 var AuthorizationService = require('../../lib/services/authorization');
+var HSError = require('../../lib/error');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -85,6 +86,30 @@ describe('Service: authorization', function() {
         });
     });
 
+    it('handles authorization for a non existing role', function(done) {
+
+        AuthorizationService.canRole('invalid role', 'read', 'role').then(function(result) {
+
+            expect(result).to.not.exist();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            done();
+        });
+    });
+
+    it('handles authorization for a non existing resource', function(done) {
+
+        AuthorizationService.canRole('guest', 'read', 'invalid resource').then(function(result) {
+
+            expect(result).to.not.exist();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            done();
+        });
+    });
+
     it('can authorize a user that has a role with the right permissions', function(done) {
 
         AuthorizationService.canUser('admin', 'create', 'user').then(function(result) {
@@ -114,9 +139,21 @@ describe('Service: authorization', function() {
 
     it('can not authorize a user that has no roles', function(done) {
 
-        AuthorizationService.canUser('guest', 'read', 'role').then(function(result) {
+        AuthorizationService.canUser('noroles', 'read', 'role').then(function(result) {
 
             expect(result).to.be.false();
+            done();
+        });
+    });
+
+    it('handles authorization for a non existing user', function(done) {
+
+        AuthorizationService.canUser('invalid user', 'read', 'role').then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
             done();
         });
     });

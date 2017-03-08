@@ -29,6 +29,14 @@ exports.seed = function(knex, Promise) {
                     username: 'guest',
                     email: 'guest@gmail.com',
                     password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW' // guest
+                }),
+                knex('user').insert({
+                    id: 4,
+                    active: true,
+                    name: 'User wit no Roles',
+                    username: 'noroles',
+                    email: 'noroles@gmail.com',
+                    password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW' // guest
                 })
             ]);
         }),
