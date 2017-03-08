@@ -89,7 +89,7 @@ describe('Plugin: assets', function() {
 
             expect(err).to.not.exist();
 
-            server.inject('/fonts/foundation-icons.ttf', function(response) {
+            server.inject('/fonts/OpenSans.woff2', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
