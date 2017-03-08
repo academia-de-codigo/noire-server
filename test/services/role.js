@@ -81,7 +81,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('fetch invalid user by id', function(done) {
+    it('fetch invalid role by id', function(done) {
 
         RoleService.findById(9000).then(function(result) {
 
@@ -157,7 +157,6 @@ describe('Service: role', function() {
     it('does not add an existing role', function(done) {
 
         var role = {
-            id: 1,
             name: 'admin'
         };
 
@@ -174,7 +173,6 @@ describe('Service: role', function() {
             done();
         });
     });
-
 
     it('deletes an existing role', function(done) {
 
