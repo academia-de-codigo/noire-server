@@ -39,6 +39,7 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 * Automated API documentation generation
 * Stateless JWT auth for API endpoints
 * Cookie stored JWT auth for web app with CSRF protection
+* RBAC authorization
 * AJAX login form
 * Client side caching of assets
 * Logging to console and file - ops, error, auth and access logs
