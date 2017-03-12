@@ -86,7 +86,7 @@ describe('Service: user', function() {
 
     it('fetch invalid user by id', function(done) {
 
-        UserService.findById(9000).then(function(result) {
+        UserService.findById(999).then(function(result) {
 
             expect(result).to.not.exist();
         }).catch(function(error) {
@@ -253,7 +253,7 @@ describe('Service: user', function() {
             username: 'test2',
             email: 'test2@gmail.com',
             password: 'test2',
-            active: true
+            active: false
         };
 
         var cryptSpy = Sinon.spy(Auth, 'crypt').withArgs(newUser.password);
@@ -268,6 +268,8 @@ describe('Service: user', function() {
             expect(result.username).to.equals(newUser.username);
             expect(result.email).to.equals(newUser.email);
             expect(result.password).to.exists();
+            expect(result.active).to.exists();
+            expect(result.active).to.be.false();
             txSpy.restore();
             Auth.crypt.restore();
             done();
@@ -296,4 +298,185 @@ describe('Service: user', function() {
             done();
         });
     });
+
+    it('does not add a user with the same email as existing user', function(done) {
+
+        var newUser = {
+            username: 'test2',
+            email: 'test@gmail.com',
+            password: 'test2',
+            active: true
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.add(newUser).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('updates an existing user', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'test2',
+            name: 'test2',
+            email: 'test2@gmail.com',
+            password: 'test2',
+            active: false
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(UserModel);
+            expect(result.id).to.equals(id);
+            expect(result.username).to.equals(user.username);
+            expect(result.name).to.equals(user.name);
+            expect(result.email).to.equals(user.email);
+            expect(result.password).to.equals(user.password);
+            expect(result.active).to.satisfy(function(value) {
+                return value === false || value === 0;
+            });
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('updates an existing user same username and id as request parameters string', function(done) {
+
+        var id = '2';
+        var user = {
+            username: 'test'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(UserModel);
+            expect(result.id).to.equals(Number.parseInt(id));
+            expect(result.username).to.equals(user.username);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('updates an existing user with same username and email', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'test',
+            email: 'test@gmail.com',
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(UserModel);
+            expect(result.id).to.equals(id);
+            expect(result.username).to.equals(user.username);
+            expect(result.email).to.equals(user.email);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('handles user update with no active property', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'test2',
+            name: 'test2',
+            email: 'test2@gmail.com',
+            password: 'test2',
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(UserModel);
+            expect(result.id).to.equals(id);
+            expect(result.username).to.equals(user.username);
+            expect(result.name).to.equals(user.name);
+            expect(result.email).to.equals(user.email);
+            expect(result.password).to.equals(user.password);
+            expect(result.active).to.satisfy(function(value) {
+                return value === true || value === 1;
+            });
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not update a non existing user', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(900, {}).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not update a user with same username as existing user', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'admin'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not update a user with same email as existing user', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'test',
+            email: 'admin@gmail.com'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.update(id, user).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
+
+
 });

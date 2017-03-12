@@ -33,7 +33,7 @@ exports.seed = function(knex, Promise) {
                 knex('user').insert({
                     id: 4,
                     active: true,
-                    name: 'User wit no Roles',
+                    name: 'User with no Roles',
                     username: 'noroles',
                     email: 'noroles@gmail.com',
                     password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW' // guest

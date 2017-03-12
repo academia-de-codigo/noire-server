@@ -83,7 +83,7 @@ describe('Service: role', function() {
 
     it('fetch invalid role by id', function(done) {
 
-        RoleService.findById(9000).then(function(result) {
+        RoleService.findById(999).then(function(result) {
 
             expect(result).to.not.exist();
         }).catch(function(error) {
@@ -135,7 +135,6 @@ describe('Service: role', function() {
     it('adds a new role', function(done) {
 
         var role = {
-            id: 10,
             name: 'newrole'
         };
 
@@ -147,7 +146,7 @@ describe('Service: role', function() {
             expect(txSpy.args[0].length).to.equals(2);
             expect(txSpy.args[0][0]).to.equals(RoleModel);
             expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.equals(role.id);
+            expect(result.id).to.exists();
             expect(result.name).to.equals(role.name);
             txSpy.restore();
             done();
@@ -220,17 +219,55 @@ describe('Service: role', function() {
 
     it('updates an existing role', function(done) {
 
+        var id = 4;
         var role = {
-            id: 4,
             name: 'newname'
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(role.id, role).then(function(result) {
+        RoleService.update(id, role).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
             expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.equals(role.id);
+            expect(result.id).to.equals(id);
+            expect(result.name).to.equals(role.name);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('updates an existing role with same name and id as request parameters string', function(done) {
+
+        var id = '4';
+        var role = {
+            name: 'guest2'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.update(id, role).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(RoleModel);
+            expect(result.id).to.equals(Number.parseInt(id));
+            expect(result.name).to.equals(role.name);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('updates an existing role with same name', function(done) {
+
+        var id = 4;
+        var role = {
+            name: 'guest2'
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.update(id, role).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(RoleModel);
+            expect(result.id).to.equals(id);
             expect(result.name).to.equals(role.name);
             txSpy.restore();
             done();
@@ -255,12 +292,12 @@ describe('Service: role', function() {
 
     it('does not update a role with same name as an existing role', function(done) {
 
+        var id = 4;
         var role = {
-            id: 4,
             name: 'admin'
         };
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(role.id, role).then(function(result) {
+        RoleService.update(id, role).then(function(result) {
 
             expect(result).to.not.exists();
 
