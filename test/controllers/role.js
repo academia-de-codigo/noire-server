@@ -380,7 +380,7 @@ describe('Controller: role', function() {
         });
     });
 
-    it('updates a role that is duplicate', function(done) {
+    it('updates a role when a duplicate exists', function(done) {
 
         var request = {
             params: {
