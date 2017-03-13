@@ -315,6 +315,7 @@ describe('Service: role', function() {
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addUser(4, 2).then(function(result) {
 
+            expect(txSpy.calledOnce).to.be.true();
             expect(result).to.equals(2);
             txSpy.restore();
             done();
