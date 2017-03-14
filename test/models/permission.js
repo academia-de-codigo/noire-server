@@ -32,8 +32,8 @@ describe('Model: permission', function() {
 
     it('should contain relation mappings to resource model', function(done) {
         expect(PermissionModel.relationMappings).to.be.an.object();
-        expect(PermissionModel.relationMappings.resources).to.exist();
-        expect(PermissionModel.relationMappings.resources.relation).to.equals(Model.HasManyRelation);
+        expect(PermissionModel.relationMappings.resource).to.exist();
+        expect(PermissionModel.relationMappings.resource.relation).to.equals(Model.HasOneRelation);
         done();
     });
 });

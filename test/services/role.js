@@ -372,12 +372,22 @@ describe('Service: role', function() {
 
     it('adds a permission', function(done) {
 
+        var action = 'create';
+        var resource = 'role';
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addPermission(1, 'create', 'role').then(function(result) {
+        RoleService.addPermission(1, action, resource).then(function(result) {
 
-            expect(result).to.equals(9);
-            txSpy.restore();
-            done();
+            expect(result).to.be.a.number();
+
+            Repository.permission.model.query().findById(9).eager('resource').then(function(permission) {
+
+                expect(permission.id).to.be.a.number();
+                expect(permission.action).to.equals(action);
+                expect(permission.resource).to.exists();
+                expect(permission.resource.id).to.equals(permission.resource_id);
+                txSpy.restore();
+                done();
+            });
         });
     });
 

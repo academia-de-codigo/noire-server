@@ -29,4 +29,11 @@ describe('Model: resource', function() {
         expect(ResourceModel.jsonSchema).to.be.an.object();
         done();
     });
+
+    it('should contain relation mappings to permission model', function(done) {
+        expect(ResourceModel.relationMappings).to.be.an.object();
+        expect(ResourceModel.relationMappings.permissions).to.exist();
+        expect(ResourceModel.relationMappings.permissions.relation).to.equals(Model.HasManyRelation);
+        done();
+    });
 });
