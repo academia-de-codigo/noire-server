@@ -44,6 +44,11 @@ exports.seed = function(knex, Promise) {
                     id: 8,
                     action: 'delete',
                     resource_id: 2
+                }),
+                knex('permission').insert({
+                    id: 9,
+                    action: 'read',
+                    resource_id: 4
                 })
             ]);
         }),
@@ -62,6 +67,10 @@ exports.seed = function(knex, Promise) {
                 knex('resource').insert({
                     id: 3,
                     name: 'test'
+                }),
+                knex('resource').insert({
+                    id: 4,
+                    name: 'noroles'
                 })
             ]);
         }),

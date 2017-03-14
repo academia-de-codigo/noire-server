@@ -370,10 +370,48 @@ describe('Service: role', function() {
         });
     });
 
-    it('adds a permission', function(done) {
+    it('adds a new permission', function(done) {
+
+        var action = 'create';
+        var resource = 'test';
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addPermission(1, action, resource).then(function(result) {
+
+            expect(result).to.be.a.number();
+
+            Repository.permission.model.query().findById(10).eager('resource').then(function(permission) {
+
+                expect(permission.id).to.be.a.number();
+                expect(permission.action).to.equals(action);
+                expect(permission.resource).to.exists();
+                expect(permission.resource.id).to.equals(permission.resource_id);
+                txSpy.restore();
+                done();
+            });
+        });
+    });
+
+    it('adds a permission that already belongs to a role', function(done) {
 
         var action = 'create';
         var resource = 'role';
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addPermission(1, action, resource).then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('adds a permission that already exists but is not used by the role', function(done) {
+
+        var action = 'read';
+        var resource = 'noroles';
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addPermission(1, action, resource).then(function(result) {
 

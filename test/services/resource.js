@@ -57,7 +57,7 @@ describe('Service: resource', function() {
         ResourceService.list().then(function(results) {
 
             expect(results).to.be.an.array();
-            expect(results.length).to.equals(3);
+            expect(results.length).to.equals(4);
             results.forEach(function(resource) {
                 expect(resource).to.be.instanceof(ResourceModel);
                 expect(resource.id).to.exists();
@@ -154,7 +154,7 @@ describe('Service: resource', function() {
         });
     });
 
-    it('deletes an existing role', function(done) {
+    it('deletes an existing resource', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         ResourceService.delete(3).then(function(result) {
