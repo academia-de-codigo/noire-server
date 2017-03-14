@@ -28,7 +28,7 @@ describe('Service: role', function() {
     beforeEach(function(done) {
 
         var options = {
-            models: ['user', 'role']
+            models: ['user', 'role', 'resource', 'permission']
         };
 
         var fakeServer = {
@@ -370,4 +370,50 @@ describe('Service: role', function() {
         });
     });
 
+    it('adds a permission', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addPermission(1, 'create', 'role').then(function(result) {
+
+            expect(result).to.equals(9);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('handles adding a permission to a non existing role', function(done) {
+
+        RoleService.addPermission(999, 'create', 'role').then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            done();
+        });
+    });
+
+    it('handles adding a permission with invalid action', function(done) {
+
+        RoleService.addPermission(1, 'invalid', 'role').then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            done();
+        });
+    });
+
+    it('handles adding a permission with invalid resource', function(done) {
+
+        RoleService.addPermission(1, 'create', 'invalid').then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            done();
+        });
+    });
 });

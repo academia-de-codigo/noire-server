@@ -4,7 +4,6 @@ var Code = require('code');
 var Lab = require('lab');
 var Knex = require('knex');
 var Objection = require('objection');
-var Sinon = require('sinon');
 var KnexConfig = require('../../knexfile');
 var Repository = require('../../lib/plugins/repository');
 var AuthorizationService = require('../../lib/services/authorization');
@@ -155,45 +154,6 @@ describe('Service: authorization', function() {
         }).catch(function(error) {
 
             expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
-    });
-
-    it('adds a permission', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        AuthorizationService.addPermission('create', 'role').then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals(2);
-            txSpy.restore();
-            done();
-        });
-    });
-
-    it('handles adding a permission with invalid action', function(done) {
-
-        AuthorizationService.addPermission('invalid', 'role').then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
-    });
-
-    it('handles adding a permission with invalid resource', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        AuthorizationService.addPermission('create', 'invalid').then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
             done();
         });
     });
