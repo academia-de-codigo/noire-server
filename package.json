@@ -10,6 +10,7 @@
   "scripts": {
     "start": "node lib/index.js",
     "test": "lab",
+    "codecov": "istanbul cover ./node_modules/lab/bin/lab --report lcovonly  -- -l  && codecov",
     "reset": "knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
@@ -54,6 +55,8 @@
   },
   "devDependencies": {
     "code": "^4.0.0",
+    "codecov": "^2.0.1",
+    "istanbul": "^0.4.5",
     "lab": "^13.0.0",
     "mockery": "^2.0.0",
     "semantic-ui": "^2.2.9",
