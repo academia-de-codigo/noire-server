@@ -56,11 +56,11 @@ describe('Plugin: api', function() {
         // created using npm run token
         internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
 
-        loginCtrlStub = Sinon.stub(LoginCtrl, 'login', function(request, reply) {
+        loginCtrlStub = Sinon.stub(LoginCtrl, 'login').callsFake(function(request, reply) {
             return reply(internals.user);
         });
 
-        logoutCtrlStub = Sinon.stub(LoginCtrl, 'logout', function(request, reply) {
+        logoutCtrlStub = Sinon.stub(LoginCtrl, 'logout').callsFake(function(request, reply) {
             return reply(internals.logout);
         });
 

@@ -107,7 +107,7 @@ describe('Plugin: repository', function() {
 
             var fakePromise = 'a fake promise';
             var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query', function() {
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
                 return fakePromise;
             });
 
@@ -135,7 +135,7 @@ describe('Plugin: repository', function() {
             var id = 1;
             var fakePromise = 'a fake promise';
             var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query', function() {
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
                 return {
                     findById: Sinon.stub().withArgs(1).returns(fakePromise)
                 };
@@ -166,7 +166,7 @@ describe('Plugin: repository', function() {
             };
             var fakePromise = 'a fake promise';
             var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query', function() {
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
                 return {
                     insert: Sinon.stub().withArgs(fakeUser).returns(fakePromise)
                 };
@@ -225,7 +225,7 @@ describe('Plugin: repository', function() {
             var id = 1;
             var fakePromise = 'a fake promise';
             var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query', function() {
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
                 return {
                     deleteById: Sinon.stub().withArgs(1).returns(fakePromise)
                 };
@@ -253,7 +253,7 @@ describe('Plugin: repository', function() {
 
             var fakeQueryBuilder = 'a fake query builder';
             var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query', function() {
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
                 return fakeQueryBuilder;
             });
 
@@ -278,7 +278,7 @@ describe('Plugin: repository', function() {
         var fakeTxUserRepo = 'fake tx user repo';
         var fakeTxRoleRepo = 'fake tx role repo';
 
-        var txStub = Sinon.stub(Objection, 'transaction', function(userModel, roleModel, cb) {
+        var txStub = Sinon.stub(Objection, 'transaction').callsFake(function(userModel, roleModel, cb) {
             cb(fakeTxUserRepo, fakeTxRoleRepo);
         });
 

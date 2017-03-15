@@ -58,7 +58,6 @@ describe('Plugin: auth', function() {
 
     before(function(done) {
 
-
         // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
         internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
         internals.ID_INVALID = 2;
@@ -114,9 +113,10 @@ describe('Plugin: auth', function() {
 
     it('handles password encryption errors', function(done) {
 
-        Sinon.stub(Bcrypt, 'hash', function(password, rounds, next) {
+        Sinon.stub(Bcrypt, 'hash').callsFake(function(password, rounds, next) {
             next();
         });
+
         Auth.crypt('password').then(function(hash) {
 
             expect(hash).to.not.exists();
@@ -142,9 +142,10 @@ describe('Plugin: auth', function() {
 
     it('handles password compare errors', function(done) {
 
-        Sinon.stub(Bcrypt, 'compare', function(password, rounds, next) {
+        Sinon.stub(Bcrypt, 'compare').callsFake(function(password, rounds, next) {
             next();
         });
+
         Auth.compare().then(function(hash) {
 
             expect(hash).to.not.exists();
