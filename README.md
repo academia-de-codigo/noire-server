@@ -1,5 +1,5 @@
 [![Build Status](https://api.travis-ci.org/academia-de-codigo/noire-server.svg?branch=master)](https://travis-ci.org/academia-de-codigo/noire-server)
-
+[![Coverage](https://codecov.io/gh/academia-de-codigo/noire-server/branch/master/graph/badge.svg)](https://codecov.io/gh/academia-de-codigo/noire-server)
 [![Dependencies Status](https://david-dm.org/academia-de-codigo/noire-server/status.svg)](https://david-dm.org/academia-de-codigo/noire-server)
 [![DevDependencies Status](https://david-dm.org/academia-de-codigo/noire-server/dev-status.svg)](https://david-dm.org/academia-de-codigo/noire-server?type=dev)
 
