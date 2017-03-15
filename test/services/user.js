@@ -493,5 +493,48 @@ describe('Service: user', function() {
         });
     });
 
+    it('deletes an existing user', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.delete(3).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.not.exist();
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not delete a non existing user', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.delete(9999).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not delete an active user', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        UserService.delete(2).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_STATE);
+            txSpy.restore();
+            done();
+        });
+    });
 
 });

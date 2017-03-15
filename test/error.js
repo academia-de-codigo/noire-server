@@ -52,6 +52,7 @@ describe('hapi-starter errors', function() {
 
         expect(HSError.toBoom(HSError.RESOURCE_DUPLICATE).output.statusCode).to.equals(409);
         expect(HSError.toBoom(HSError.RESOURCE_RELATION).output.statusCode).to.equals(409);
+        expect(HSError.toBoom(HSError.RESOURCE_STATE).output.statusCode).to.equals(409);
         done();
     });
 });
