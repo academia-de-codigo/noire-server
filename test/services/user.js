@@ -253,7 +253,6 @@ describe('Service: user', function() {
             username: 'test2',
             email: 'test2@gmail.com',
             password: 'test2',
-            active: false
         };
 
         var cryptSpy = Sinon.spy(Auth, 'crypt').withArgs(newUser.password);
@@ -281,8 +280,7 @@ describe('Service: user', function() {
         var newUser = {
             username: 'test',
             email: 'test@gmail.com',
-            password: 'test',
-            active: true
+            password: 'test'
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
@@ -299,13 +297,30 @@ describe('Service: user', function() {
         });
     });
 
+    it('does not add a user with no password', function(done) {
+
+        var newUser = {
+            username: 'test',
+            email: 'test@gmail.com'
+        };
+
+        UserService.add(newUser).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
+            done();
+        });
+    });
+
     it('does not add a user with the same email as existing user', function(done) {
 
         var newUser = {
             username: 'test2',
             email: 'test@gmail.com',
-            password: 'test2',
-            active: true
+            password: 'test2'
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
@@ -330,7 +345,7 @@ describe('Service: user', function() {
             name: 'test2',
             email: 'test2@gmail.com',
             password: 'test2',
-            active: false
+            active: true
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
@@ -344,7 +359,7 @@ describe('Service: user', function() {
             expect(result.email).to.equals(user.email);
             expect(result.password).to.equals(user.password);
             expect(result.active).to.satisfy(function(value) {
-                return value === false || value === 0;
+                return value === true || value === 1;
             });
             txSpy.restore();
             done();

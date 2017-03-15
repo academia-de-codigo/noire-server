@@ -148,6 +148,7 @@ describe('Controller: user', function() {
             payload: {
                 username: 'test2',
                 email: 'test2@gmail.com',
+                name: 'test2',
                 password: 'test2'
             },
             log: function() {}
