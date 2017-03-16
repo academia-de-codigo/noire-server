@@ -6,6 +6,8 @@
 {{#if user}}
     {{#if user.admin}}
         <a class="item" href="/admin">Admin</a>
+    {{else}}
+        <a class="item" href="/">Home</a>
     {{/if}}
     <a class="item logout" href="/logout">Logout</a>
 {{else}}

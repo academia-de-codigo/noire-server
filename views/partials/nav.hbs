@@ -30,6 +30,8 @@
                         {{#if user}}
                             {{#if user.admin}}
                                 <a class="ui button secondary inverted" href="/admin">Admin</a>
+                            {{else}}
+                                <a class="ui button secondary inverted" href="/">Home</a>
                             {{/if}}
                             <button class="ui logout button secondary inverted">Logout</button>
                             <a href="/account">

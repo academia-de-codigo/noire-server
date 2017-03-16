@@ -61,6 +61,14 @@ img#account {
 }
 
 /*
+    Admin section
+ */
+.admin.card.column {
+    max-width: 200px;
+}
+
+
+/*
     Footer
  */
 .ui.footer {
