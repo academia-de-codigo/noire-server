@@ -277,7 +277,9 @@ describe('Service: role', function() {
     it('does not update a non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(100, {}).then(function(result) {
+        RoleService.update(100, {
+            name: 'non existing role'
+        }).then(function(result) {
 
             expect(result).to.not.exists();
 

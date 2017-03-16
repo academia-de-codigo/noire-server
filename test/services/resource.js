@@ -220,7 +220,9 @@ describe('Service: resource', function() {
     it('does not update a non existing resource', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.update(999, {}).then(function(result) {
+        ResourceService.update(999, {
+            name: 'non existing resource'
+        }).then(function(result) {
 
             expect(result).to.not.exists();
 
