@@ -341,13 +341,13 @@ describe('Plugin: auth', function() {
 
             server.inject({
                 method: 'GET',
-                url: '/account',
+                url: Config.prefixes.profile,
                 headers: {
                     authorization: Auth.getToken(internals.user.id)
                 }
             }, function(response) {
 
-                expect(UserService.findById.calledOnce).to.be.true();
+                expect(UserService.findById.calledTwice).to.be.true();
                 expect(response.statusCode, 'Status code').to.equal(200);
                 expect(response.request.auth.isAuthenticated).to.be.true();
                 expect(response.request.auth.credentials.id).to.equal(internals.user.id);

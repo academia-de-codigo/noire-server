@@ -565,8 +565,12 @@ describe('Controller: role', function() {
             expect(RoleService.removeUser.calledOnce).to.be.true();
             expect(response).to.not.exist();
 
-            removeUserStub.restore();
-            done();
+            return {
+                code: function() {
+                    removeUserStub.restore();
+                    done();
+                }
+            };
         });
     });
 
@@ -615,7 +619,7 @@ describe('Controller: role', function() {
 
         RoleCtrl.removeUser(request, function(response) {
 
-            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(RoleService.removeUser.calledOnce).to.be.true();
             expect(response.isBoom).to.be.true();
             expect(response.output.statusCode).to.equals(500);
             expect(response.output.payload.error).to.equals('Internal Server Error');
