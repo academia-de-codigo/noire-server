@@ -56,7 +56,6 @@ internals.users = [{
     'id': 1,
     'username': 'admin',
     'email': 'admin@gmail.com',
-    'scope': 'admin'
 }];
 
 
@@ -134,7 +133,6 @@ describe('Plugin: web', function() {
                 credentials: internals.users[1]
             }, function(response) {
 
-                expect(internals.users[1].scope).to.equal('admin');
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
                 expect(response.request.auth.isAuthenticated).to.be.true();
