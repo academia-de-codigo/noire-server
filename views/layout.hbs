@@ -5,25 +5,23 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
-    {{#if crumb}}
-        <meta name="crumb" content="{{crumb}}" value="{{crumb}}">
-    {{/if}}
+    <!-- TODO: are there problems with including the crumb in all page headers? -->
+    <meta name="crumb" content="{{crumb}}" value="{{crumb}}">
 
     <title>Noire Server {{version}}</title>
+
     <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+
+    <!-- TODO: generate single css from build process... -->
     <link rel="stylesheet" type="text/css" href="css/login.css">
     <link rel="stylesheet" type="text/css" href="css/app.css">
 </head>
 
 <body>
 
-    <script src="js/vendor/jquery-3.1.1.min.js"></script>
-    <script src="js/vendor/jquery.serialize-object.min.js"></script>
-    <script src="js/vendor/semantic.min.js"></script>
-
     {{{ content }}}
 
+    <!-- TODO: get rid of scripts partial, combining all scripts in the build process -->
 </body>
 
 </html>

@@ -6,29 +6,20 @@
     {{> nav}}
 
     <div class="ui container">
-        <form class="ui form">
-            <h4 class="ui dividing header">Your profile</h4>
-            <div class="two fields">
-                <div class="field">
-                    <label>username</label>
-                    <input type="text" name="user[username]" value="{{user.username}}">
-                </div>
-                <div class="field">
-                    <label>email</label>
-                    <input type="text" name="user[email]" value="{{user.email}}">
-                </div>
-            </div>
-
-            <h4 class="ui dividing header">Your roles</h4>
-
+        <h1>User profile page</h1>
+        <p>{{ user.username }}</p>
+        <p>{{ user.email }}</p>
+        <p>roles:</p>
+        <ul>
             {{#each user.roles}}
-                <h1>{{this}}</h1>
+                <li>{{this}}</li>
             {{/each}}
-
-        </form>
+        </ul>
     </div>
 
     {{> footer}}
 </div>
+
+{{> scripts }}
 
 <script src="js/profile.js"></script>
