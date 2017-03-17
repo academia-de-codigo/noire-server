@@ -545,4 +545,84 @@ describe('Controller: role', function() {
         });
     });
 
+    it('removes a user from an existing role', function(done) {
+
+        var request = {
+            params: {
+                id: 3
+            },
+            payload: {
+                id: 1
+            },
+            log: function() {}
+        };
+
+        var removeUserStub = Sinon.stub(RoleService, 'removeUser');
+        removeUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve());
+
+        RoleCtrl.removeUser(request, function(response) {
+
+            expect(RoleService.removeUser.calledOnce).to.be.true();
+            expect(response).to.not.exist();
+
+            removeUserStub.restore();
+            done();
+        });
+    });
+
+    it('handles removing a non exiting user or from non existing role', function(done) {
+
+        var request = {
+            params: {
+                id: 8
+            },
+            payload: {
+                id: 8
+            },
+            log: function() {}
+        };
+
+        var removeUserStub = Sinon.stub(RoleService, 'removeUser');
+        removeUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+
+        RoleCtrl.removeUser(request, function(response) {
+
+            expect(RoleService.removeUser.calledOnce).to.be.true();
+            expect(response.isBoom).to.be.true();
+            expect(response.output.statusCode).to.equals(404);
+            expect(response.output.payload.error).to.equals('Not Found');
+            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+
+            removeUserStub.restore();
+            done();
+        });
+    });
+
+    it('handles server error while removing user from role', function(done) {
+
+        var request = {
+            params: {
+                id: 0
+            },
+            payload: {
+                id: 1
+            },
+            log: function() {}
+        };
+
+        var removeUserStub = Sinon.stub(RoleService, 'removeUser');
+        removeUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
+
+        RoleCtrl.removeUser(request, function(response) {
+
+            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(response.isBoom).to.be.true();
+            expect(response.output.statusCode).to.equals(500);
+            expect(response.output.payload.error).to.equals('Internal Server Error');
+            expect(response.output.payload.message).to.equals('An internal server error occurred');
+
+            removeUserStub.restore();
+            done();
+        });
+    });
 });
