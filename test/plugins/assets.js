@@ -35,6 +35,22 @@ internals.composeOptions = {
 
 describe('Plugin: assets', function() {
 
+    it('returns the favicon', function(done) {
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject('/favicon.ico', function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+            });
+
+            Manager.stop(done);
+        });
+    });
+
     it('returns the app images', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
