@@ -4,10 +4,10 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var JWT = require('jsonwebtoken');
 var Promise = require('bluebird');
-var UserService = require('../../lib/services/user');
-var LoginCtrl = require('../../lib/controllers/login');
+var UserService = require('../../../lib/services/user');
+var LoginCtrl = require('../../../lib/controllers/api/login');
 var Sinon = require('sinon');
-var HSError = require('../../lib/error');
+var HSError = require('../../../lib/error');
 
 
 var lab = exports.lab = Lab.script(); // export the test script

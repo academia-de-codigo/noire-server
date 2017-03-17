@@ -4,9 +4,9 @@ var Promise = require('bluebird');
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Sinon = require('sinon');
-var UserService = require('../../lib/services/user');
-var UserCtrl = require('../../lib/controllers/user');
-var HSError = require('../../lib/error');
+var UserService = require('../../../lib/services/user');
+var UserCtrl = require('../../../lib/controllers/api/user');
+var HSError = require('../../../lib/error');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
