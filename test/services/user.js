@@ -53,6 +53,15 @@ describe('Service: user', function() {
         });
     });
 
+    it('counts users', function(done) {
+
+        UserService.count().then(function(result) {
+
+            expect(result).to.equals(4);
+            done();
+        });
+    });
+
     it('lists users', function(done) {
 
         UserService.list().then(function(results) {
