@@ -45,7 +45,12 @@ internals.manifest = {
             select: ['web', 'web-tls'],
         }
     }, {
-        plugin: './plugins/redirect',
+        plugin: {
+            register: './plugins/redirect',
+            options: {
+                tlsRoutes: Config.redirect.tlsOnly
+            }
+        },
         options: {
             select: ['web', 'web-tls']
         }
