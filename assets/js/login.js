@@ -71,18 +71,10 @@ var validation = {
 };
 
 $(document).ready(function() {
-
-    // setup API endpoints
-    $.fn.api.settings.api = {
-        'login': '/login',
-        'logout': '/logout'
-    };
-
     grabDomElements();
     setupCheckBoxBehaviour();
     setupLoginFormBehaviour();
     setupLogoutButtonBehaviour();
-
 });
 
 function grabDomElements() {
