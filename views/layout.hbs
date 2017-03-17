@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    {{#if crumb}}
+        <meta name="crumb" content="{{crumb}}" value="{{crumb}}">
+    {{/if}}
+
+    <title>Noire Server {{version}}</title>
+    <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+</head>
+
+<body>
+
+    <script src="js/vendor/jquery-3.1.1.min.js"></script>
+    <script src="js/vendor/jquery.serialize-object.min.js"></script>
+    <script src="js/vendor/semantic.min.js"></script>
+
+    {{{ content }}}
+
+</body>
+
+</html>
