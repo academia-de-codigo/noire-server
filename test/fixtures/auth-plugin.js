@@ -18,7 +18,7 @@ exports.validate = function(request, reply) {
 exports.credentials = {
     id: 1,
     username: 'mock',
-    scope: ['admin']
+    scope: ['admin', 'user']
 };
 
 exports.register = function(server, options, next) {

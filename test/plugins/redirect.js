@@ -1,5 +1,6 @@
 'use strict';
 
+var Promise = require('bluebird');
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
@@ -7,6 +8,9 @@ var Url = require('url');
 var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
+var Auth = require('../../lib/plugins/auth');
+var UserService = require('../../lib/services/user');
+var Sinon = require('sinon');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -84,6 +88,14 @@ internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
+internals.user = {
+    id: 1,
+    username: 'test',
+    roles: [{
+        name: 'user'
+    }]
+};
+
 describe('Plugin: redirect', function() {
 
     before(function(done) {
@@ -141,21 +153,33 @@ describe('Plugin: redirect', function() {
 
     });
 
-    it('http account requests redirected to https', function(done) {
+    it('http profile requests redirected to https', function(done) {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.account;
+        var findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
+
+        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.profile;
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
-            web.inject(Config.prefixes.account, function(response) {
+
+            web.inject({
+                method: 'GET',
+                url: Config.prefixes.profile,
+                headers: {
+                    authorization: Auth.getToken(internals.user.id)
+                }
+            }, function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
                 expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-            });
 
+                findByIdStub.restore();
+                Manager.stop(done); // done() callback is required to end the test.
+
+            });
         });
 
     });

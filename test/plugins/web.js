@@ -1,5 +1,6 @@
 'use strict';
 
+var Promise = require('bluebird');
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
@@ -9,6 +10,7 @@ var Config = require('../../lib/config');
 var Manager = require('../../lib/manager');
 var MockAuth = require('../fixtures/auth-plugin');
 var Repository = require('../../lib/plugins/repository');
+var UserService = require('../../lib/services/user');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -49,7 +51,7 @@ internals.users = [{
     'id': 0,
     'username': 'test',
     'email': 'test@gmail.com',
-    'scope': 'user'
+    'roles': []
 }, {
     'id': 1,
     'username': 'admin',
@@ -201,19 +203,25 @@ describe('Plugin: web', function() {
 
     it('returns the user account page', function(done) {
 
+        var findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.withArgs(internals.users[0].id).returns(Promise.resolve(internals.users[0]));
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             server.inject({
                 method: 'GET',
-                url: Config.prefixes.account,
+                url: Config.prefixes.profile,
                 credentials: {
+                    id: internals.users[0].id,
                     scope: 'user'
-                },
+                }
             }, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+
+                findByIdStub.restore();
                 Manager.stop(done);
             });
 
