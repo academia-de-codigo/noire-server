@@ -425,7 +425,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('does not remove user from role if user is not in it', function(done) {
+    it('does not remove non related user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.removeUser(4, 1).then(function(result) {
