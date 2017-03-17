@@ -54,6 +54,15 @@ describe('Service: role', function() {
         });
     });
 
+    it('counts roles', function(done) {
+
+        RoleService.count().then(function(result) {
+
+            expect(result).to.equals(4);
+            done();
+        });
+    });
+
     it('lists roles', function(done) {
 
         RoleService.list().then(function(results) {

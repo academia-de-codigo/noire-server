@@ -4,9 +4,11 @@ var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Path = require('path');
 var Exiting = require('exiting');
+var Sinon = require('sinon');
 var Config = require('../../lib/config');
 var Manager = require('../../lib/manager');
 var MockAuth = require('../fixtures/auth-plugin');
+var Repository = require('../../lib/plugins/repository');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -29,6 +31,13 @@ internals.manifest = {
         plugin: './plugins/web'
     }, {
         plugin: 'vision'
+    }, {
+        plugin: {
+            register: './plugins/repository',
+            options: {
+                models: ['user', 'role']
+            }
+        }
     }]
 };
 
@@ -155,7 +164,20 @@ describe('Plugin: web', function() {
 
     it('returns the admin page', function(done) {
 
+        var mockQuery = {
+            count: function() {
+                return {
+                    then: function() {
+                        return 4;
+                    }
+                };
+            }
+        };
+
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            Sinon.stub(Repository.user, 'query').returns(mockQuery);
+            Sinon.stub(Repository.role, 'query').returns(mockQuery);
 
             expect(err).to.not.exist();
             server.inject({
@@ -168,6 +190,9 @@ describe('Plugin: web', function() {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
+
+                Repository.user.query.restore();
+                Repository.role.query.restore();
                 Manager.stop(done);
             });
 
