@@ -381,6 +381,67 @@ describe('Service: role', function() {
         });
     });
 
+    it('removes user from role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUser(1, 1).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.equals({});
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not remove user from non existing role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUser(5,1).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not remove non existing user from role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUser(1,99).then(function(result) {
+
+            expect(result).to.no.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not remove user from role if user is not in it', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUser(4, 1).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+
+        });
+    });
+
     it('adds a new permission', function(done) {
 
         var action = 'create';
