@@ -186,12 +186,12 @@ describe('Plugin: redirect', function() {
 
     it('http login requests redirected to https', function(done) {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.paths.login;
+        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.login;
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
             var web = server.select('web');
-            web.inject(Config.paths.login, function(response) {
+            web.inject(Config.prefixes.login, function(response) {
 
                 expect(response.statusCode).to.equal(301);
                 expect(response.statusMessage).to.equal('Moved Permanently');
@@ -224,7 +224,7 @@ describe('Plugin: redirect', function() {
 
     it('https root request redirected to home', function(done) {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.paths.home;
+        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.home;
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
@@ -247,7 +247,7 @@ describe('Plugin: redirect', function() {
 
             expect(err).to.not.exist();
             var webTls = server.select('web-tls');
-            webTls.inject(Config.paths.home, function(response) {
+            webTls.inject(Config.prefixes.home, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();

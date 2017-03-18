@@ -110,7 +110,7 @@ describe('Plugin: csrf', function() {
 
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: internals.user.username,
                     password: internals.user.password
@@ -139,7 +139,7 @@ describe('Plugin: csrf', function() {
                 var crumb = JSON.parse(response.payload).crumb;
                 server.inject({
                     method: 'POST',
-                    url: Config.paths.login,
+                    url: Config.prefixes.login,
                     payload: {
                         username: internals.user.username,
                         password: internals.user.password

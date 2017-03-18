@@ -105,7 +105,7 @@ describe('Plugin: api', function() {
 
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: 'test',
                     password: 'password'
@@ -127,7 +127,7 @@ describe('Plugin: api', function() {
 
             expect(err).to.not.exist();
 
-            server.inject(Config.paths.logout, function(response) {
+            server.inject(Config.prefixes.logout, function(response) {
 
                 expect(LoginCtrl.logout.calledOnce).to.be.true();
                 expect(response.statusCode).to.equal(200);
