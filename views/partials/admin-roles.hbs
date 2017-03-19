@@ -1,0 +1,25 @@
+<div class="ui stripe">
+    <div class="ui row">
+        <h4 class="ui horizontal divider header">
+            <i class="users icon"></i>
+            Roles
+        </h4>
+
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each roles}}
+                    <tr>
+                        <td>{{this.name}}</td>
+                        <td>{{this.description}}</td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

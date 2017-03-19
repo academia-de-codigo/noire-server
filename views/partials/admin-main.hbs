@@ -1,9 +1,9 @@
 <div class="ui stripe">
     <div class="ui three column stackable centered relaxed grid">
         <div class="admin card column">
-            <div class="ui link card">
+            <a href="?p=users"><div class="ui link card">
                 <div class="image">
-                    <img src="/img/users.png">
+                    <img src="/img/users.png" alt="users">
                 </div>
                 <div class="content">
                     <div class="header">Users</div>
@@ -12,12 +12,12 @@
                 <div class="extra content">
                     <span><i class="users icon"></i>{{count.users}} Users</span>
                 </div>
-            </div>
+            </div></a>
         </div>
         <div class="admin card column">
-            <div class="ui link card">
+            <a href="?p=roles"><div class="ui link card">
                 <div class="image">
-                    <img src="/img/roles.png">
+                    <img src="/img/roles.png" alt="roles">
                 </div>
                 <div class="content">
                     <div class="header">Roles</div>
@@ -26,19 +26,19 @@
                 <div class="extra content">
                     <span><i class="users icon"></i>{{count.roles}} Roles</span>
                 </div>
-            </div>
+            </div></a>
         </div>
         <div class="admin card column">
             <div class="ui link card">
                 <div class="image">
-                    <img src="/img/security.png">
+                    <img src="/img/security.png" alt="resources">
                 </div>
                 <div class="content">
                     <div class="header">Permissions</div>
                     <div class="description">Add or Revoke Permissions</div>
                 </div>
                 <div class="extra content">
-                    <span><i class="users icon"></i>{{count.permissions}} Permissions</span>
+                    <span><i class="users icon"></i>{{count.resources}} Resources</span>
                 </div>
             </div>
         </div>

@@ -21,8 +21,7 @@
 .sidebar.toggle {
     margin-left: 2em;
 }
-
-img#account {
+.ui.profile.avatar.image {
     margin-right: 2em;
 }
 
@@ -49,7 +48,7 @@ img#account {
     Main Content
 */
 .ui.stripe {
-    padding: 8em 0em;
+    padding: 8em 8em;
 }
 
 .ui.stripe h3 {

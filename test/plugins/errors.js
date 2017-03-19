@@ -97,7 +97,7 @@ describe('Plugin: errors', function() {
             expect(err).to.not.exist();
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     email: 'invalid',
                     password: 'x'
@@ -158,7 +158,7 @@ describe('Plugin: errors', function() {
             expect(err).to.not.exist();
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: mockUserData.username,
                     password: mockUserData.password
@@ -181,7 +181,7 @@ describe('Plugin: errors', function() {
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
-            server.inject(Config.paths.login, function(response) {
+            server.inject(Config.prefixes.login, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();

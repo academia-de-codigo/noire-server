@@ -67,7 +67,7 @@ describe('Plugin: web-tls', function() {
             expect(err).to.not.exists();
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: 'x'
                 }
@@ -93,7 +93,7 @@ describe('Plugin: web-tls', function() {
             expect(err).to.not.exists();
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: internals.user.username,
                     password: 'x'
@@ -123,7 +123,7 @@ describe('Plugin: web-tls', function() {
             expect(err).to.not.exists();
             server.inject({
                 method: 'POST',
-                url: Config.paths.login,
+                url: Config.prefixes.login,
                 payload: {
                     username: internals.user.username,
                     password: internals.user.password
@@ -148,7 +148,7 @@ describe('Plugin: web-tls', function() {
             expect(err).to.not.exists();
             server.inject({
                 method: 'GET',
-                url: Config.paths.logout,
+                url: Config.prefixes.logout,
                 credentials: internals.user
             }, function(response) {
 

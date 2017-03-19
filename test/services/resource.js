@@ -52,6 +52,15 @@ describe('Service: resource', function() {
         });
     });
 
+    it('counts resources', function(done) {
+
+        ResourceService.count().then(function(result) {
+
+            expect(result).to.equals(4);
+            done();
+        });
+    });
+
     it('lists resources', function(done) {
 
         ResourceService.list().then(function(results) {

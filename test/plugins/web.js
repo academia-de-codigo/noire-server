@@ -84,7 +84,7 @@ describe('Plugin: web', function() {
 
             expect(err).to.not.exist();
 
-            server.inject(Config.paths.home, function(response) {
+            server.inject(Config.prefixes.home, function(response) {
 
                 MockAuth.authenticate = true;
                 expect(response.statusCode).to.equal(200);
@@ -103,7 +103,7 @@ describe('Plugin: web', function() {
 
             server.inject({
                 method: 'GET',
-                url: Config.paths.home,
+                url: Config.prefixes.home,
                 credentials: internals.users[0]
             }, function(response) {
 
@@ -129,7 +129,7 @@ describe('Plugin: web', function() {
 
             server.inject({
                 method: 'GET',
-                url: Config.paths.home,
+                url: Config.prefixes.home,
                 credentials: internals.users[1]
             }, function(response) {
 
@@ -152,7 +152,7 @@ describe('Plugin: web', function() {
 
             expect(err).to.not.exist();
 
-            server.inject(Config.paths.login, function(response) {
+            server.inject(Config.prefixes.login, function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
