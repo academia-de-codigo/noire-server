@@ -448,15 +448,15 @@ describe('Controller: role', function() {
             log: function() {}
         };
 
-        var addUserStub = Sinon.stub(RoleService, 'addUser');
-        addUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve(request.payload.id));
+        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve(request.payload.id));
 
-        RoleCtrl.addUser(request, function(response) {
+        RoleCtrl.addUsers(request, function(response) {
 
-            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(RoleService.addUsers.calledOnce).to.be.true();
             expect(response).to.equals(request.payload.id);
 
-            addUserStub.restore();
+            addUsersStub.restore();
             done();
         });
     });
@@ -473,18 +473,18 @@ describe('Controller: role', function() {
             log: function() {}
         };
 
-        var addUserStub = Sinon.stub(RoleService, 'addUser');
-        addUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
 
-        RoleCtrl.addUser(request, function(response) {
+        RoleCtrl.addUsers(request, function(response) {
 
-            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(RoleService.addUsers.calledOnce).to.be.true();
             expect(response.isBoom).to.be.true();
             expect(response.output.statusCode).to.equals(404);
             expect(response.output.payload.error).to.equals('Not Found');
             expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
 
-            addUserStub.restore();
+            addUsersStub.restore();
             done();
         });
     });
@@ -501,18 +501,18 @@ describe('Controller: role', function() {
             log: function() {}
         };
 
-        var addUserStub = Sinon.stub(RoleService, 'addUser');
-        addUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
+        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
 
-        RoleCtrl.addUser(request, function(response) {
+        RoleCtrl.addUsers(request, function(response) {
 
-            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(RoleService.addUsers.calledOnce).to.be.true();
             expect(response.isBoom).to.be.true();
             expect(response.output.statusCode).to.equals(409);
             expect(response.output.payload.error).to.equals('Conflict');
             expect(response.output.payload.message).to.equals(HSError.RESOURCE_DUPLICATE);
 
-            addUserStub.restore();
+            addUsersStub.restore();
             done();
         });
     });
@@ -529,18 +529,18 @@ describe('Controller: role', function() {
             log: function() {}
         };
 
-        var addUserStub = Sinon.stub(RoleService, 'addUser');
-        addUserStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
+        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
 
-        RoleCtrl.addUser(request, function(response) {
+        RoleCtrl.addUsers(request, function(response) {
 
-            expect(RoleService.addUser.calledOnce).to.be.true();
+            expect(RoleService.addUsers.calledOnce).to.be.true();
             expect(response.isBoom).to.be.true();
             expect(response.output.statusCode).to.equals(500);
             expect(response.output.payload.error).to.equals('Internal Server Error');
             expect(response.output.payload.message).to.equals('An internal server error occurred');
 
-            addUserStub.restore();
+            addUsersStub.restore();
             done();
         });
     });

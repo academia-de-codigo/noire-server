@@ -321,13 +321,25 @@ describe('Service: role', function() {
         });
     });
 
-    it('adds user to role', function(done) {
+    it('adds user (with id as integer) to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(4, 2).then(function(result) {
+        RoleService.addUsers(4, 2).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals(2);
+            expect(result).to.equals([2]);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('adds severall users (with array of integers) to role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addUsers(4, [1,2,3]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.equals([1,2,3]);
             txSpy.restore();
             done();
         });
@@ -336,7 +348,7 @@ describe('Service: role', function() {
     it('does not add user to non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(100, 2).then(function(result) {
+        RoleService.addUsers(100, [2]).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -352,7 +364,7 @@ describe('Service: role', function() {
     it('does not add non existing user to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(4, 100).then(function(result) {
+        RoleService.addUsers(4, 100).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -368,7 +380,7 @@ describe('Service: role', function() {
     it('does not add user to role which already contains user', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(1, 1).then(function(result) {
+        RoleService.addUsers(1, 1).then(function(result) {
 
             expect(result).to.not.exists();
 
