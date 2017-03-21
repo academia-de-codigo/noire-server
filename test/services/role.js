@@ -321,7 +321,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('adds user (with id as integer) to role', function(done) {
+    it('adds one user (with id as integer) to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addUsers(4, 2).then(function(result) {
@@ -333,7 +333,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('adds severall users (with array of integers) to role', function(done) {
+    it('adds several users (with array of integers as ids) to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addUsers(4, [1,2,3]).then(function(result) {
@@ -393,13 +393,25 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes user from role', function(done) {
+    it('removes one user (using id as integer) from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(1, 1).then(function(result) {
+        RoleService.removeUsers(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals({});
+            expect(result).to.equals([{}]);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('removes several users (using array of integers as ids) from one role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUsers(3, [2,3]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result.length).to.equals(2);
             txSpy.restore();
             done();
         });
@@ -408,7 +420,7 @@ describe('Service: role', function() {
     it('does not remove user from non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(5, 1).then(function(result) {
+        RoleService.removeUsers(5, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -424,7 +436,7 @@ describe('Service: role', function() {
     it('does not remove non existing user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(1, 99).then(function(result) {
+        RoleService.removeUsers(3, [99, 3]).then(function(result) {
 
             expect(result).to.no.exist();
 
@@ -440,7 +452,7 @@ describe('Service: role', function() {
     it('does not remove non related user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(4, 1).then(function(result) {
+        RoleService.removeUsers(4, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
