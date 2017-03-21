@@ -358,9 +358,12 @@ describe('Service: user', function() {
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
+        var cryptSpy = Sinon.spy(Auth, 'crypt');
+
         UserService.update(id, user).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
+            expect(cryptSpy.calledOnce).to.be.true();
             expect(result).to.be.an.instanceof(UserModel);
             expect(result.id).to.equals(id);
             expect(result.username).to.equals(user.username);
