@@ -561,23 +561,35 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes permission from role', function(done) {
+    it('removes one permission (using id as integer) from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(1, 1).then(function(result) {
+        RoleService.removePermissions(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals({});
+            expect(result).to.equals([{}]);
             txSpy.restore();
             done();
 
         });
     });
 
+    it('removes several permissions (using array of integers as ids)', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removePermissions(2, [2, 3, 6]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result.length).to.equals(3);
+            txSpy.restore();
+            done();
+        });
+    });
+
     it('does not remove permission from non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(5, 1).then(function(result) {
+        RoleService.removePermissions(5, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -593,7 +605,7 @@ describe('Service: role', function() {
     it('does not remove non existing permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(1, 99).then(function(result) {
+        RoleService.removePermissions(1, [1, 99]).then(function(result) {
 
             expect(result).to.no.exist();
 
@@ -609,7 +621,7 @@ describe('Service: role', function() {
     it('does not remove non related permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(2, 4).then(function(result) {
+        RoleService.removePermissions(2, 4).then(function(result) {
 
             expect(result).to.not.exist();
 
