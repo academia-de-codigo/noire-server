@@ -346,7 +346,7 @@ describe('Service: user', function() {
         });
     });
 
-    it('updates an existing user', function(done) {
+    it('updates an existing user with new password', function(done) {
 
         var id = 2;
         var user = {
@@ -369,7 +369,37 @@ describe('Service: user', function() {
             expect(result.username).to.equals(user.username);
             expect(result.name).to.equals(user.name);
             expect(result.email).to.equals(user.email);
-            expect(result.password).to.equals(user.password);
+            expect(result.password).to.exists();
+            expect(result.active).to.satisfy(function(value) {
+                return value === true || value === 1;
+            });
+            txSpy.restore();
+            done();
+        });
+    });
+
+
+    it('updates an existing user without changing password', function(done) {
+
+        var id = 2;
+        var user = {
+            username: 'test2',
+            name: 'test2',
+            email: 'test2@gmail.com',
+            active: true
+        };
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+
+        UserService.update(id, user).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.be.an.instanceof(UserModel);
+            expect(result.id).to.equals(id);
+            expect(result.username).to.equals(user.username);
+            expect(result.name).to.equals(user.name);
+            expect(result.email).to.equals(user.email);
+            expect(result.password).to.exists();
             expect(result.active).to.satisfy(function(value) {
                 return value === true || value === 1;
             });
@@ -413,6 +443,7 @@ describe('Service: user', function() {
             expect(result.id).to.equals(id);
             expect(result.username).to.equals(user.username);
             expect(result.email).to.equals(user.email);
+            expect(result.password).to.exists();
             txSpy.restore();
             done();
         });
@@ -437,7 +468,7 @@ describe('Service: user', function() {
             expect(result.username).to.equals(user.username);
             expect(result.name).to.equals(user.name);
             expect(result.email).to.equals(user.email);
-            expect(result.password).to.equals(user.password);
+            expect(result.password).to.exists();
             expect(result.active).to.satisfy(function(value) {
                 return value === true || value === 1;
             });
