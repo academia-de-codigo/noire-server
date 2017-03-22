@@ -95,7 +95,12 @@ function setupCheckBoxBehaviour() {
 }
 
 function setupLoginFormBehaviour() {
-    formElement.api(apiSettings.login).form(validation);
+    formElement.form(validation).api(apiSettings.login);
+    formElement.keypress(function(event) {
+        if (event.which === 13) {
+            event.preventDefault();
+        }
+    });
 }
 
 function setupLogoutButtonBehaviour() {
