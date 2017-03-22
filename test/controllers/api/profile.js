@@ -22,7 +22,7 @@ internals.user = {
     'email': 'test@gmail.com'
 };
 
-describe('Controller: Profile', function() {
+describe('API Controller: Profile', function() {
 
     it('gets the user profile', function(done) {
 

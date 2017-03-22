@@ -26,7 +26,7 @@ internals.users = [{
     'email': 'admin@gmail.com'
 }];
 
-describe('Controller: user', function() {
+describe('API Controller: user', function() {
 
     it('lists available users', function(done) {
 

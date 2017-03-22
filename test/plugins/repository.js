@@ -25,7 +25,7 @@ describe('Plugin: repository', function() {
         done();
     });
 
-    it('should create a repository object for each model', function(done) {
+    it('should create a repository object for each model present in configuration', function(done) {
 
         var options = {
             models: ['user', 'role']
@@ -42,6 +42,22 @@ describe('Plugin: repository', function() {
             expect(Repository['user'].model).to.equals(UserModel);
             expect(Repository['role']).to.be.an.object();
             expect(Repository['role'].model).to.equals(RoleModel);
+            done();
+        });
+    });
+
+    it('sould create a repository object for a specific model', function(done) {
+
+        var fakeServer = {
+            log: function() {},
+            decorate: function() {}
+        };
+
+        Repository.register(fakeServer, {}, function() {
+
+            Repository.create('user');
+            expect(Repository['user']).to.be.an.object();
+            expect(Repository['user'].model).to.equals(UserModel);
             done();
         });
     });

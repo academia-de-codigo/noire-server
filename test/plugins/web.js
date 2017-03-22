@@ -37,7 +37,7 @@ internals.manifest = {
         plugin: {
             register: './plugins/repository',
             options: {
-                models: ['user', 'role']
+                models: ['user', 'role', 'resource']
             }
         }
     }]
@@ -178,6 +178,7 @@ describe('Plugin: web', function() {
 
             Sinon.stub(Repository.user, 'query').returns(mockQuery);
             Sinon.stub(Repository.role, 'query').returns(mockQuery);
+            Sinon.stub(Repository.resource, 'query').returns(mockQuery);
 
             expect(err).to.not.exist();
             server.inject({
@@ -193,6 +194,7 @@ describe('Plugin: web', function() {
 
                 Repository.user.query.restore();
                 Repository.role.query.restore();
+                Repository.resource.query.restore();
                 Manager.stop(done);
             });
 

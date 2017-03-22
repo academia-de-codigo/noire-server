@@ -26,7 +26,7 @@ internals.user = {
     'password': 'test'
 };
 
-describe('Controller: login', function() {
+describe('API Controller: login', function() {
 
     before(function(done) {
 

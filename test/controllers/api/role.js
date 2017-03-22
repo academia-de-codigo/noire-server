@@ -27,7 +27,7 @@ internals.roles = [{
     }]
 }];
 
-describe('Controller: role', function() {
+describe('API Controller: role', function() {
 
     it('lists available roles', function(done) {
 
