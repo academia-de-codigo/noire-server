@@ -264,8 +264,8 @@ describe('Service: user', function() {
             password: 'test2',
         };
 
-        var cryptSpy = Sinon.spy(Auth, 'crypt').withArgs(newUser.password);
         var txSpy = Sinon.spy(Repository, 'tx');
+        var cryptSpy = Sinon.spy(Auth, 'crypt');
 
         UserService.add(newUser).then(function(result) {
 
@@ -279,7 +279,8 @@ describe('Service: user', function() {
             expect(result.active).to.exists();
             expect(result.active).to.be.false();
             txSpy.restore();
-            Auth.crypt.restore();
+            cryptSpy.restore();
+
             done();
         });
     });
@@ -374,6 +375,8 @@ describe('Service: user', function() {
                 return value === true || value === 1;
             });
             txSpy.restore();
+            cryptSpy.restore();
+
             done();
         });
     });
@@ -460,9 +463,12 @@ describe('Service: user', function() {
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
+        var cryptSpy = Sinon.spy(Auth, 'crypt');
+
         UserService.update(id, user).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
+            expect(cryptSpy.calledOnce).to.be.true();
             expect(result).to.be.an.instanceof(UserModel);
             expect(result.id).to.equals(id);
             expect(result.username).to.equals(user.username);
@@ -473,6 +479,8 @@ describe('Service: user', function() {
                 return value === true || value === 1;
             });
             txSpy.restore();
+            cryptSpy.restore();
+
             done();
         });
     });

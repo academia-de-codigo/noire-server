@@ -321,13 +321,25 @@ describe('Service: role', function() {
         });
     });
 
-    it('adds user to role', function(done) {
+    it('adds one user (with id as integer) to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(4, 2).then(function(result) {
+        RoleService.addUsers(4, 2).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals(2);
+            expect(result).to.equals([2]);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('adds several users (with array of integers as ids) to role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addUsers(4, [1,2,3]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result).to.equals([1,2,3]);
             txSpy.restore();
             done();
         });
@@ -336,7 +348,7 @@ describe('Service: role', function() {
     it('does not add user to non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(100, 2).then(function(result) {
+        RoleService.addUsers(100, [2]).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -352,7 +364,7 @@ describe('Service: role', function() {
     it('does not add non existing user to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(4, 100).then(function(result) {
+        RoleService.addUsers(4, 100).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -368,7 +380,7 @@ describe('Service: role', function() {
     it('does not add user to role which already contains user', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUser(1, 1).then(function(result) {
+        RoleService.addUsers(1, 1).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -381,13 +393,25 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes user from role', function(done) {
+    it('removes one user (using id as integer) from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(1, 1).then(function(result) {
+        RoleService.removeUsers(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals({});
+            expect(result).to.equals([{}]);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('removes several users (using array of integers as ids) from one role', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUsers(3, [2,3]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result.length).to.equals(2);
             txSpy.restore();
             done();
         });
@@ -396,7 +420,7 @@ describe('Service: role', function() {
     it('does not remove user from non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(5, 1).then(function(result) {
+        RoleService.removeUsers(5, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -412,7 +436,7 @@ describe('Service: role', function() {
     it('does not remove non existing user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(1, 99).then(function(result) {
+        RoleService.removeUsers(3, [99, 3]).then(function(result) {
 
             expect(result).to.no.exist();
 
@@ -428,7 +452,7 @@ describe('Service: role', function() {
     it('does not remove non related user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUser(4, 1).then(function(result) {
+        RoleService.removeUsers(4, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -537,23 +561,35 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes permission from role', function(done) {
+    it('removes one permission (using id as integer) from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(1, 1).then(function(result) {
+        RoleService.removePermissions(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals({});
+            expect(result).to.equals([{}]);
             txSpy.restore();
             done();
 
         });
     });
 
+    it('removes several permissions (using array of integers as ids)', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removePermissions(2, [2, 3, 6]).then(function(result) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(result.length).to.equals(3);
+            txSpy.restore();
+            done();
+        });
+    });
+
     it('does not remove permission from non existing role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(5, 1).then(function(result) {
+        RoleService.removePermissions(5, 1).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -569,7 +605,7 @@ describe('Service: role', function() {
     it('does not remove non existing permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(1, 99).then(function(result) {
+        RoleService.removePermissions(1, [1, 99]).then(function(result) {
 
             expect(result).to.no.exist();
 
@@ -585,7 +621,7 @@ describe('Service: role', function() {
     it('does not remove non related permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermission(2, 4).then(function(result) {
+        RoleService.removePermissions(2, 4).then(function(result) {
 
             expect(result).to.not.exist();
 
