@@ -336,10 +336,10 @@ describe('Service: role', function() {
     it('adds multiple users to role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(4, [1,2,3]).then(function(result) {
+        RoleService.addUsers(4, [1, 2, 3]).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([1,2,3]);
+            expect(result).to.equals([1, 2, 3]);
             txSpy.restore();
             done();
         });
@@ -377,10 +377,41 @@ describe('Service: role', function() {
         });
     });
 
+    it('does not add any user to role if at least one of the users does not exist', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addUsers(4, [1, 2, 3, 100]).then(function(result) {
+
+            expect(result).to.not.exists();
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
     it('does not add user to role which already contains user', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addUsers(1, 1).then(function(result) {
+
+            expect(result).to.not.exists();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not add any user to role which already contains at least one of the users', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.addUsers(1, [1, 2, 3]).then(function(result) {
 
             expect(result).to.not.exists();
 
@@ -408,7 +439,7 @@ describe('Service: role', function() {
     it('removes multiple users from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(3, [2,3]).then(function(result) {
+        RoleService.removeUsers(3, [2, 3]).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
             expect(result.length).to.equals(2);
@@ -436,7 +467,23 @@ describe('Service: role', function() {
     it('does not remove non existing user from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(3, [99, 3]).then(function(result) {
+        RoleService.removeUsers(3, 99).then(function(result) {
+
+            expect(result).to.no.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not remove any user from role if at least one user does not exist', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUsers(1, [99, 2, 3]).then(function(result) {
 
             expect(result).to.no.exist();
 
@@ -453,6 +500,23 @@ describe('Service: role', function() {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.removeUsers(4, 1).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+
+        });
+    });
+
+    it('does not remove any user from role if at least one is unrelated', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removeUsers(2, [1, 2, 3]).then(function(result) {
 
             expect(result).to.not.exist();
 
@@ -561,7 +625,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes one permission (using id as integer) from role', function(done) {
+    it('removes permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.removePermissions(1, 1).then(function(result) {
@@ -574,7 +638,7 @@ describe('Service: role', function() {
         });
     });
 
-    it('removes several permissions (using array of integers as ids)', function(done) {
+    it('removes multiple permissions from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.removePermissions(2, [2, 3, 6]).then(function(result) {
@@ -605,9 +669,25 @@ describe('Service: role', function() {
     it('does not remove non existing permission from role', function(done) {
 
         var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(1, [1, 99]).then(function(result) {
+        RoleService.removePermissions(1, 99).then(function(result) {
 
-            expect(result).to.no.exist();
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
+        });
+    });
+
+    it('does not remove any permission from role if at least one permission does not exist', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removePermissions(1, [1, 2, 3, 99]).then(function(result) {
+
+            expect(result).to.not.exist();
 
         }).catch(function(error) {
 
@@ -632,6 +712,22 @@ describe('Service: role', function() {
             txSpy.restore();
             done();
 
+        });
+    });
+
+    it('does not remove any permission from role if at least one is unrelated', function(done) {
+
+        var txSpy = Sinon.spy(Repository, 'tx');
+        RoleService.removePermissions(2, [2, 3, 4]).then(function(result) {
+
+            expect(result).to.not.exist();
+
+        }).catch(function(error) {
+
+            expect(txSpy.calledOnce).to.be.true();
+            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
+            txSpy.restore();
+            done();
         });
     });
 
