@@ -39,7 +39,7 @@ internals.roles = [{
     }]
 }];
 
-describe('Web Controller: user', function() {
+describe('Web Controller: admin', function() {
 
     it('gets the main admin page', function(done) {
 
@@ -62,9 +62,9 @@ describe('Web Controller: user', function() {
         var countResources = Sinon.stub(ResourceService, 'count').returns(resourceCount);
 
         var reply = function() {};
-        reply.view = function(partial, context) {
+        reply.view = function(page, context) {
             expect(context.user.id).to.equals(request.auth.credentials.id);
-            expect(partial).to.equals('pages/admin');
+            expect(page).to.equals('pages/admin');
             expect(UserService.count.calledOnce).to.be.true();
             expect(RoleService.count.calledOnce).to.be.true();
             expect(ResourceService.count.calledOnce).to.be.true();
@@ -123,9 +123,9 @@ describe('Web Controller: user', function() {
         var listUsers = Sinon.stub(UserService, 'list').returns(Promise.resolve(internals.users));
 
         var reply = function() {};
-        reply.view = function(partial, context) {
+        reply.view = function(page, context) {
             expect(context.user.id).to.equals(request.auth.credentials.id);
-            expect(partial).to.equals('pages/admin');
+            expect(page).to.equals('pages/admin');
             expect(UserService.list.calledOnce).to.be.true();
             expect(context.users).to.equals(internals.users);
             expect(context.getAdminPartial()).to.equals('admin-users');
@@ -176,9 +176,9 @@ describe('Web Controller: user', function() {
         var listRoles = Sinon.stub(RoleService, 'list').returns(Promise.resolve(internals.roles));
 
         var reply = function() {};
-        reply.view = function(partial, context) {
+        reply.view = function(page, context) {
             expect(context.user.id).to.equals(request.auth.credentials.id);
-            expect(partial).to.equals('pages/admin');
+            expect(page).to.equals('pages/admin');
             expect(RoleService.list.calledOnce).to.be.true();
             expect(context.roles).to.equals(internals.roles);
             expect(context.getAdminPartial()).to.equals('admin-roles');
