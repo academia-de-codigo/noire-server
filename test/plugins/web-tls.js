@@ -23,7 +23,7 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
-        plugin: 'vision'
+        plugin: './plugins/views'
     }, {
         plugin: './plugins/auth'
     }, {

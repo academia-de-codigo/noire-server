@@ -34,7 +34,7 @@ internals.manifest = {
     }, {
         plugin: './plugins/web'
     }, {
-        plugin: 'vision'
+        plugin: './plugins/views'
     }]
 };
 
