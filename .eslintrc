@@ -7,7 +7,7 @@
         }
     },
     "env": {
-        "node": 1
+        "node": true
     },
     "globals": {},
     "rules": {

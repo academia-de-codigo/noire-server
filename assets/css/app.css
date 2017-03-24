@@ -3,8 +3,6 @@
  */
 .ui.menu {
     padding: 1em;
-    margin: 0;
-    border-radius: 0;
 }
 
 .ui.menu .right.item .ui.button {
@@ -66,12 +64,24 @@
     max-width: 200px;
 }
 
-
 /*
     Footer
  */
 .ui.footer {
-    border-radius: 0;
     margin-bottom: 0;
-    padding: 5em 0em;
+    padding: 5em 0;
+}
+
+.ui.fluid.dropdown {
+    width: 90%;
+    display: inline;
+}
+
+/* https://github.com/Semantic-Org/Semantic-UI/issues/3801 */
+/* remove shadows from segment ouline, basic segment? */
+.ui.basic.vertical.segment,.ui.horizontal.basic.segments {
+    background: none ;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
 }
