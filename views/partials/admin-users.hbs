@@ -1,69 +1,89 @@
-<div class="ui stripe">
-    <div class="ui row">
-        <div class="ui horizontal basic segments">
-            <div class="ui basic vertical segment">
+<div class="ui main stackable grid">
+
+    <div class="ui two column row">
+        <div class="ui column">
+            <div class="ui basic left aligned segment">
                 <h3>
-            <i class="users icon"></i>
-            Users
-        </h3>
+                    <i class="users icon"></i> Users
+                </h3>
             </div>
-            <div class="ui basic vertical right aligned segment">
+        </div>
+        <div class="ui computer tablet only column">
+            <div class="ui basic right aligned segment">
+                <div class="ui positive button">
+                    <i class="add user icon"></i> Add User
+                </div>
+            </div>
+        </div>
+        <div class="ui mobile only column">
+            <div class="ui basic left aligned segment">
                 <div class="ui positive button">
                     <i class="add user icon"></i> Add User
                 </div>
             </div>
         </div>
     </div>
-    <div class="ui row">
-        <div class="ui horizontal basic segments">
-            <div class="ui basic vertical segment">
-                <div class="ui fluid loading search">
+
+    <div class="ui three column row">
+        <div class="ui column">
+            <div class="ui basic segment">
+                <div class="ui loading search">
                     <div class="ui icon input">
                         <input class="prompt" type="text" placeholder="Search users...">
                         <i class="search icon"></i>
                     </div>
                 </div>
             </div>
-            <div class="ui basic vertical right aligned segment">
+        </div>
+        <div class="ui column">
+            <div class="ui basic right aligned segment">
                 <select class="ui fluid dropdown">
-                <option value="">Order</option>
-                <option value="user">User</option>
-                <option value="name">Name</option>
-                <option value="email">Email</option>
-            </select>
+                    <option value="">Order</option>
+                    <option value="user">User</option>
+                    <option value="name">Name</option>
+                    <option value="email">Email</option>
+                </select>
             </div>
-            <div class="ui basic vertical right aligned segment">
+        </div>
+        <div class="ui column">
+            <div class="ui basic right aligned segment">
                 <select class="ui fluid dropdown">
-                <option value="">Limit</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
+                    <option value="">Limit</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
             </div>
         </div>
     </div>
-    <div class="ui row">
-        <table class="ui celled table">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each users}}
-                    {{#if this.active}}
+
+    <div class="ui one column row">
+        <div class="ui column">
+            <div class="ui basic segment">
+                <table class="ui celled table">
+                    <thead>
                         <tr>
-                    {{else}}
-                        <tr class="disabled">
-                    {{/if}}
-                    <td>{{this.username}}</td>
-                    <td>{{this.name}}</td>
-                    <td>{{this.email}}</td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>
+                            <th>User</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each users}}
+                            {{#if this.active}}
+                                <tr>
+                            {{else}}
+                                <tr class="disabled">
+                            {{/if}}
+                            <td>{{this.username}}</td>
+                            <td>{{this.name}}</td>
+                            <td>{{this.email}}</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
 </div>

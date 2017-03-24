@@ -45,15 +45,15 @@
 /*
     Main Content
 */
-.ui.stripe {
-    padding: 8em 8em;
+.ui.main {
+    padding: 8em 0em;
 }
 
-.ui.stripe h3 {
+.ui.main h3 {
   font-size: 2em;
 }
 
-.ui.stripe p {
+.ui.main p {
   font-size: 1.33em;
 }
 
@@ -70,11 +70,6 @@
 .ui.footer {
     margin-bottom: 0;
     padding: 5em 0;
-}
-
-.ui.fluid.dropdown {
-    width: 90%;
-    display: inline;
 }
 
 /* https://github.com/Semantic-Org/Semantic-UI/issues/3801 */

@@ -1,25 +1,82 @@
-<div class="ui stripe">
-    <div class="ui row">
-        <h4 class="ui horizontal divider header">
-            <i class="users icon"></i>
-            Roles
-        </h4>
+<div class="ui main stackable grid">
 
-        <table class="ui celled table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each roles}}
-                    <tr>
-                        <td>{{this.name}}</td>
-                        <td>{{this.description}}</td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>
+    <div class="ui two column row">
+        <div class="ui column">
+            <div class="ui basic left aligned segment">
+                <h3>
+                    <i class="group icon"></i> Roles
+                </h3>
+            </div>
+        </div>
+        <div class="ui computer tablet only column">
+            <div class="ui basic right aligned segment">
+                <div class="ui positive button">
+                    <i class="add group icon"></i> Add Role
+                </div>
+            </div>
+        </div>
+        <div class="ui mobile only column">
+            <div class="ui basic left aligned segment">
+                <div class="ui positive button">
+                    <i class="add group icon"></i> Add Role
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div class="ui three column row">
+        <div class="ui column">
+            <div class="ui basic segment">
+                <div class="ui loading search">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" placeholder="Search roles...">
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui column">
+            <div class="ui basic right aligned segment">
+                <select class="ui fluid dropdown">
+                    <option value="">Order</option>
+                    <option value="name">Name</option>
+                    <option value="description">Description</option>
+                </select>
+            </div>
+        </div>
+        <div class="ui column">
+            <div class="ui basic right aligned segment">
+                <select class="ui fluid dropdown">
+                    <option value="">Limit</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui one column row">
+        <div class="ui column">
+            <div class="ui basic segment">
+                <table class="ui celled table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each roles}}
+                            <tr>
+                                <td>{{this.name}}</td>
+                                <td>{{this.description}}</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
