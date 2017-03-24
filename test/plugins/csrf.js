@@ -25,6 +25,8 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
+        plugin: 'vision'
+    },{
         plugin: './plugins/web-tls'
     }, {
         plugin: './plugins/csrf'
