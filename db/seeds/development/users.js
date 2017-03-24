@@ -39,15 +39,18 @@ exports.seed = function(knex, Promise) {
 
                 knex('role').insert({
                     id: 1,
-                    name: 'admin'
+                    name: 'admin',
+                    description: 'administrator'
                 }),
                 knex('role').insert({
                     id: 2,
-                    name: 'user'
+                    name: 'user',
+                    description: 'registered user'
                 }),
                 knex('role').insert({
                     id: 3,
-                    name: 'guest'
+                    name: 'guest',
+                    description: 'guest user'
                 })
             ]);
         }),

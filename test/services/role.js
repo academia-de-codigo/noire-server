@@ -1,5 +1,3 @@
-'use strict';
-
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Knex = require('knex');
@@ -86,6 +84,7 @@ describe('Service: role', function() {
             expect(result).to.be.instanceof(RoleModel);
             expect(result.id).to.equals(1);
             expect(result.name).to.equals('admin');
+            expect(result.description).to.equals('administrator');
             done();
         });
     });
@@ -144,7 +143,8 @@ describe('Service: role', function() {
     it('adds a new role', function(done) {
 
         var role = {
-            name: 'newrole'
+            name: 'newrole',
+            description: 'description'
         };
 
         var txSpy = Sinon.spy(Repository, 'tx');
@@ -157,6 +157,7 @@ describe('Service: role', function() {
             expect(result).to.be.an.instanceof(RoleModel);
             expect(result.id).to.exists();
             expect(result.name).to.equals(role.name);
+            expect(result.description).to.equals(role.description);
             txSpy.restore();
             done();
         });
