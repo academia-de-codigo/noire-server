@@ -1,0 +1,32 @@
+<div class="ui container" id="profile-form">
+
+    <form class="ui form">
+        <h4 class="ui dividing header">Basic information</h4>
+        <div class="two fields">
+            <div class="field">
+                <label>username_</label>
+                <input type="text" name="username" placeholder="{{user.username}}">
+            </div>
+            <div class="field">
+                <label>email_</label>
+                <input type="text" name="email" placeholder="{{user.email}}">
+            </div>
+        </div>
+
+        <h4 class="ui dividing header">Update your password</h4>
+        <div class="equal width fields">
+            <div class="field">
+                <input type="password" name="password" placeholder="new password">
+            </div>
+            <div class="field">
+                <input type="password" id="pw-confirmation" placeholder="confirm it">
+            </div>
+        </div>
+
+        <div class="ui button submit">
+            Update
+        </div>
+
+        <div class="ui error message"></div>
+    </form>
+</div>

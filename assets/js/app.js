@@ -20,6 +20,6 @@ function setupApi() {
     $.fn.api.settings.api = {
         'login': '/login',
         'logout': '/logout',
-        'update user': '/profile'
+        'update profile': '/profile'
     };
 }

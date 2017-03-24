@@ -5,25 +5,7 @@
 <div class="pusher">
     {{> nav}}
 
-    <div class="ui container">
-
-        <form class="ui form">
-            <div class="two fields">
-                <div class="field">
-                    <label>username_</label>
-                    <input type="text" name="username" placeholder="username" value="{{user.username}}">
-                </div>
-                <div class="field">
-                    <label>email_</label>
-                    <input type="text" name="email" placeholder="email" value="{{user.email}}">
-                </div>
-            </div>
-
-            <button class="ui button" type="submit">
-                Submit
-            </button>
-        </div>
-    </form>
+    {{> profile-update}}
 
     {{> footer }}
 </div>
