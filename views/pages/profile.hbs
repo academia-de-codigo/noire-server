@@ -6,16 +6,24 @@
     {{> nav}}
 
     <div class="ui container">
-        <h1>User profile page</h1>
-        <p>{{ user.username }}</p>
-        <p>{{ user.email }}</p>
-        <p>roles:</p>
-        <ul>
-            {{#each user.roles}}
-                <li>{{ this }}</li>
-            {{/each}}
-        </ul>
-    </div>
+
+        <form class="ui form">
+            <div class="two fields">
+                <div class="field">
+                    <label>username_</label>
+                    <input type="text" name="username" placeholder="username" value="{{user.username}}">
+                </div>
+                <div class="field">
+                    <label>email_</label>
+                    <input type="text" name="email" placeholder="email" value="{{user.email}}">
+                </div>
+            </div>
+
+            <button class="ui button" type="submit">
+                Submit
+            </button>
+        </div>
+    </form>
 
     {{> footer }}
 </div>
@@ -23,4 +31,3 @@
 {{> scripts }}
 
 <script src="js/profile.js"></script>
-<script src="js/login.js"></script>
