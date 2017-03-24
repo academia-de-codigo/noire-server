@@ -57,7 +57,7 @@ internals.manifest = {
             select: ['web', 'web-tls']
         }
     }, {
-        plugin: 'vision'
+        plugin: './plugins/views'
     }]
 };
 
