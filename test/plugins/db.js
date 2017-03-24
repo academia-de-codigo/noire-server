@@ -1,4 +1,3 @@
-'use strict';
 var Mockery = require('mockery'); // mock global node require
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
