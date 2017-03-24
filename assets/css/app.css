@@ -1,4 +1,11 @@
 /*
+    Global
+ */
+.ui.breadcrumb a {
+    color: grey;
+}
+
+/*
     Computer and Table Navigation
  */
 .ui.menu {
