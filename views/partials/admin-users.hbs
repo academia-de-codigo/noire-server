@@ -1,10 +1,48 @@
 <div class="ui stripe">
     <div class="ui row">
-        <h4 class="ui horizontal divider header">
+        <div class="ui horizontal basic segments">
+            <div class="ui basic vertical segment">
+                <h3>
             <i class="users icon"></i>
             Users
-        </h4>
-
+        </h3>
+            </div>
+            <div class="ui basic vertical right aligned segment">
+                <div class="ui positive button">
+                    <i class="add user icon"></i> Add User
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui row">
+        <div class="ui horizontal basic segments">
+            <div class="ui basic vertical segment">
+                <div class="ui fluid loading search">
+                    <div class="ui icon input">
+                        <input class="prompt" type="text" placeholder="Search users...">
+                        <i class="search icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="ui basic vertical right aligned segment">
+                <select class="ui fluid dropdown">
+                <option value="">Order</option>
+                <option value="user">User</option>
+                <option value="name">Name</option>
+                <option value="email">Email</option>
+            </select>
+            </div>
+            <div class="ui basic vertical right aligned segment">
+                <select class="ui fluid dropdown">
+                <option value="">Limit</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            </div>
+        </div>
+    </div>
+    <div class="ui row">
         <table class="ui celled table">
             <thead>
                 <tr>
@@ -20,9 +58,9 @@
                     {{else}}
                         <tr class="disabled">
                     {{/if}}
-                        <td>{{this.username}}</td>
-                        <td>{{this.name}}</td>
-                        <td>{{this.email}}</td>
+                    <td>{{this.username}}</td>
+                    <td>{{this.name}}</td>
+                    <td>{{this.email}}</td>
                     </tr>
                 {{/each}}
             </tbody>

@@ -1,5 +1,3 @@
-'use strict';
-
 var Package = require('../../package.json');
 
 exports.authenticate = true;

@@ -1,5 +1,3 @@
-'use strict';
-
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Sinon = require('sinon');
@@ -25,6 +23,8 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
+        plugin: 'vision'
+    }, {
         plugin: './plugins/auth'
     }, {
         plugin: './plugins/web-tls'
