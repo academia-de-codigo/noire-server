@@ -1,5 +1,3 @@
-'use strict';
-
 var Path = require('path');
 
 module.exports = {

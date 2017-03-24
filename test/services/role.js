@@ -1,5 +1,3 @@
-'use strict';
-
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Knex = require('knex');
