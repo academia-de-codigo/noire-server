@@ -66,6 +66,7 @@
                 <table class="ui celled table">
                     <thead>
                         <tr>
+                            <th>Avatar</th>
                             <th>User</th>
                             <th>Name</th>
                             <th>Email</th>
@@ -74,19 +75,23 @@
                     </thead>
                     <tbody>
                         {{#each users}}
-                            {{#if this.active}}
-                                <tr>
-                            {{else}}
-                                <tr class="disabled">
-                            {{/if}}
-                            <td>{{this.username}}</td>
-                            <td>{{this.name}}</td>
-                            <td>{{this.email}}</td>
+                        <tr>
                             <td>
-                                <i class="blue edit icon"></i>
-                                <i class="red remove user icon"></i>
+                                <img class="ui avatar image {{#unless this.active}} disabled {{/unless}}" src="{{this.avatar}}" alt="avatar">
                             </td>
-                            </tr>
+                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.username}}</td>
+                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.name}}</td>
+                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.email}}</td>
+                            <td>
+                                <i class="large blue link write icon"></i>
+                                {{#if this.active}}
+                                <i class="large disabled link remove user icon"></i>
+                                {{else}}
+                                <i class="large green link user icon"></i>
+                                {{/if}}
+                                <i class="large red link trash user icon"></i>
+                            </td>
+                        </tr>
                         {{/each}}
                     </tbody>
                 </table>
