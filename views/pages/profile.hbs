@@ -7,11 +7,11 @@
 
     <div class="ui container">
         <h1>User profile page</h1>
-        <p>{{ user.username }}</p>
-        <p>{{ user.email }}</p>
+        <p>{{ credentials.username }}</p>
+        <p>{{ credentials.email }}</p>
         <p>roles:</p>
         <ul>
-            {{#each user.roles}}
+            {{#each credentials.roles}}
                 <li>{{ this }}</li>
             {{/each}}
         </ul>

@@ -5,6 +5,11 @@
     color: grey;
 }
 
+.ui.big {
+    font-size: 2em;
+    color: darkslategrey;
+}
+
 /*
     Computer and Table Navigation
  */
