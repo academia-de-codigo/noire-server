@@ -63,7 +63,7 @@ describe('Web Controller: admin', function() {
             expect(context.count.users).to.equals(userCount);
             expect(context.count.roles).to.equals(roleCount);
             expect(context.count.resources).to.equals(resourceCount);
-            expect(context.getAdminPartial()).to.equals('admin-main');
+            expect(context.getAdminPartial()).to.equals('admin/main');
             countUsers.restore();
             countRoles.restore();
             countResources.restore();
@@ -114,7 +114,7 @@ describe('Web Controller: admin', function() {
             expect(page).to.equals('pages/admin');
             expect(UserService.list.calledOnce).to.be.true();
             expect(context.users).to.equals(internals.users);
-            expect(context.getAdminPartial()).to.equals('admin-users');
+            expect(context.getAdminPartial()).to.equals('admin/user-list');
             listUsers.restore();
             done();
         };
@@ -161,7 +161,7 @@ describe('Web Controller: admin', function() {
             expect(page).to.equals('pages/admin');
             expect(RoleService.list.calledOnce).to.be.true();
             expect(context.roles).to.equals(internals.roles);
-            expect(context.getAdminPartial()).to.equals('admin-roles');
+            expect(context.getAdminPartial()).to.equals('admin/role-list');
             listRoles.restore();
             done();
         };
