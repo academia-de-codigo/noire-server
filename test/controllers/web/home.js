@@ -1,7 +1,6 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var HomeCtrl = require('../../../lib/controllers/web/home');
-var Package = require('../../../package.json');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -20,10 +19,8 @@ describe('Web Controller: home', function() {
         };
 
         var reply = function() {};
-        reply.view = function(page, context) {
+        reply.view = function(page) {
             expect(page).to.equals('pages/home');
-            expect(context.version).to.equals(Package.version);
-            expect(context.user).to.not.exists();
             done();
         };
 

@@ -6,6 +6,9 @@ var Path = require('path');
 var UserService = require('../../lib/services/user');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
+var WebTls = require('../../lib/plugins/web-tls');
+var WebTlsRoutes = require('../../lib/routes/web-tls');
+var Package = require('../../package.json');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -58,6 +61,46 @@ describe('Plugin: web-tls', function() {
     after(function(done) {
         process.env.JWT_SECRET = '';
         done();
+    });
+
+    it('registers the view handler', function(done) {
+
+        var fakeServer = {
+            dependency: function(views, next) {
+                expect(views).to.equals('views');
+                next(this, function() {});
+            },
+            views: function(options) {
+                expect(options).to.exist();
+                expect(options.engines).to.exist();
+                expect(options.engines.hbs).to.exist();
+                expect(options.context).to.exist();
+                expect(options.layout).to.be.true();
+                expect(options.context.version).to.equals(Package.version);
+            },
+            route: function() {}
+        };
+
+        WebTls.register(fakeServer, null, function() {
+            done();
+        });
+    });
+
+    it('registers the route handler', function(done) {
+
+        var fakeServer = {
+            dependency: function(views, next) {
+                next(this, function() {});
+            },
+            views: function() {},
+            route: function(routes) {
+                expect(routes).to.equals(WebTlsRoutes.endpoints);
+            }
+        };
+
+        WebTls.register(fakeServer, null, function() {
+            done();
+        });
     });
 
     it('joi validates invalid username', function(done) {

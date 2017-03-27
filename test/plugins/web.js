@@ -9,6 +9,9 @@ var Manager = require('../../lib/manager');
 var MockAuth = require('../fixtures/auth-plugin');
 var Repository = require('../../lib/plugins/repository');
 var UserService = require('../../lib/services/user');
+var Web = require('../../lib/plugins/web');
+var WebRoutes = require('../../lib/routes/web');
+var Package = require('../../package.json');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -73,6 +76,46 @@ describe('Plugin: web', function() {
             done();
         }
 
+    });
+
+    it('registers the view handler', function(done) {
+
+        var fakeServer = {
+            dependency: function(views, next) {
+                expect(views).to.equals('views');
+                next(this, function() {});
+            },
+            views: function(options) {
+                expect(options).to.exist();
+                expect(options.engines).to.exist();
+                expect(options.engines.hbs).to.exist();
+                expect(options.context).to.exist();
+                expect(options.layout).to.be.true();
+                expect(options.context.version).to.equals(Package.version);
+            },
+            route: function() {}
+        };
+
+        Web.register(fakeServer, null, function() {
+            done();
+        });
+    });
+
+    it('registers the route handler', function(done) {
+
+        var fakeServer = {
+            dependency: function(views, next) {
+                next(this, function() {});
+            },
+            views: function() {},
+            route: function(routes) {
+                expect(routes).to.equals(WebRoutes.endpoints);
+            }
+        };
+
+        Web.register(fakeServer, null, function() {
+            done();
+        });
     });
 
     it('returns the home view for non authenticaded users', function(done) {
