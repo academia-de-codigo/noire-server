@@ -5,9 +5,12 @@
     color: grey;
 }
 
-.ui.big {
-    font-size: 2em;
-    color: darkslategrey;
+.ui.no.right.padding {
+    padding-right: 0;
+}
+
+.ui.no.right.margin {
+    margin-right: 0;
 }
 
 /*
@@ -65,7 +68,7 @@
     padding: 8em 0em;
 }
 
-.ui.main h3 {
+.ui.main.section h1 {
   font-size: 2em;
 }
 

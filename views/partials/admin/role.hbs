@@ -32,20 +32,18 @@
     <div class="ui one column row">
         <div class="ui column">
             <div class="ui raised segment">
-                <div class="ui primary ribbon label">ID</div>
+                <div class="ui primary ribbon label">{{role.id}}</div>
                 <p></p>
-                <p class="ui big">{{role.id}}</p>
-                <p></p>
-
-                <div class="ui primary ribbon label">Name</div>
-                <p></p>
-                <p class="ui big">{{role.name}}</p>
-                <p></p>
-
-                <div class="ui primary ribbon label">Name</div>
-                <p></p>
-                <p class="ui big">{{role.description}}</p>
-                <p></p>
+                <div class="ui large list">
+                    <div class="item">
+                        <div class="header">Name</div>
+                        <div class="content">{{role.name}}</div>
+                    </div>
+                    <div class="item">
+                        <div class="header">Description</div>
+                        <div class="content">{{role.description}}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
