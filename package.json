@@ -9,15 +9,16 @@
   ],
   "scripts": {
     "start": "node lib/index.js",
-    "test": "./node_modules/.bin/lab",
+    "test": "lab",
     "codecov": "mkdir .coverage 2>/dev/null; lab -r lcov > .coverage/lcov.info && codecov",
-    "reset": "./node_modules/.bin/knex migrate:latest; knex seed:run",
+    "reset": "knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
-    "semantic": "./node_modules/.bin/gulp --gulpfile client/semantic/gulpfile.js build",
-    "webpack": " ./node_modules/.bin/webpack --hide-modules true --config webpack.config.js",
-    "build": "npm run clean; npm run semantic; npm run webpack",
-    "clean": "rm -rf public/"
+    "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
+    "webpack": "npm run clean; webpack --hide-modules true --config webpack.config.js",
+    "webpack:watch": "webpack --config webpack.config.js --watch",
+    "build": "npm run semantic; npm run webpack",
+    "clean": "rm -rf client/dist/"
   },
   "repository": {
     "type": "git",
