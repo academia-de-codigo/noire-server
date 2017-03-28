@@ -16,7 +16,7 @@ internals.manifest = {
         port: 0,
         routes: {
             files: {
-                relativeTo: Path.join(__dirname, '../../assets')
+                relativeTo: Path.join(__dirname, '../../public')
             }
         }
     }],
@@ -65,6 +65,10 @@ describe('Plugin: assets', function() {
         });
     });
 
+    /*
+    Disabled for now, CSS will be removed from JS soon
+     */
+    /*
     it('returns the app css', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
@@ -80,14 +84,15 @@ describe('Plugin: assets', function() {
             Manager.stop(done);
         });
     });
+    */
 
-    it('returns the app js', function(done) {
+    it('returns the login js', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            server.inject('/js/app.js', function(response) {
+            server.inject('/js/login.bundle.js', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
