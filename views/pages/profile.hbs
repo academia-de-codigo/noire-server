@@ -6,15 +6,9 @@
     {{> nav}}
 
     <div class="ui container">
-        <h1>User profile page</h1>
-        <p>{{ credentials.username }}</p>
-        <p>{{ credentials.email }}</p>
-        <p>roles:</p>
-        <ul>
-            {{#each credentials.roles}}
-                <li>{{ this }}</li>
-            {{/each}}
-        </ul>
+
+        {{> profile-update}}
+
     </div>
 
     {{> footer }}
