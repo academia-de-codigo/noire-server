@@ -13,18 +13,22 @@
     margin-right: 0;
 }
 
+.table.footer {
+    min-height: 65px;
+}
+
 /*
-    Computer and Table Navigation
+    Computer and Tablet Navigation
  */
-.ui.menu {
+.ui.top.menu {
     padding: 1em;
 }
 
-.ui.menu .right.item .ui.button {
+.ui.top.menu .right.item .ui.button {
   margin-left: 0.5em;
 }
 
-.ui.menu .right.item img {
+.ui.top.menu .right.item img {
   margin-left: 1em;
 }
 

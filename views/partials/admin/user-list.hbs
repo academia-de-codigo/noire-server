@@ -75,25 +75,45 @@
                     </thead>
                     <tbody>
                         {{#each users}}
-                        <tr>
-                            <td>
-                                <img class="ui avatar image {{#unless this.active}} disabled {{/unless}}" src="{{this.avatar}}" alt="avatar">
-                            </td>
-                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.username}}</td>
-                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.name}}</td>
-                            <td {{#unless this.active}}class="disabled"{{/unless}}>{{this.email}}</td>
-                            <td>
-                                <i class="large blue link write icon"></i>
-                                {{#if this.active}}
-                                <i class="large disabled link remove user icon"></i>
-                                {{else}}
-                                <i class="large green link user icon"></i>
-                                {{/if}}
-                                <i class="large red link trash user icon"></i>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td>
+                                    <img class="ui avatar image {{#unless this.active}} disabled {{/unless}}" src="{{this.avatar}}" alt="avatar">
+                                </td>
+                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.username}}</td>
+                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.name}}</td>
+                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.email}}</td>
+                                <td>
+                                    <i class="large blue link write icon"></i>
+                                    {{#if this.active}}
+                                        <i class="large disabled link remove user icon"></i>
+                                    {{else}}
+                                        <i class="large green link user icon"></i>
+                                    {{/if}}
+                                    <i class="large red link trash user icon"></i>
+                                </td>
+                            </tr>
                         {{/each}}
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="5">
+                                <div class="ui right floated pagination menu">
+                                    <a class="icon item">
+                                        <i class="circle left chevron icon"></i>
+                                    </a>
+                                    <a class="icon item">
+                                        <i class="left chevron icon"></i>
+                                    </a>
+                                    <a class="icon item">
+                                        <i class="right chevron icon"></i>
+                                    </a>
+                                    <a class="icon item">
+                                        <i class="circle right chevron icon"></i>
+                                    </a>
+                                </div>
+                            </th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

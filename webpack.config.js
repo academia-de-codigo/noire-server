@@ -135,7 +135,7 @@ function getEntries() {
 
     var fileList, entries;
 
-    fileList = Glob.sync(Path.join(__dirname, SRC_PATH, 'src/entries/**/*.js'));
+    fileList = Glob.sync(Path.join(__dirname, SRC_PATH, 'src/pages/**/*.js'));
     entries = {};
 
     fileList.forEach(function(file) {

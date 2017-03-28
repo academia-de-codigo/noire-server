@@ -35,9 +35,9 @@
                 <div class="ui primary ribbon label">{{user.id}}</div>
                 <img class="ui centered small circular image" src="{{user.avatar}}" alt="avatar">
                 <h2 class="ui centered header">{{user.name}}<br>
-                <a class="ui teal label">Admin</a>
-                <a class="ui teal label">User</a>
-                <a class="ui teal label">Guest</a>
+                {{#each user.roles}}
+                <a href="/admin/role/{{this.id}}" class="ui teal label">{{this.name}}</a>
+                {{/each}}
                 </h2>
                 <h3 class="ui blue header">Contact Information</h3>
                 <div class="ui divider"></div>
