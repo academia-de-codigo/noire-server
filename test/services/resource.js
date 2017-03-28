@@ -74,6 +74,81 @@ describe('Service: resource', function() {
         });
     });
 
+    it('lists resources with limit', function(done) {
+
+        var criteria = {
+            limit: 2
+        };
+
+        ResourceService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(2);
+            results.forEach(function(resource) {
+                expect(resource).to.be.instanceof(ResourceModel);
+                expect(resource.id).to.exists();
+                expect(resource.id < 3).to.be.true();
+                expect(resource.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists resources with offset', function(done) {
+        var criteria = {
+            page: 4,
+            limit: 1
+        };
+
+        ResourceService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            results.forEach(function(resource) {
+                expect(resource).to.be.instanceof(ResourceModel);
+                expect(resource.id > 3).to.be.true();
+                expect(resource.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists resources ordered by column', function(done) {
+        var criteria = {
+            sort: 'name'
+        };
+
+        ResourceService.list(criteria).then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            results.forEach(function(resource) {
+                expect(resource).to.be.instanceof(ResourceModel);
+                expect(resource.id).to.exist();
+                expect(resource.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists resources ordered by id, descending', function(done) {
+        var criteria = {
+            sort: 'id',
+            descending: true
+        };
+
+        ResourceService.list(criteria).then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            expect(results[0].id > results[1].id).to.be.true();
+            results.forEach(function(resource) {
+                expect(resource).to.be.instanceof(ResourceModel);
+                expect(resource.id).to.exist();
+                expect(resource.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
     it('fetch valid resource by id', function(done) {
 
         ResourceService.findById(1).then(function(result) {

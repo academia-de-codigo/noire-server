@@ -77,6 +77,84 @@ describe('Service: role', function() {
         });
     });
 
+    it('lists roles with limit', function(done) {
+
+        var criteria = {
+            limit: 2
+        };
+
+        RoleService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(2);
+            expect(results.users).to.not.exists();
+            results.forEach(function(role) {
+                expect(role).to.be.instanceof(RoleModel);
+                expect(role.id).to.exists();
+                expect(role.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists roles with offset', function(done) {
+        var criteria = {
+            page: 4,
+            limit: 1
+        };
+        RoleService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results.users).to.not.exist();
+            results.forEach(function(role) {
+                expect(role).to.be.instanceof(RoleModel);
+                expect(role.id > 3).to.be.true();
+                expect(role.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists roles ordered by column', function(done) {
+        var criteria = {
+            sort: 'name'
+        };
+        RoleService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            expect(results.users).to.not.exist();
+            results.forEach(function(role) {
+                expect(role).to.be.instanceof(RoleModel);
+                expect(role.id).to.exists();
+                expect(role.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
+    it('lists roles ordered by column, descending', function(done) {
+        var criteria = {
+            sort: 'id',
+            descending: true
+        };
+
+        RoleService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            expect(results.users).to.not.exist();
+            expect(results[0].id > results[1].id).to.be.true();
+            results.forEach(function(role) {
+                expect(role).to.be.instanceof(RoleModel);
+                expect(role.id).to.exists();
+                expect(role.name).to.be.a.string();
+            });
+            done();
+        });
+    });
+
     it('fetch valid role by id', function(done) {
 
         RoleService.findById(1).then(function(result) {
