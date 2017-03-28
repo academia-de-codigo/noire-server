@@ -6,7 +6,7 @@
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
 
 require('../app');
-require('../css/login.css');
+require('../../assets/css/login.css');
 
 var commons = require('../commons');
 var config = require('../config');

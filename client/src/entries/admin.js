@@ -1,3 +1,3 @@
-require('../css/admin.css');
+require('../../assets/css/admin.css');
 require('../app');
 require('../commons/nav');

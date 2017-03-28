@@ -2,7 +2,7 @@
  * Profile page javascript file
  */
 
-require('../css/profile.css');
+require('../../assets/css/profile.css');
 require('../commons/nav'); // import nav code (including logout button handlers) TODO: rethink this.
 
 var commons = require('../commons');
