@@ -1,9 +1,9 @@
 var Path = require('path');
 var Glob = require('glob');
 var Webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
+//var ExtractTextPlugin = require('extract-text-webpack-plugin'); // this will be used to extract CSS from javascript into their own files..
 
 var Config = require('./lib/config');
 var internals = {};
@@ -87,12 +87,21 @@ internals.baseConfig = {
     // add development/production plugins here
     plugins: [
         // the plugin that extracts all CSS required in JS into a bundled css file
-        new ExtractTextPlugin('./css/[name].css'),
+        //new ExtractTextPlugin('./css/[name].css'),
 
         // TODO: one image gets copied twice because it is already required in one of the css files.. please recheck this later
-        new CopyWebpackPlugin([
-            { from: Path.join(__dirname, SRC_PATH, 'assets'), to: Path.join(__dirname, DIST_PATH) },
-        ])
+        new CopyWebpackPlugin([{
+            from: Path.join(__dirname, SRC_PATH, 'assets'),
+            to: Path.join(__dirname, DIST_PATH)
+        }, {
+            // HACK: temporary. make semantic.min.css load in every page (by placing it on layout.hbs) to load it async
+            // this way, only page-specific css will be loaded inline with javascript
+            from: Path.join(__dirname, SRC_PATH, 'semantic', 'dist', 'semantic.min.css'),
+            to: Path.join(__dirname, DIST_PATH, 'css')
+        }, {
+            from: Path.join(__dirname, SRC_PATH, 'semantic', 'dist', 'themes'),
+            to: Path.join(__dirname, DIST_PATH, 'css', 'themes')
+        }])
     ]
 };
 

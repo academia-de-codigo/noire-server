@@ -2,6 +2,7 @@
  * Profile page javascript file
  */
 
+require('../app');
 require('../../assets/css/profile.css');
 require('../commons/nav'); // import nav code (including logout button handlers) TODO: rethink this.
 
@@ -21,9 +22,9 @@ var apiSettings = {
 var validationRules = {
     on: 'blur',
     fields: {
-        username: config.validationRules.username(true),
-        email: config.validationRules.email(true),
-        password: config.validationRules.password(true),
+        username: config.validation.username(true),
+        email: config.validation.email(true),
+        password: config.validation.password(true),
         confPassword: {
             identifier: 'pw-confirmation',
             depends: 'password',
