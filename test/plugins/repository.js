@@ -106,7 +106,7 @@ describe('Plugin: repository', function() {
         });
     });
 
-    it('should return all records', function(done) {
+    it('should return records within limit with no args', function(done) {
 
         var options = {
             models: ['user']
@@ -122,7 +122,17 @@ describe('Plugin: repository', function() {
             var fakePromise = 'a fake promise';
             var repo = Repository['user'];
             var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return fakePromise;
+                return {
+                    limit: Sinon.stub().withArgs(1).callsFake(function() {
+                        return {
+                            offset: Sinon.stub().withArgs(2).callsFake(function() {
+                                return {
+                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
+                                };
+                            })
+                        };
+                    })
+                };
             });
 
             expect(repo.findAll()).to.equals(fakePromise);
@@ -132,6 +142,112 @@ describe('Plugin: repository', function() {
         });
     });
 
+    it('should return records within limit with a criteria object', function(done) {
+
+        var options = {
+            models: ['user']
+        };
+
+        var fakeServer = {
+            log: function() {},
+            decorate: function() {}
+        };
+
+        Repository.register(fakeServer, options, function() {
+
+            var criteria = {};
+            var fakePromise = 'a fake promise';
+            var repo = Repository['user'];
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
+                return {
+                    limit: Sinon.stub().withArgs(1).callsFake(function() {
+                        return {
+                            offset: Sinon.stub().withArgs(2).callsFake(function() {
+                                return {
+                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
+                                };
+                            })
+                        };
+                    })
+                };
+            });
+
+            expect(repo.findAll(criteria)).to.equals(fakePromise);
+            Sinon.assert.calledOnce(queryStub);
+            queryStub.restore();
+            done();
+        });
+    });
+
+    it('should return records within limit with a number as criteria', function(done) {
+        var options = {
+            models: ['user']
+        };
+
+        var fakeServer = {
+            log: function() {},
+            decorate: function() {}
+        };
+        Repository.register(fakeServer, options, function() {
+
+            var criteria = 1;
+            var fakePromise = 'a fake promise';
+            var repo = Repository['user'];
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
+                return {
+                    limit: Sinon.stub().withArgs(1).callsFake(function() {
+                        return {
+                            offset: Sinon.stub().withArgs(2).callsFake(function() {
+                                return {
+                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
+                                };
+                            })
+                        };
+                    })
+                };
+            });
+
+            expect(repo.findAll(criteria)).to.equals(fakePromise);
+            Sinon.assert.calledOnce(queryStub);
+            queryStub.restore();
+            done();
+        });
+    });
+
+    it('should return records ordered by a column with a string as criteria', function(done) {
+        var options = {
+            models: ['user']
+        };
+
+        var fakeServer = {
+            log: function() {},
+            decorate: function() {}
+        };
+        Repository.register(fakeServer, options, function() {
+
+            var criteria = 'column';
+            var fakePromise = 'a fake promise';
+            var repo = Repository['user'];
+            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
+                return {
+                    limit: Sinon.stub().withArgs(1).callsFake(function() {
+                        return {
+                            offset: Sinon.stub().withArgs(2).callsFake(function() {
+                                return {
+                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
+                                };
+                            })
+                        };
+                    })
+                };
+            });
+
+            expect(repo.findAll(criteria)).to.equals(fakePromise);
+            Sinon.assert.calledOnce(queryStub);
+            queryStub.restore();
+            done();
+        });
+    });
 
     it('should return a specific record', function(done) {
 

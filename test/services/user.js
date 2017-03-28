@@ -78,6 +78,90 @@ describe('Service: user', function() {
         });
     });
 
+    it('lists users with limit', function(done) {
+
+        var criteria = {
+            limit: 2
+        };
+        UserService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(2);
+            expect(results.roles).to.not.exist();
+            results.forEach(function(user) {
+                expect(user).to.be.instanceof(UserModel);
+                expect(user.id).to.exists();
+                expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
+                expect(user.password).to.not.exist();
+            });
+            done();
+        });
+    });
+
+    it('lists users with offset', function(done) {
+        var criteria = {
+            page: 4,
+            limit: 1
+        };
+        UserService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results.roles).to.not.exist();
+            results.forEach(function(user) {
+                expect(user).to.be.instanceof(UserModel);
+                expect(user.id > 3).to.be.true();
+                expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
+                expect(user.password).to.not.exist();
+            });
+            done();
+        });
+    });
+
+    it('lists users ordered by column', function(done) {
+        var criteria = {
+            sort: 'username'
+        };
+        UserService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            expect(results.roles).to.not.exist();
+            results.forEach(function(user) {
+                expect(user).to.be.instanceof(UserModel);
+                expect(user.id).to.exists();
+                expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
+                expect(user.password).to.not.exists();
+            });
+            done();
+        });
+    });
+
+    it('lists users ordered by id, descending', function(done) {
+        var criteria = {
+            sort: 'id',
+            descending: true
+        };
+        UserService.list(criteria).then(function(results) {
+
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(4);
+            expect(results.roles).to.not.exist();
+            expect(results[0].id > results[1].id).to.be.true();
+            results.forEach(function(user) {
+                expect(user).to.be.instanceof(UserModel);
+                expect(user.id).to.exists();
+                expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
+                expect(user.password).to.not.exists();
+            });
+            done();
+        });
+    });
+
     it('fetch valid user by id', function(done) {
 
         UserService.findById(1).then(function(result) {
