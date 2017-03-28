@@ -9,18 +9,18 @@ require('../commons/nav'); // import nav code (including logout button handlers)
 var commons = require('../commons');
 var config = require('../config');
 
-var formElement;
+var formElement, submitButton;
 
 var apiSettings = {
     action: 'update profile',
     method: 'put',
     serializeForm: true,
     beforeXHR: commons.utils.setCsrfTokenHeader,
-    beforeSend: beforeSend
+    beforeSend: stripOptionals
 };
 
 var validationRules = {
-    on: 'blur',
+    on: 'change',
     fields: {
         username: config.validation.username(true),
         email: config.validation.email(true),
@@ -33,17 +33,69 @@ var validationRules = {
                 prompt: 'Passwords must match.'
             }]
         },
+    },
+    onValid: function() {
+        if (fieldsAreEmpty()) {
+            toggleButton(false);
+            return;
+        }
+
+        toggleButton(true);
+    },
+    onInvalid: function() {
+        toggleButton(false);
     }
 };
 
 $(document).ready(function() {
 
     formElement = $('.ui.form');
-    formElement.form(validationRules);
-    formElement.api(apiSettings);
+    submitButton = $('.ui.form button')
+
+    setupForm();
 });
 
-function beforeSend(settings) {
+function setupForm() {
+    commons.utils.disableFormKeyHandlers(formElement);
+    formElement.form(validationRules);
+    formElement.api(apiSettings);
+}
+
+/**
+ * toggles or sets a button state
+ * @param  {Boolean} absoluteState if supplied, button state will be set to this state (true - active, false - not actve). if not, it will be toggled
+ */
+function toggleButton(absoluteState) {
+
+    // get current button state
+    var buttonState = !submitButton.attr('disabled');
+    var disable;
+
+    // if the button's state is the same as the one you want to put it, don't touch it
+    if (buttonState === absoluteState) {
+        return;
+    }
+
+    // no state provided, toggle its state.
+    if (absoluteState === undefined) {
+        disable = !buttonState;
+    } else {
+        // true means false, and false means true
+        disable = !absoluteState;
+    }
+
+    submitButton.attr('disabled', disable);
+}
+
+function fieldsAreEmpty() {
+    var fields = formElement.serializeObject();
+
+    return Object.keys(fields).every(function(field) {
+        return !fields[field];
+    });
+}
+
+function stripOptionals(settings) {
 
     var data = {};
 
@@ -58,6 +110,5 @@ function beforeSend(settings) {
     });
 
     settings.data = data;
-
     return settings;
 }
