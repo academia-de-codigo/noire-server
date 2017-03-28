@@ -1,5 +1,3 @@
-var $ = require('jquery');
-
 exports.utils = {
     redirectTo: redirectTo,
     setCsrfTokenHeader: setCsrfTokenHeader,

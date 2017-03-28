@@ -5,16 +5,15 @@
 // TODO: Would be nice to provide user with timeout error instead of a generic one
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
 
-require('jquery');
+require('../app');
 require('../css/login.css');
-var app = require('../app');
 
-var commons = app.commons;
-var config = app.config;
+var commons = require('../commons');
+var config = require('../config');
 
 var formElement, checkBoxElement, passwordElement, errorElement;
 
-var loginAPISettings = {
+var apiSettings = {
     action: 'login',
     method: 'post',
     serializeForm: true,
@@ -29,7 +28,7 @@ var loginAPISettings = {
     onAbort: addShowError
 };
 
-var formValidationRules = {
+var validationRules = {
     on: 'blur', // validate form when user changes field
     fields: {
         username: config.validation.username(),
@@ -62,7 +61,10 @@ function setupCheckBoxBehaviour() {
 }
 
 function setupLoginFormBehaviour() {
-    formElement.form(formValidationRules).api(loginAPISettings);
+    formElement.form(validationRules).api(apiSettings);
+
+    // prevent browser from canceling xhr request due to browser
+    // form handling behaviour when return key is pressed
     formElement.keypress(function(event) {
         if (event.which === 13) {
             event.preventDefault();

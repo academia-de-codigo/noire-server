@@ -2,14 +2,11 @@
  * Profile page javascript file
  */
 
-var app = require('../app');
 require('../css/profile.css');
-
-var $ = require('jquery');
 require('../commons/nav'); // import nav code (including logout button handlers) TODO: rethink this.
 
-var commons = app.commons;
-var config = app.config;
+var commons = require('../commons');
+var config = require('../config');
 
 var formElement;
 
@@ -21,12 +18,12 @@ var apiSettings = {
     beforeSend: beforeSend
 };
 
-var validation = {
+var validationRules = {
     on: 'blur',
     fields: {
-        username: config.validation.username(true),
-        email: config.validation.email(true),
-        password: config.validation.password(true),
+        username: config.validationRules.username(true),
+        email: config.validationRules.email(true),
+        password: config.validationRules.password(true),
         confPassword: {
             identifier: 'pw-confirmation',
             depends: 'password',
@@ -41,7 +38,7 @@ var validation = {
 $(document).ready(function() {
 
     formElement = $('.ui.form');
-    formElement.form(validation);
+    formElement.form(validationRules);
     formElement.api(apiSettings);
 });
 
