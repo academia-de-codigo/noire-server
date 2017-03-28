@@ -14,9 +14,10 @@
     "reset": "knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
-    "semantic": "gulp --gulpfile client/semantic/gulpfile.js build; cp -R client/semantic/dist/themes/default assets/css/themes; cp client/semantic/dist/*.min.css assets/css;",
-    "webpack": "webpack --config webpack.config.js",
-    "build": "npm run semantic; npm run webpack"
+    "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
+    "webpack": "webpack --hide-modules true --config webpack.config.js",
+    "build": "npm run clean; npm run semantic; npm run webpack",
+    "clean": "rm -rf public/"
   },
   "repository": {
     "type": "git",
@@ -58,6 +59,7 @@
   "devDependencies": {
     "code": "^4.0.0",
     "codecov": "^2.0.1",
+    "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.27.3",
     "expose-loader": "^0.7.3",
     "extract-text-webpack-plugin": "^2.1.0",

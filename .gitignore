@@ -3,9 +3,6 @@ node_modules
 npm-debug.log
 log
 db/dev.sqlite3
-assets/css/semantic*
-assets/css/themes/*
-!assets/css/themes/.gitkeep
-assets/js/*.bundle.js
 client/semantic/dist
 .coverage
+public

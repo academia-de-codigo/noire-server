@@ -1,9 +1,10 @@
 /**
  * Profile page javascript file
  */
-require('../../css/profile.css');
 
 var app = require('../app');
+require('../css/profile.css');
+
 var $ = require('jquery');
 require('../commons/nav'); // import nav code (including logout button handlers) TODO: rethink this.
 

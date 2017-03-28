@@ -2,11 +2,14 @@ var Path = require('path');
 var Glob = require('glob');
 var Webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+
 
 var Config = require('./lib/config');
 var internals = {};
 
-var DIST_PATH = Config.build.path;
+var SRC_PATH = Config.build.src;
+var DIST_PATH = Config.build.dist;
 // TODO: make all paths come from Config file.. (DIST_PATH/img/, etc...)
 
 // base configuration for development build
@@ -35,15 +38,15 @@ internals.baseConfig = {
             // if ExtractTextPlugin isn't available, use style loader, which injects css inline with JS (not async)
             // the resulting CSS will be written in /assets/css/styles.css (check plugin config below)
             test: /\.css$/,
-            use: ExtractTextPlugin.extract({
-                fallback: 'style-loader',
-                use: [{
-                    loader: 'css-loader',
-                    options: {
-                        minimize: Config.environment === 'production'? true : false
-                    }
-                }]
-            })
+            use: [{
+                loader: 'style-loader' // TODO: having problems with ExtractTextPlugin, temporarily using style-loader
+            }, {
+                loader: 'css-loader',
+                options: {
+                    minimize: Config.environment === 'production' ? true : false
+                }
+            }]
+            //use: ExtractTextPlugin.extract({})
         }, {
             // files required by css (using url()) will live as files inside their own folders
             // this is required for css-loader to work
@@ -52,11 +55,12 @@ internals.baseConfig = {
             test: /\.(png|jpg|gif|svg)$/,
             loader: 'url-loader',
             options: {
-                // public path preppends '../' where this file is required
-                // css file lives inside /assets/css/ and images in /assets/img/, so it has to go up a level
+                // public path prepends '../' where this file is required
+                // css file lives inside client/src/css/ and images in client/assets/img/, so it has to go up two levels
                 // (e.g. require('../img/asset.png'))
-                publicPath: '../',
-                name: './img/[name].[ext]',
+                publicPath: '../img/',
+                name: '[name].[ext]',
+                outputPath: './img/',
                 limit: 10000 // TODO: investigate this.. does not build the files with this option off
             }
         }, {
@@ -65,8 +69,9 @@ internals.baseConfig = {
             test: /\.(eot|ttf|woff|woff2)$/,
             loader: 'url-loader',
             options: {
-                publicPath: '../',
-                name: './fonts/[name].[ext]',
+                publicPath: '/fonts/',
+                name: '[name].[ext]',
+                outputPath: './fonts/',
                 limit: 10000
             }
         }],
@@ -74,14 +79,20 @@ internals.baseConfig = {
 
     // output all files to assets, each one with the name of it's entry file
     output: {
-        path: Path.join(__dirname, DIST_PATH),
+        path: Path.resolve(DIST_PATH),
         filename: Path.join('js', '[name].bundle.js'),
         chunkFilename: Path.join('js', '[id].chunk.js')
     },
 
     // add development/production plugins here
     plugins: [
-        new ExtractTextPlugin('./css/styles.css'),
+        // the plugin that extracts all CSS required in JS into a bundled css file
+        new ExtractTextPlugin('./css/[name].css'),
+
+        // TODO: one image gets copied twice because it is already required in one of the css files.. please recheck this later
+        new CopyWebpackPlugin([
+            { from: Path.resolve(SRC_PATH + 'assets/'), to: Path.resolve(DIST_PATH) },
+        ])
     ]
 };
 
@@ -122,18 +133,19 @@ function buildConfig() {
 
 function getEntries() {
 
-    var entries, config;
+    var fileList, entries;
 
-    entries = Glob.sync(Path.resolve('./client/js/entries/**/*.js'));
-    config = {};
+    fileList = Glob.sync(Path.resolve(SRC_PATH, 'src/entries/**/*.js'));
+    entries = {};
 
-    entries.forEach(function(file) {
+    fileList.forEach(function(file) {
 
         var name;
 
         name = Path.basename(file, '.js');
-        config[name] = file;
+        entries[name] = file;
     });
 
-    return config;
+
+    return entries;
 }
