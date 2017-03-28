@@ -1,8 +1,19 @@
-.DS_STORE
+# frontend build
+client/semantic/dist
+client/dist
+
+# database files
+db/dev.sqlite3
+
+# server generated logs
+log
+
+# test coverage reports
+.coverage
+
+# ignore node stuff
 node_modules
 npm-debug.log
-log
-db/dev.sqlite3
-client/semantic/dist
-.coverage
-public
+
+# osx
+.DS_STORE

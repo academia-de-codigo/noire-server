@@ -79,7 +79,7 @@ internals.baseConfig = {
 
     // output all files to assets, each one with the name of it's entry file
     output: {
-        path: Path.resolve(DIST_PATH),
+        path: Path.join(__dirname, DIST_PATH),
         filename: Path.join('js', '[name].bundle.js'),
         chunkFilename: Path.join('js', '[id].chunk.js')
     },
@@ -91,7 +91,7 @@ internals.baseConfig = {
 
         // TODO: one image gets copied twice because it is already required in one of the css files.. please recheck this later
         new CopyWebpackPlugin([
-            { from: Path.resolve(SRC_PATH + 'assets/'), to: Path.resolve(DIST_PATH) },
+            { from: Path.join(__dirname, SRC_PATH, 'assets'), to: Path.join(__dirname, DIST_PATH) },
         ])
     ]
 };
@@ -135,7 +135,7 @@ function getEntries() {
 
     var fileList, entries;
 
-    fileList = Glob.sync(Path.resolve(SRC_PATH, 'src/entries/**/*.js'));
+    fileList = Glob.sync(Path.join(__dirname, SRC_PATH, 'src/entries/**/*.js'));
     entries = {};
 
     fileList.forEach(function(file) {
