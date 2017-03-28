@@ -8,9 +8,9 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var Config = require('./lib/config');
 var internals = {};
 
+// TODO: make all paths come from Config file.. (DIST_PATH/img/, etc...)
 var SRC_PATH = Config.build.src;
 var DIST_PATH = Config.build.dist;
-// TODO: make all paths come from Config file.. (DIST_PATH/img/, etc...)
 
 // base configuration for development build
 internals.baseConfig = {

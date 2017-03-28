@@ -9,13 +9,13 @@
   ],
   "scripts": {
     "start": "node lib/index.js",
-    "test": "lab",
+    "test": "./node_modules/.bin/lab",
     "codecov": "mkdir .coverage 2>/dev/null; lab -r lcov > .coverage/lcov.info && codecov",
-    "reset": "knex migrate:latest; knex seed:run",
+    "reset": "./node_modules/.bin/knex migrate:latest; knex seed:run",
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
-    "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
-    "webpack": "webpack --hide-modules true --config webpack.config.js",
+    "semantic": "./node_modules/.bin/gulp --gulpfile client/semantic/gulpfile.js build",
+    "webpack": " ./node_modules/.bin/webpack --hide-modules true --config webpack.config.js",
     "build": "npm run clean; npm run semantic; npm run webpack",
     "clean": "rm -rf public/"
   },
@@ -28,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/academia-de-codigo/noire-server/issues"
   },
-  "homepage": "https://github.com/academia-de-codigo/noire-server/issues",
+  "homepage": "https://github.com/academia-de-codigo/noire-server",
   "dependencies": {
     "bcrypt": "^1.0.0",
     "bluebird": "^3.4.6",
@@ -66,6 +66,7 @@
     "file-loader": "^0.10.1",
     "form-serializer": "^2.5.0",
     "glob": "^7.1.1",
+    "gulp": "^3.9.1",
     "imports-loader": "^0.7.1",
     "jquery": "^3.2.1",
     "lab": "^13.0.0",
@@ -74,6 +75,6 @@
     "sinon": "^2.0.0",
     "style-loader": "^0.16.0",
     "url-loader": "^0.5.8",
-    "webpack": "^2.3.1"
+    "webpack": "^2.3.2"
   }
 }

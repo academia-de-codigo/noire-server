@@ -5,17 +5,16 @@
 // TODO: Would be nice to provide user with timeout error instead of a generic one
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
 
-var app = require('../app');
+require('jquery');
 require('../css/login.css');
-
-var $ = require('jquery');
+var app = require('../app');
 
 var commons = app.commons;
 var config = app.config;
 
 var formElement, checkBoxElement, passwordElement, errorElement;
 
-var loginAPI = {
+var loginAPISettings = {
     action: 'login',
     method: 'post',
     serializeForm: true,
@@ -30,10 +29,12 @@ var loginAPI = {
     onAbort: addShowError
 };
 
-var validation = {
-    on: 'blur',
-    username: config.validation.username(),
-    password: config.validation.password(),
+var formValidationRules = {
+    on: 'blur', // validate form when user changes field
+    fields: {
+        username: config.validation.username(),
+        password: config.validation.password(),
+    },
     onValid: updateUI,
     onInvalid: updateUI
 };
@@ -42,10 +43,7 @@ $(document).ready(function() {
 
     grabDomElements();
     setupCheckBoxBehaviour();
-
-    formElement.api(loginAPI);
-    formElement.form(validation);
-
+    setupLoginFormBehaviour();
 });
 
 function grabDomElements() {
@@ -60,6 +58,15 @@ function setupCheckBoxBehaviour() {
     checkBoxElement.checkbox({
         onChecked: showPassword,
         onUnchecked: hidePassword
+    });
+}
+
+function setupLoginFormBehaviour() {
+    formElement.form(formValidationRules).api(loginAPISettings);
+    formElement.keypress(function(event) {
+        if (event.which === 13) {
+            event.preventDefault();
+        }
     });
 }
 
