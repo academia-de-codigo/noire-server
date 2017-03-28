@@ -62,7 +62,7 @@
     <div class="ui one column row">
         <div class="ui column">
             <div class="ui basic segment">
-                <table class="ui celled table">
+                <table class="ui selectable celled role table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -72,7 +72,7 @@
                     </thead>
                     <tbody>
                         {{#each roles}}
-                            <tr>
+                            <tr data-id="{{this.id}}">
                                 <td>{{this.name}}</td>
                                 <td>{{this.description}}</td>
                                 <td>
