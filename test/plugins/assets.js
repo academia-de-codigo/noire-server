@@ -1,6 +1,7 @@
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Manager = require('../../lib/manager');
+var Assets = require('../../lib/plugins/assets');
 var Path = require('path');
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -65,6 +66,22 @@ describe('Plugin: assets', function() {
         });
     });
 
+    it('returns semantic-ui minified css', function(done) {
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.inject('/css/semantic.min.css', function(response) {
+
+                expect(response.statusCode).to.equal(200);
+                expect(response.result).to.be.a.string();
+            });
+
+            Manager.stop(done);
+        });
+    });
+
     /*
     Disabled for now, CSS will be removed from JS soon
      */
@@ -115,6 +132,24 @@ describe('Plugin: assets', function() {
             });
 
             Manager.stop(done);
+        });
+    });
+
+    it('handles inert plugin registration failures', function(done) {
+        var PLUGIN_ERROR = 'plugin error';
+        var fakeServer = {
+            dependency: function() {}
+        };
+
+        fakeServer.register = function(plugin, next) {
+            return next(new Error(PLUGIN_ERROR));
+        };
+
+        Assets.register(fakeServer, null, function(error) {
+
+            expect(error).to.exist();
+            expect(error.message).to.equals(PLUGIN_ERROR);
+            done();
         });
     });
 
