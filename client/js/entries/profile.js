@@ -1,6 +1,7 @@
 /**
  * Profile page javascript file
  */
+require('../../css/profile.css');
 
 var app = require('../app');
 var $ = require('jquery');

@@ -1,6 +1,9 @@
+require('../semantic/dist/semantic.css');
+require('../css/app.css');
+
 var $ = require('jquery');
 require('form-serializer');
-require('./semantic/dist/semantic.js');
+require('../semantic/dist/semantic.js');
 
 exports.config = require('./config');
 exports.commons = require('./commons');

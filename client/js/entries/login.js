@@ -4,6 +4,7 @@
 
 // TODO: Would be nice to provide user with timeout error instead of a generic one
 // https://github.com/Semantic-Org/Semantic-UI/issues/5121
+require('../../css/login.css');
 
 var app = require('../app');
 var $ = require('jquery');
