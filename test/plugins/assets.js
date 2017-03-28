@@ -16,7 +16,7 @@ internals.manifest = {
         port: 0,
         routes: {
             files: {
-                relativeTo: Path.join(__dirname, '../../public')
+                relativeTo: Path.join(__dirname, '../../client/dist')
             }
         }
     }],

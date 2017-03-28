@@ -25,8 +25,10 @@ internals.manifest = {
         port: 0,
     }],
     registrations: [{
+        plugin: '../test/fixtures/auth-plugin'
+    }, {
         plugin: './plugins/views'
-    },{
+    }, {
         plugin: './plugins/web-tls'
     }, {
         plugin: './plugins/csrf'
@@ -99,7 +101,6 @@ describe('Plugin: csrf', function() {
 
             });
         });
-
     });
 
     it('errors on missing crumb headers', function(done) {
