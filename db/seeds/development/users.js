@@ -12,7 +12,8 @@ exports.seed = function(knex, Promise) {
                     name: 'Admin User',
                     username: 'admin',
                     email: 'admin@gmail.com',
-                    password: '$2a$10$VAVGq0cwRzsHWRLq9wexk.vE9AJlvE0IOoXt7Ru/J/hQVxgJz7ZG.' // admin
+                    password: '$2a$10$VAVGq0cwRzsHWRLq9wexk.vE9AJlvE0IOoXt7Ru/J/hQVxgJz7ZG.', // admin
+                    avatar: '/img/avatar.png'
                 }),
                 knex('user').insert({
                     id: 2,
@@ -20,15 +21,17 @@ exports.seed = function(knex, Promise) {
                     name: 'Test User',
                     username: 'test',
                     email: 'test@gmail.com',
-                    password: '$2a$10$t7TOeE4Xqwadu3rCzcqsPuFO60UkG0ertEHwEgaXkEY8tMQnJBgHe' // test
+                    password: '$2a$10$t7TOeE4Xqwadu3rCzcqsPuFO60UkG0ertEHwEgaXkEY8tMQnJBgHe', // test
+                    avatar: '/img/avatar.png'
                 }),
                 knex('user').insert({
                     id: 3,
-                    active: true,
+                    active: false,
                     name: 'Guest User',
                     username: 'guest',
                     email: 'guest@gmail.com',
-                    password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW' // guest
+                    password: '$2a$10$69gf1wrnvXhS6OArva47lut/I5ovAn7pdXSJfRNHHFZ0/9t/f8sXW', // guest
+                    avatar: '/img/avatar.png'
                 })
             ]);
         }),

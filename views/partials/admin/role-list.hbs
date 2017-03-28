@@ -4,24 +4,24 @@
         <div class="ui column">
             <div class="ui large breadcrumb basic left aligned segment">
                 <h3>
-                    <i class="users icon"></i>
+                    <i class="group icon"></i>
                     <a href="/admin" class="section">Admin</a>
                     <div class="divider"> / </div>
-                    <div class="ui section active">Users</div>
+                    <div class="ui section active">Roles</div>
                 </h3>
             </div>
         </div>
         <div class="ui computer tablet only column">
             <div class="ui basic right aligned segment">
                 <div class="ui positive button">
-                    <i class="add user icon"></i> Add User
+                    <i class="add group icon"></i> Add Role
                 </div>
             </div>
         </div>
         <div class="ui mobile only column">
             <div class="ui basic left aligned segment">
                 <div class="ui positive button">
-                    <i class="add user icon"></i> Add User
+                    <i class="add group icon"></i> Add Role
                 </div>
             </div>
         </div>
@@ -32,7 +32,7 @@
             <div class="ui basic segment">
                 <div class="ui loading search">
                     <div class="ui icon input">
-                        <input class="prompt" type="text" placeholder="Search users...">
+                        <input class="prompt" type="text" placeholder="Search roles...">
                         <i class="search icon"></i>
                     </div>
                 </div>
@@ -42,9 +42,8 @@
             <div class="ui basic right aligned segment">
                 <select class="ui fluid dropdown">
                     <option value="">Order</option>
-                    <option value="user">User</option>
                     <option value="name">Name</option>
-                    <option value="email">Email</option>
+                    <option value="description">Description</option>
                 </select>
             </div>
         </div>
@@ -66,21 +65,20 @@
                 <table class="ui celled table">
                     <thead>
                         <tr>
-                            <th>User</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Description</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{#each users}}
-                            {{#if this.active}}
-                                <tr>
-                            {{else}}
-                                <tr class="disabled">
-                            {{/if}}
-                            <td>{{this.username}}</td>
-                            <td>{{this.name}}</td>
-                            <td>{{this.email}}</td>
+                        {{#each roles}}
+                            <tr>
+                                <td>{{this.name}}</td>
+                                <td>{{this.description}}</td>
+                                <td>
+                                    <i class="large blue link write icon"></i>
+                                    <i class="large red link trash user icon"></i>
+                                </td>
                             </tr>
                         {{/each}}
                     </tbody>

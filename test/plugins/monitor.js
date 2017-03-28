@@ -451,7 +451,9 @@ describe('Plugin: monitor', function() {
         var orig = Config.monitor.debug;
         Config.monitor.debug = true;
 
-        var fakeResponse = {};
+        var fakeResponse = {
+            source: {}
+        };
         var fakeServer = {
             on: function(event, next) {
                 expect(event).to.match(/(route|request|response)/);
@@ -460,8 +462,6 @@ describe('Plugin: monitor', function() {
                     next({
                         response: fakeResponse
                     });
-
-                    fakeResponse.source = {};
 
                     next({
                         response: fakeResponse
@@ -477,13 +477,99 @@ describe('Plugin: monitor', function() {
             },
             log: function(tags, data) {
 
-                if (!fakeResponse.source) {
-                    fail('response should not be logged if source is not available');
-                }
                 expect(tags).to.be.an.array();
                 expect(tags).to.contains('response');
                 expect(tags).to.contains('debug');
                 expect(data).to.equals(fakeResponse.source);
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('does not log empty response events for api server', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var fakeResponse = {};
+        var fakeServer = {
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'response') {
+                    next({
+                        response: fakeResponse
+                    });
+
+                    next({
+                        response: fakeResponse
+                    });
+                }
+            },
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next();
+            },
+            log: function() {
+                fail('response should not be logged if source is not available');
+                done();
+            }
+        };
+
+        Monitor.register(fakeServer, null, function(error) {
+
+            expect(error).to.not.exist();
+            Config.monitor.debug = orig;
+            done();
+        });
+    });
+
+    it('does not log view template response events for api server', {
+        parallel: false
+    }, function(done) {
+
+        var orig = Config.monitor.debug;
+        Config.monitor.debug = true;
+
+        var fakeResponse = {
+            source: {},
+            variety: 'view'
+        };
+        var fakeServer = {
+            on: function(event, next) {
+                expect(event).to.match(/(route|request|response)/);
+                expect(next).to.be.a.function();
+                if (event === 'response') {
+                    next({
+                        response: fakeResponse
+                    });
+
+                    next({
+                        response: fakeResponse
+                    });
+                }
+            },
+            ext: function() {},
+            select: function() {
+                return this;
+            },
+            register: function(plugin, next) {
+                return next();
+            },
+            log: function() {
+                fail('view template responses should not be logged');
+                done();
             }
         };
 

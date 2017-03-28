@@ -42,11 +42,6 @@ describe('Web Controller: admin', function() {
     it('gets the main admin page', function(done) {
 
         var request = {
-            auth: {
-                credentials: {
-                    id: 0
-                }
-            },
             params: {},
             log: function() {}
         };
@@ -61,7 +56,6 @@ describe('Web Controller: admin', function() {
 
         var reply = function() {};
         reply.view = function(page, context) {
-            expect(context.user.id).to.equals(request.auth.credentials.id);
             expect(page).to.equals('pages/admin');
             expect(UserService.count.calledOnce).to.be.true();
             expect(RoleService.count.calledOnce).to.be.true();
@@ -69,7 +63,7 @@ describe('Web Controller: admin', function() {
             expect(context.count.users).to.equals(userCount);
             expect(context.count.roles).to.equals(roleCount);
             expect(context.count.resources).to.equals(resourceCount);
-            expect(context.getAdminPartial()).to.equals('admin-main');
+            expect(context.getAdminPartial()).to.equals('admin/main');
             countUsers.restore();
             countRoles.restore();
             countResources.restore();
@@ -107,11 +101,6 @@ describe('Web Controller: admin', function() {
     it('gets the users admin page', function(done) {
 
         var request = {
-            auth: {
-                credentials: {
-                    id: 0
-                }
-            },
             params: {
                 partial: 'users'
             },
@@ -122,11 +111,10 @@ describe('Web Controller: admin', function() {
 
         var reply = function() {};
         reply.view = function(page, context) {
-            expect(context.user.id).to.equals(request.auth.credentials.id);
             expect(page).to.equals('pages/admin');
             expect(UserService.list.calledOnce).to.be.true();
             expect(context.users).to.equals(internals.users);
-            expect(context.getAdminPartial()).to.equals('admin-users');
+            expect(context.getAdminPartial()).to.equals('admin/user-list');
             listUsers.restore();
             done();
         };
@@ -160,11 +148,6 @@ describe('Web Controller: admin', function() {
     it('gets the roles admin page', function(done) {
 
         var request = {
-            auth: {
-                credentials: {
-                    id: 0
-                }
-            },
             params: {
                 partial: 'roles'
             },
@@ -175,11 +158,10 @@ describe('Web Controller: admin', function() {
 
         var reply = function() {};
         reply.view = function(page, context) {
-            expect(context.user.id).to.equals(request.auth.credentials.id);
             expect(page).to.equals('pages/admin');
             expect(RoleService.list.calledOnce).to.be.true();
             expect(context.roles).to.equals(internals.roles);
-            expect(context.getAdminPartial()).to.equals('admin-roles');
+            expect(context.getAdminPartial()).to.equals('admin/role-list');
             listRoles.restore();
             done();
         };

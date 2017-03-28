@@ -240,7 +240,7 @@ describe('Manager', function() {
 
     it('returns manager state', function(done) {
 
-        expect(Manager.getState()).to.not.exists();
+        expect(Manager.getState()).to.equals('stopped');
         Manager.start(internals.manifest, internals.composeOptions, function() {
 
             expect(Manager.getState()).to.exists();
