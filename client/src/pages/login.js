@@ -62,14 +62,7 @@ function setupCheckBoxBehaviour() {
 
 function setupLoginFormBehaviour() {
     formElement.form(validationRules).api(apiSettings);
-
-    // prevent browser from canceling xhr request due to browser
-    // form handling behaviour when return key is pressed
-    formElement.keypress(function(event) {
-        if (event.which === 13) {
-            event.preventDefault();
-        }
-    });
+    commons.utils.disableFormKeyHandlers(formElement);
 }
 
 function updateUI() {
