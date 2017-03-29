@@ -50,7 +50,7 @@ var validationRules = {
 $(document).ready(function() {
 
     formElement = $('.ui.form');
-    submitButton = $('.ui.form button')
+    submitButton = $('.ui.form button');
 
     setupForm();
 });
