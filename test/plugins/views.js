@@ -22,6 +22,17 @@ internals.manifest = {
     }]
 };
 
+internals.manager = {
+    engines: {
+        hbs: require('handlebars')
+    },
+    layout: true,
+    path: Path.join(__dirname,'/../fixtures'),
+    isCached: false,
+};
+
+internals.fakeTemplate = 'pages/page';
+
 internals.composeOptions = {
     relativeTo: Path.resolve(__dirname, '../../lib')
 };
@@ -56,20 +67,14 @@ describe('Plugin: views', function() {
 
             expect(err).to.not.exist();
 
-            server.views({
-                engines: {
-                    hbs: require('handlebars')
-                },
-                path: Path.join(__dirname,'/../fixtures'),
-                isCached: false
-            });
+            server.views(internals.manager);
 
             server.route({
                 method: 'GET',
                 path: '/',
                 handler: function(request, reply) {
                     request.auth.credentials = credentials;
-                    return reply.view('template');
+                    return reply.view(internals.fakeTemplate);
                 }
             });
 
@@ -84,19 +89,13 @@ describe('Plugin: views', function() {
 
     it('adds logged in user to view context if authenticated', function(done) {
 
-        var credentials = 'test';
+        var credentials = 'credentials';
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            server.views({
-                engines: {
-                    hbs: require('handlebars')
-                },
-                path: Path.join(__dirname,'/../fixtures'),
-                isCached: false
-            });
+            server.views(internals.manager);
 
             server.route({
                 method: 'GET',
@@ -104,14 +103,42 @@ describe('Plugin: views', function() {
                 handler: function(request, reply) {
                     request.auth.isAuthenticated = true;
                     request.auth.credentials = credentials;
-                    return reply.view('template');
+                    return reply.view(internals.fakeTemplate);
                 }
             });
 
             server.inject('/', function(response) {
 
                 expect(response.result).to.be.a.string();
-                expect(response.result).to.startWith(credentials);
+                expect(response.result).to.include(credentials);
+                Manager.stop(done);
+            });
+        });
+    });
+
+    it('adds page-name to view context', function(done) {
+
+        var pageName = Path.basename(internals.fakeTemplate);
+
+        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+
+            expect(err).to.not.exist();
+
+            server.views(internals.manager);
+
+            server.route({
+                method: 'GET',
+                path: '/',
+                handler: function(request, reply) {
+                    return reply.view(internals.fakeTemplate);
+                }
+            });
+
+            server.inject('/', function(response) {
+
+                expect(response.result).to.be.a.string();
+                expect(response.result).to.not.include(internals.fakeTemplate);
+                expect(response.result).to.include(pageName);
                 Manager.stop(done);
             });
         });

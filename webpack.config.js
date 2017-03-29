@@ -1,9 +1,9 @@
 var Path = require('path');
 var Glob = require('glob');
 var Webpack = require('webpack');
+var CommonsChunkPlugin = Webpack.optimize.CommonsChunkPlugin;
 var CopyWebpackPlugin = require('copy-webpack-plugin');
-
-//var ExtractTextPlugin = require('extract-text-webpack-plugin'); // this will be used to extract CSS from javascript into their own files..
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var Config = require('./lib/config');
 var internals = {};
@@ -36,17 +36,17 @@ internals.baseConfig = {
         }, {
             // required css in javascript files will be injected in a script tag to load asynchronously
             // if ExtractTextPlugin isn't available, use style loader, which injects css inline with JS (not async)
-            // the resulting CSS will be written in /assets/css/styles.css (check plugin config below)
+            // the resulting CSS will be written in /assets/css/[pagename].css (check plugin config below)
             test: /\.css$/,
-            use: [{
-                loader: 'style-loader' // TODO: having problems with ExtractTextPlugin, temporarily using style-loader
-            }, {
-                loader: 'css-loader',
-                options: {
-                    minimize: Config.environment === 'production' ? true : false
-                }
-            }]
-            //use: ExtractTextPlugin.extract({})
+            use: ExtractTextPlugin.extract({
+                fallback: 'style-loader',
+                use: [{
+                    loader: 'css-loader',
+                    options: {
+                        minimize: Config.environment === 'production' ? true : false
+                    }
+                }]
+            })
         }, {
             // files required by css (using url()) will live as files inside their own folders
             // this is required for css-loader to work
@@ -81,26 +81,21 @@ internals.baseConfig = {
     output: {
         path: Path.join(__dirname, DIST_PATH),
         filename: Path.join('js', '[name].bundle.js'),
-        chunkFilename: Path.join('js', '[id].chunk.js')
+        chunkFilename: Path.join('js', '[id].chunk.js') // TODO: investigate this too
     },
 
     // add development/production plugins here
     plugins: [
+        new CommonsChunkPlugin({
+            name: 'commons',
+        }),
         // the plugin that extracts all CSS required in JS into a bundled css file
-        //new ExtractTextPlugin('./css/[name].css'),
+        new ExtractTextPlugin('./css/[name].css'),
 
         // TODO: one image gets copied twice because it is already required in one of the css files.. please recheck this later
         new CopyWebpackPlugin([{
             from: Path.join(__dirname, SRC_PATH, 'assets'),
             to: Path.join(__dirname, DIST_PATH)
-        }, {
-            // HACK: temporary. make semantic.min.css load in every page (by placing it on layout.hbs) to load it async
-            // this way, only page-specific css will be loaded inline with javascript
-            from: Path.join(__dirname, SRC_PATH, 'semantic', 'dist', 'semantic.min.css'),
-            to: Path.join(__dirname, DIST_PATH, 'css')
-        }, {
-            from: Path.join(__dirname, SRC_PATH, 'semantic', 'dist', 'themes'),
-            to: Path.join(__dirname, DIST_PATH, 'css', 'themes')
         }])
     ]
 };

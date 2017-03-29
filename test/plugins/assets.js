@@ -66,13 +66,13 @@ describe('Plugin: assets', function() {
         });
     });
 
-    it('returns semantic-ui minified css', function(done) {
+    it('returns commons css', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            server.inject('/css/semantic.min.css', function(response) {
+            server.inject('/css/commons.css', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();
@@ -82,34 +82,13 @@ describe('Plugin: assets', function() {
         });
     });
 
-    /*
-    Disabled for now, CSS will be removed from JS soon
-     */
-    /*
-    it('returns the app css', function(done) {
+    it('returns the commons js', function(done) {
 
         Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
 
             expect(err).to.not.exist();
 
-            server.inject('/css/app.css', function(response) {
-
-                expect(response.statusCode).to.equal(200);
-                expect(response.result).to.be.a.string();
-            });
-
-            Manager.stop(done);
-        });
-    });
-    */
-
-    it('returns the login js', function(done) {
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-
-            server.inject('/js/login.bundle.js', function(response) {
+            server.inject('/js/commons.bundle.js', function(response) {
 
                 expect(response.statusCode).to.equal(200);
                 expect(response.result).to.be.a.string();

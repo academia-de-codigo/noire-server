@@ -10,12 +10,17 @@
 
     <title>Noire Server {{version}}</title>
 
-    <link href="/css/semantic.min.css" rel="stylesheet">
+    <link href="/css/commons.css" rel="stylesheet">
+    <link href="/css/{{page-name}}.css" rel="stylesheet">
+
 </head>
 
 <body>
 
     {{{ content }}}
+
+    <script src="/js/commons.bundle.js" charset="utf-8"></script>
+    <script src="/js/{{page-name}}.bundle.js" charset="utf-8"></script>
 
 </body>
 
