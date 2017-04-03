@@ -1,6 +1,7 @@
 /*
     Admin section
-.admin.card.column {
-    max-width: 200px;
-}
  */
+.ui.admin.card {
+    width: 200px;
+    height: 330px;
+}

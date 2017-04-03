@@ -1,7 +1,7 @@
-<div class="ui main three column stackable centered relaxed grid">
-    <div class="admin card column">
-        <a href="/admin/users">
-            <div class="ui link card">
+<div class="ui main stackable three column grid">
+    <div class="column">
+        <div class="basic segment">
+            <a class="ui centered link admin card" href="/admin/users">
                 <div class="image">
                     <img src="/img/users.png" alt="users">
                 </div>
@@ -12,13 +12,13 @@
                 <div class="extra content">
                     <span><i class="users icon"></i>{{count.users}} Users</span>
                 </div>
-            </div>
-        </a>
+            </a>
+        </div>
     </div>
-    <div class="admin card column">
-        <a href="/admin/roles">
-            <div class="ui link card">
-                <div class="image">
+    <div class="column">
+        <div class="basic segment">
+            <a class="ui centered link admin card" href="/admin/roles">
+                <div class="image" href="/admin/roles">
                     <img src="/img/roles.png" alt="roles">
                 </div>
                 <div class="content">
@@ -28,21 +28,23 @@
                 <div class="extra content">
                     <span><i class="group icon"></i>{{count.roles}} Roles</span>
                 </div>
-            </div>
-        </a>
+            </a>
+        </div>
     </div>
-    <div class="admin card column">
-        <div class="ui link card">
-            <div class="image">
-                <img src="/img/security.png" alt="resources">
-            </div>
-            <div class="content">
-                <div class="header">Permissions</div>
-                <div class="description">Add or Revoke Permissions</div>
-            </div>
-            <div class="extra content">
-                <span><i class="lock icon"></i>{{count.resources}} Resources</span>
-            </div>
+    <div class="column">
+        <div class="basic segment">
+            <a class="ui centered link admin card" href="#">
+                <div class="image">
+                    <img src="/img/security.png" alt="resources">
+                </div>
+                <div class="content">
+                    <div class="header">Permissions</div>
+                    <div class="description">Add or Revoke Permissions</div>
+                </div>
+                <div class="extra content">
+                    <span><i class="lock icon"></i>{{count.resources}} Resources</span>
+                </div>
+            </a>
         </div>
     </div>
 </div>
