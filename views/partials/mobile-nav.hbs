@@ -3,8 +3,8 @@
 <a class="item" href="#">Two</a>
 <a class="item" href="#">Three</a>
 <a class="item" href="#">Four</a>
-{{#if user}}
-    {{#if user.admin}}
+{{#if credentials}}
+    {{#if credentials.admin}}
         <a class="item" href="/admin">Admin</a>
     {{else}}
         <a class="item" href="/">Home</a>

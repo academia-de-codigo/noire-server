@@ -35,15 +35,16 @@ var validationRules = {
         },
     },
     onValid: function() {
+
         if (fieldsAreEmpty()) {
-            toggleButton(false);
+            toggleSubmitButton(false);
             return;
         }
 
-        toggleButton(true);
+        toggleSubmitButton(true);
     },
     onInvalid: function() {
-        toggleButton(false);
+        toggleSubmitButton(false);
     }
 };
 
@@ -65,7 +66,7 @@ function setupForm() {
  * toggles or sets a button state
  * @param  {Boolean} absoluteState if supplied, button state will be set to this state (true - active, false - not actve). if not, it will be toggled
  */
-function toggleButton(absoluteState) {
+function toggleSubmitButton(absoluteState) {
 
     // get current button state
     var buttonState = !submitButton.attr('disabled');
@@ -88,6 +89,7 @@ function toggleButton(absoluteState) {
 }
 
 function fieldsAreEmpty() {
+
     var fields = formElement.serializeObject();
 
     return Object.keys(fields).every(function(field) {
