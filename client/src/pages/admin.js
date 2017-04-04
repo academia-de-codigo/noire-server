@@ -20,7 +20,7 @@ function grabDomElements() {
 function setupUserTableBehaviour() {
 
     // delegate table click events on the corresponding row
-    userTable.on('click', 'tr', function(event) {
+    userTable.on('click', 'tbody tr', function(event) {
 
         // api can trigger XHR call..
         /*$(event.currentTarget).api({
@@ -37,7 +37,7 @@ function setupUserTableBehaviour() {
 function setupRoleTableBehaviour() {
 
     // delegate table click events on the corresponding row
-    roleTable.on('click', 'tr', function(event) {
+    roleTable.on('click', 'tbody tr', function(event) {
 
         var roleId = $(event.currentTarget) .attr('data-id');
         window.location.href = $.fn.api.settings.api['view role'].replace(/{id}/, roleId);

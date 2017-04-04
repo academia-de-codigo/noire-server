@@ -104,17 +104,22 @@ describe('Web Controller: admin', function() {
             params: {
                 partial: 'users'
             },
+            query: {},
             log: function() {}
         };
 
+        var userCount = 2;
+        var countUsers = Sinon.stub(UserService, 'count').returns(userCount);
         var listUsers = Sinon.stub(UserService, 'list').returns(Promise.resolve(internals.users));
 
         var reply = function() {};
         reply.view = function(page, context) {
             expect(page).to.equals('pages/admin');
+            expect(UserService.count.calledOnce).to.be.true();
             expect(UserService.list.calledOnce).to.be.true();
             expect(context.users).to.equals(internals.users);
             expect(context.getAdminPartial()).to.equals('admin/user-list');
+            countUsers.restore();
             listUsers.restore();
             done();
         };
@@ -128,9 +133,12 @@ describe('Web Controller: admin', function() {
             params: {
                 partial: 'users'
             },
+            query: {},
             log: function() {}
         };
 
+        var userCount = 2;
+        var countUsers = Sinon.stub(UserService, 'count').returns(userCount);
         var listUsers = Sinon.stub(UserService, 'list').returns(Promise.reject('error'));
 
         AdminCtrl.get(request, function(response) {
@@ -141,6 +149,7 @@ describe('Web Controller: admin', function() {
             expect(response.output.payload.message).to.equals('An internal server error occurred');
 
             listUsers.restore();
+            countUsers.restore();
             done();
         });
     });
@@ -151,18 +160,23 @@ describe('Web Controller: admin', function() {
             params: {
                 partial: 'roles'
             },
+            query: {},
             log: function() {}
         };
 
+        var roleCount = 2;
+        var countRoles = Sinon.stub(RoleService, 'count').returns(roleCount);
         var listRoles = Sinon.stub(RoleService, 'list').returns(Promise.resolve(internals.roles));
 
         var reply = function() {};
         reply.view = function(page, context) {
             expect(page).to.equals('pages/admin');
             expect(RoleService.list.calledOnce).to.be.true();
+            expect(RoleService.count.calledOnce).to.be.true();
             expect(context.roles).to.equals(internals.roles);
             expect(context.getAdminPartial()).to.equals('admin/role-list');
             listRoles.restore();
+            countRoles.restore();
             done();
         };
 
@@ -175,9 +189,12 @@ describe('Web Controller: admin', function() {
             params: {
                 partial: 'roles'
             },
+            query: {},
             log: function() {}
         };
 
+        var roleCount = 2;
+        var countRoles = Sinon.stub(RoleService, 'count').returns(roleCount);
         var listRoles = Sinon.stub(RoleService, 'list').returns(Promise.reject('error'));
 
         AdminCtrl.get(request, function(response) {
@@ -188,6 +205,7 @@ describe('Web Controller: admin', function() {
             expect(response.output.payload.message).to.equals('An internal server error occurred');
 
             listRoles.restore();
+            countRoles.restore();
             done();
         });
     });
