@@ -40,21 +40,19 @@
         </div>
         <div class="ui column">
             <div class="ui basic right aligned segment">
-                <select class="ui fluid dropdown">
-                    <option value="">Order</option>
-                    <option value="user">User</option>
-                    <option value="name">Name</option>
-                    <option value="email">Email</option>
+                <select class="ui fluid dropdown" onChange="window.location.href=this.value">
+                    {{#each sortOptions}}
+                    <option value="{{this.value}}" {{#if selected}}selected="selected"{{/if}}>{{this.name}}</option>
+                    {{/each}}
                 </select>
             </div>
         </div>
         <div class="ui column">
             <div class="ui basic right aligned segment">
-                <select class="ui fluid dropdown">
-                    <option value="">Limit</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
+                <select class="ui fluid dropdown" onchange="window.location.href=this.value">
+                    {{#each limitOptions}}
+                    <option value="{{this.value}}" {{#if selected}}selected="selected"{{/if}}>{{this.name}}</option>
+                    {{/each}}
                 </select>
             </div>
         </div>
