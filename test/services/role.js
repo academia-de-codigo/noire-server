@@ -77,6 +77,25 @@ describe('Service: role', function() {
         });
     });
 
+    it('lists roles with a search clause', function(done) {
+
+        var criteria = {
+            search: '%adm%'
+        };
+        RoleService.list(criteria).then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results.users).to.not.exists();
+            results.forEach(function(role) {
+                expect(role).to.be.instanceof(RoleModel);
+                expect(role.id === 1).to.be.true();
+                expect(role.name).to.be.a.string();
+            });
+        });
+        done();
+
+    });
+
     it('lists roles with limit', function(done) {
 
         var criteria = {

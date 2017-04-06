@@ -78,6 +78,27 @@ describe('Service: user', function() {
         });
     });
 
+    it('lists users with a search clause', function(done) {
+
+        var criteria = {
+            search: '%tes%'
+        };
+        UserService.list(criteria).then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            expect(results.roles).to.not.exists();
+            results.forEach(function(user) {
+                expect(user).to.be.instanceof(UserModel);
+                expect(user.id === 2).to.be.true();
+                expect(user.username).to.be.a.string();
+                expect(user.email).to.be.a.string();
+                expect(user.password).to.not.exists();
+            });
+        });
+        done();
+
+    });
+
     it('lists users with limit', function(done) {
 
         var criteria = {
