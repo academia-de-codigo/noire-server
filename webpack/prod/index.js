@@ -1,48 +1,41 @@
 var Path = require('path');
-
-var rules = require('./rules');
-var plugins = require('./plugins');
 var utils = require('../utils');
+
+var Rules = require('./rules');
+var Plugins = require('./plugins');
+var DevRules = require('../dev/rules');
+var DevPlugins = require('../dev/plugins');
 
 module.exports = function(options) {
 
-    var entries = utils.prepareEntries(Path.join(options.BASE_PATH, options.src.path, options.src.js));
+    var paths, entryPoints, entries, rules, plugins;
 
-    options.optimizations = options.optimizations || {
+    paths = options.paths;
+    entryPoints = Path.join(paths.src.path, paths.src.entryPoints);
+
+    entries = utils.prepareEntries(entryPoints);
+    rules = utils.init(Rules, options);
+    plugins = utils.init(Plugins, options);
+
+    paths.optimizations = paths.optimizations || {
         minimize: true,
         beautify: false
     };
 
-    if (options.extendDev !== false) {
-        extendFromDev();
+    if (paths.extendDev !== false) {
+        rules = utils.init(DevRules, paths).concat(rules);
+        plugins = utils.init(DevPlugins, paths).concat(plugins);
     }
 
     return {
         entry: entries,
         module: {
-            rules: rules(options)
+            rules: rules
         },
         output: {
-            path: Path.join(options.BASE_PATH, options.dist.path),
-            filename: Path.join(options.dist.js, '[name].bundle.js'),
-            chunkFilename: Path.join(options.dist.js, '[id].chunk.js') // TODO: investigate this too
+            path: paths.output.path,
+            filename: Path.join(paths.output.js, '[name].bundle.js')
         },
-        plugins: plugins(options)
+        plugins: plugins
     };
 };
-
-function extendFromDev() {
-
-    var prodRules = rules;
-    var prodPlugins = plugins;
-    var devRules = require('../dev/rules');
-    var devPlugins = require('../dev/plugins');
-
-    rules = function(options) {
-        return devRules(options).concat(prodRules(options));
-    };
-
-    plugins = function(options) {
-        return devPlugins(options).concat(prodPlugins(options));
-    };
-}

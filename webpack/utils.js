@@ -15,3 +15,12 @@ exports.prepareEntries = function(path) {
 
     return entries;
 };
+
+/**
+ * This is used to init plugins and rules.. cant find a better name
+ */
+exports.init = function(configurations, options) {
+    return configurations.map(function(conf) {
+        return conf(options);
+    });
+};

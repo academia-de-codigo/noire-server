@@ -1,0 +1,50 @@
+<div class="ui main stackable grid">
+
+    <div class="ui two column row">
+        <div class="ui column">
+            <div class="ui large breadcrumb basic left aligned segment">
+                <h3>
+                    <i class="group icon"></i>
+                    <a href="/admin" class="section">Admin</a>
+                    <div class="divider"> / </div>
+                    <a href="/admin/roles" class="section">Roles</a>
+                    <div class="divider"> / </div>
+                    <div class="ui section active">{{role.name}}</div>
+                </h3>
+            </div>
+        </div>
+        <div class="ui computer tablet only column">
+            <div class="ui basic right aligned segment">
+                <div class="ui primary button">
+                    <i class="edit icon"></i> Edit Role
+                </div>
+            </div>
+        </div>
+        <div class="ui mobile only column">
+            <div class="ui basic left aligned segment">
+                <div class="ui primary button">
+                    <i class="edit icon"></i> Edit Role
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui one column row">
+        <div class="ui column">
+            <div class="ui raised segment">
+                <div class="ui primary ribbon label">{{role.id}}</div>
+                <p></p>
+                <div class="ui large list">
+                    <div class="item">
+                        <div class="header">Name</div>
+                        <div class="content">{{role.name}}</div>
+                    </div>
+                    <div class="item">
+                        <div class="header">Description</div>
+                        <div class="content">{{role.description}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

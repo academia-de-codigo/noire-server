@@ -1,3 +1,4 @@
+var Path = require('path');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var rules = {};
@@ -14,7 +15,7 @@ rules.extractCSS = function(options) {
             use: [{
                 loader: 'css-loader',
                 options: {
-                    minimize: options.optimizations.minimize || false
+                    minimize: options.optimizations ? options.optimizations.minimize : false
                 }
             }]
         })
@@ -23,33 +24,30 @@ rules.extractCSS = function(options) {
 
 // static assets required by bundles (e.g css files using url()) will be included in the build process
 // and copied to the desired folder
-rules.extractImages = function() {
+rules.extractImages = function(options) {
     return {
         // pictures will live inside /assets/img/ folder
         test: /\.(png|jpg|gif|svg)$/,
         loader: 'url-loader',
         options: {
-            // public path prepends '../' where this file is required
-            // css file lives inside client/src/css/ and images in client/assets/img/, so it has to go up two levels
-            // (e.g. require('../img/asset.png'))
-            publicPath: '../img/',
+            publicPath: Path.join('..', '/'),
             name: '[name].[ext]',
-            outputPath: './img/',
-            limit: 10000 // TODO: investigate this.. does not build the files with this option off
+            outputPath: Path.join(options.paths.output.img, '/'), // file-loader needs a trailling slash on the path (didnt find open issue)
+            limit: 1024 // images smaller than 1MB will be imported as a data url (in base64)
         }
     };
 };
 
-rules.extractFonts = function() {
+rules.extractFonts = function(options) {
     return {
         // fonts will live inside /assets/fonts/
         test: /\.(eot|ttf|woff|woff2)$/,
         loader: 'url-loader',
         options: {
-            publicPath: '/fonts/',
+            publicPath: Path.join('..', '/'),
             name: '[name].[ext]',
-            outputPath: './fonts/',
-            limit: 10000
+            outputPath: Path.join(options.paths.output.fonts, '/'),
+            limit: 1024
         }
     };
 };

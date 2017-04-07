@@ -1,35 +1,64 @@
 var Webpack = require('./webpack');
-var Config = require('./lib/config');
+var Path = require('path');
 
-var devOptions, prodOptions;
+var internals = {};
+internals.production = process.env.NODE_ENV === 'production';
 
-devOptions = prodOptions = {
-    BASE_PATH: __dirname,
-    src: {
-        path: Config.build.src,
-        js: 'src/pages',
-        assets: 'assets',
-        views: 'views'
-    },
-    dist: {
-        path: Config.build.dist,
-        js: 'js',
-        assets: Config.build.dist,
-        views: 'views'
-    },
-    names: {
-        commons: 'commons' // where should I put this config?
-    },
-    optimizations: {}
+module.exports = build;
+
+internals.basePath = Path.join(__dirname, 'client');
+internals.srcPath = 'src';
+internals.outputPath = 'dist';
+
+internals.src = {
+    path: Path.join(internals.basePath, internals.srcPath),
+    entryPoints: 'js/pages',
+    assets: 'assets',
+    views: 'views',
 };
 
-module.exports = getConfig;
+internals.output = {
+    path: Path.join(internals.basePath, internals.outputPath),
+    js: 'js',
+    views: 'views',
+    css: 'css',
+    img: 'img',
+    fonts: 'fonts'
+};
 
-function getConfig() {
+internals.assets = {
+    css: 'css',
+    fonts: 'fonts',
+    img: 'img'
+};
 
-    if (Config.environment === 'production') {
-        return Webpack.production(prodOptions);
+internals.views = {
+    pages: 'pages',
+    partials: 'partials',
+    layout: 'layout.hbs'
+};
+
+internals.options = {
+    plugins: {
+        commons: {
+            filename: 'commons'
+        }
+    },
+    paths: {
+        base: internals.basePath,
+        src: internals.src,
+        output: internals.output,
+        views: internals.views,
+        assets: internals.assets
+    }
+};
+
+module.exports.options = internals.options;
+
+function build() {
+    if (internals.production) {
+        return Webpack.production(internals.options, module.exports.paths);
     } else {
-        return Webpack.dev(devOptions);
+        return Webpack.dev(internals.options, module.exports.paths);
     }
 }

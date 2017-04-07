@@ -1,23 +1,30 @@
 var Path = require('path');
-
-var rules = require('./rules');
-var plugins = require('./plugins');
 var utils = require('../utils');
+
+var Rules = require('./rules');
+var Plugins = require('./plugins');
 
 module.exports = function(options) {
 
-    var entries = utils.prepareEntries(Path.join(options.BASE_PATH, options.src.path, options.src.js));
+    var paths, entryPoints, entries, rules, plugins;
+
+    paths = options.paths;
+    entryPoints = Path.join(paths.src.path, paths.src.entryPoints);
+
+    entries = utils.prepareEntries(entryPoints);
+    rules = utils.init(Rules, options);
+    plugins = utils.init(Plugins, options);
 
     return {
+        context: paths.basePath,
         entry: entries,
         module: {
-            rules: rules(options)
+            rules: rules,
         },
         output: {
-            path: Path.join(options.BASE_PATH, options.dist.path),
-            filename: Path.join(options.dist.js, '[name].bundle.js'),
-            chunkFilename: Path.join(options.dist.js, '[id].chunk.js') // TODO: investigate this too
+            path: paths.output.path,
+            filename: Path.join(paths.output.js, '[name].bundle.js')
         },
-        plugins: plugins(options)
+        plugins: plugins
     };
 };

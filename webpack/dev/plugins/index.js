@@ -1,13 +1,9 @@
-var Path = require('path');
-var Glob = require('glob');
 
-var pluginFiles = Glob.sync(Path.join(__dirname, 'internals', '**/*.js'));
+var plugins = [
+    require('./commons'),
+    require('./extract-text'),
+    require('./interpolator'),
+    require('./copy-files'),
+];
 
 module.exports = plugins;
-
-function plugins(options) {
-
-    return pluginFiles.map(function(file) {
-        return require(file)(options);
-    });
-}

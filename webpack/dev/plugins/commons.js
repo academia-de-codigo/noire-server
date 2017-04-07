@@ -4,7 +4,7 @@ var CommonsChunkPlugin = Webpack.optimize.CommonsChunkPlugin;
 module.exports = function(options) {
 
     var config = {
-        name: options.names.commons || 'commons'
+        name: options.plugins.commons.filename || 'commons'
     };
 
     return new CommonsChunkPlugin(config);

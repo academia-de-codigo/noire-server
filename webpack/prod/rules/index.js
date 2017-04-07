@@ -1,8 +1,4 @@
-//var rulesFiles = glob.sync(Path.join(__dirname, 'internals', '**/*.js');
+
+var rules = [];
 
 module.exports = rules;
-
-function rules() {
-
-    return [];
-}

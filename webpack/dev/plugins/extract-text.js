@@ -1,10 +1,10 @@
+var Path = require('path');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-module.exports = function() {
+module.exports = function(options) {
 
-    // TODO: make this configurable from outside
     var config = {
-        filename: './css/[name].css'
+        filename: Path.join(options.paths.output.css, '[name].css')
     };
 
     return new ExtractTextPlugin(config);
