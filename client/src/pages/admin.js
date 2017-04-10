@@ -2,7 +2,7 @@ require('../../assets/css/admin.css');
 require('../app');
 require('../commons/nav');
 
-var userTable, roleTable, dropdown, search;
+var userTable, roleTable, dropdown, search, searchValue;
 
 $(document).ready(function() {
 
@@ -19,12 +19,19 @@ function grabDomElements() {
     roleTable = $('.ui.role.table');
     dropdown = $('.ui.dropdown');
     search = $('.ui.search');
+    searchValue = $('#search');
 }
 
 function setupSearchBehaviour() {
+
+    searchValue.keydown(function(event) {
+        if (event.which === 13) {
+            executeQuery();
+        }
+    });
+
     search.on('click', '.link.icon', function() {
-        var value = $('#search').val() || '%';
-        window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
+        executeQuery();
     });
 }
 
@@ -57,4 +64,9 @@ function setupRoleTableBehaviour() {
         var roleId = $(event.currentTarget).attr('data-id');
         window.location.href = $.fn.api.settings.api['view role'].replace(/{id}/, roleId);
     });
+}
+
+function executeQuery() {
+    var value = $(searchValue).val() || '%';
+    window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
 }
