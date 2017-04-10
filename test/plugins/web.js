@@ -90,7 +90,6 @@ describe('Plugin: web', function() {
                 expect(options.engines).to.exist();
                 expect(options.engines.hbs).to.exist();
                 expect(options.context).to.exist();
-                expect(options.layout).to.be.true();
                 expect(options.context.version).to.equals(Package.version);
             },
             route: function() {}
