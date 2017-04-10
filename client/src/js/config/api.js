@@ -4,7 +4,7 @@ exports.routes = {
     'update profile': '/profile',
     'view user': '/admin/user/{id}',
     'view role': '/admin/role/{id}',
-    'list with param': '?sort={/sort}&limit={/limit}'
+    'list with search': '?search={value}'
 };
 
 exports.XHR_OPTIONS = {

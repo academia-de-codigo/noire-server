@@ -2,14 +2,15 @@ require('../../assets/css/admin.css');
 require('../app');
 require('../commons/nav');
 
-var userTable, roleTable, dropdown;
+var userTable, roleTable, dropdown, search;
 
 $(document).ready(function() {
 
     grabDomElements();
     setupUserTableBehaviour();
     setupRoleTableBehaviour();
-    setupDropdown();
+    setupDropdownBehaviour();
+    setupSearchBehaviour();
 
 });
 
@@ -17,9 +18,17 @@ function grabDomElements() {
     userTable = $('.ui.user.table');
     roleTable = $('.ui.role.table');
     dropdown = $('.ui.dropdown');
+    search = $('.ui.search');
 }
 
-function setupDropdown() {
+function setupSearchBehaviour() {
+    search.on('click', '.link.icon', function() {
+        var value = $('#search').val() || '%';
+        window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
+    });
+}
+
+function setupDropdownBehaviour() {
     dropdown.dropdown();
 }
 
