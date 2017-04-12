@@ -81,7 +81,7 @@ describe('Service: user', function() {
     it('lists users with a search clause', function(done) {
 
         var criteria = {
-            search: '%tes%'
+            search: 'tes'
         };
         UserService.list(criteria).then(function(results) {
             expect(results).to.be.an.array();

@@ -2,10 +2,11 @@ var Promise = require('bluebird');
 var Code = require('code'); // the assertions library
 var Lab = require('lab'); // the test framework
 var Sinon = require('sinon');
-var AdminCtrl = require('../../../lib/controllers/web/admin');
-var UserService = require('../../../lib/services/user');
-var RoleService = require('../../../lib/services/role');
-var ResourceService = require('../../../lib/services/resource');
+var AdminCtrl = require('../../../../lib/controllers/web/admin');
+var PartialHelper = require('../../../../lib/controllers/web/admin/partial');
+var UserService = require('../../../../lib/services/user');
+var RoleService = require('../../../../lib/services/role');
+var ResourceService = require('../../../../lib/services/resource');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
@@ -208,6 +209,16 @@ describe('Web Controller: admin', function() {
             countRoles.restore();
             done();
         });
+    });
+
+    it('returns main partial if asked for invalid partial', function(done) {
+
+        var partialSpy = Sinon.spy(PartialHelper, 'getPartialHelper');
+        PartialHelper.getPartialHelper('inexistentPartial');
+        var partialSpyCall = PartialHelper.getPartialHelper.getCall(0);
+        expect(partialSpyCall.returnValue()).to.equals('admin/main');
+        partialSpy.restore();
+        done();
     });
 
 });

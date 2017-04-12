@@ -30,17 +30,17 @@
     <div class="ui three column row">
         <div class="ui column">
             <div class="ui basic segment">
-                <div class="ui loading search">
+                <div class="ui search">
                     <div class="ui icon input">
-                        <input class="prompt" type="text" placeholder="Search roles...">
-                        <i class="search icon"></i>
+                        <input id="search" class="prompt" type="text" placeholder="Search roles...">
+                        <i class="search link icon"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="ui column">
             <div class="ui basic right aligned segment">
-                <select class="ui fluid dropdown" onChange="window.location.href=this.value">
+                <select class="ui fluid dropdown">
                     {{#each sortOptions}}
                     <option value="{{this.value}}" {{#if selected}}selected="selected"{{/if}}>{{this.name}}</option>
                     {{/each}}
@@ -49,7 +49,7 @@
         </div>
         <div class="ui column">
             <div class="ui basic right aligned segment">
-                <select class="ui fluid dropdown" onChange="window.location.href=this.value">
+                <select class="ui fluid dropdown">
                     {{#each limitOptions}}
                     <option value="{{this.value}}" {{#if selected}}selected="selected"{{/if}}>{{this.name}}</option>
                     {{/each}}

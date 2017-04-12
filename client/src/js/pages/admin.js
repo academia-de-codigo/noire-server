@@ -36,7 +36,12 @@ function setupSearchBehaviour() {
 }
 
 function setupDropdownBehaviour() {
-    dropdown.dropdown();
+    dropdown.dropdown({
+        action: function(text, value) {
+            window.location.href = $.fn.api.settings.api['list from dropdown'].replace(/{query}/, value);
+        }
+    });
+
 }
 
 function setupUserTableBehaviour() {
@@ -67,6 +72,8 @@ function setupRoleTableBehaviour() {
 }
 
 function executeQuery() {
-    var value = $(searchValue).val() || '%';
-    window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
+    var value = $(searchValue).val().trim();
+    if (value) {
+        window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
+    }
 }
