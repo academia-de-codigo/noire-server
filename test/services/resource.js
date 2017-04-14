@@ -59,6 +59,19 @@ describe('Service: resource', function() {
         });
     });
 
+    it('counts resources with search criteria', function(done) {
+
+        var criteria = {
+            search: 'user'
+        };
+
+        ResourceService.count(criteria).then(function(result) {
+
+            expect(result).to.equals(1);
+            done();
+        });
+    });
+
     it('lists resources', function(done) {
 
         ResourceService.list().then(function(results) {
@@ -72,6 +85,24 @@ describe('Service: resource', function() {
             });
             done();
         });
+    });
+
+    it('lists resources with a search clause', function(done) {
+
+        var criteria = {
+            search: 'use'
+        };
+        ResourceService.list(criteria).then(function(results) {
+            expect(results).to.be.an.array();
+            expect(results.length).to.equals(1);
+            results.forEach(function(resource) {
+                expect(resource).to.be.instanceof(ResourceModel);
+                expect(resource.id === 1).to.be.true();
+                expect(resource.name).to.be.a.string();
+            });
+        });
+        done();
+
     });
 
     it('lists resources with limit', function(done) {

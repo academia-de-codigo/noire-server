@@ -26,6 +26,7 @@ describe('Web Controller: admin - model list', function() {
     it('goes to next page', function(done) {
         var count = 5;
         var query = {
+            search: 'test',
             limit: 1,
             page: 3,
         };
@@ -35,10 +36,10 @@ describe('Web Controller: admin - model list', function() {
 
         var querySpyCall = ModelList.getNextPageHelper.getCall(0);
 
-        expect(querySpyCall.returnValue()).to.equals('?limit=1&page=4');
+        expect(querySpyCall.returnValue()).to.equals('?search=test&limit=1&page=4');
         expect(query.page).to.equals(4);
         expect(query.limit).to.exist();
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         nextSpy.restore();
@@ -46,20 +47,21 @@ describe('Web Controller: admin - model list', function() {
     });
 
     it('stays in the same page if in its last', function(done) {
-        var count = 5;
+        var count = 2;
         var query = {
+            search: 'test',
             limit: 1,
-            page: 5
+            page: 2
         };
 
         var nextSpy= Sinon.spy(ModelList, 'getNextPageHelper');
         ModelList.getNextPageHelper(query, count);
 
         var querySpyCall = ModelList.getNextPageHelper.getCall(0);
-        expect(querySpyCall.returnValue()).to.equals('?limit=1&page=5');
-        expect(query.page).to.equals(5);
+        expect(querySpyCall.returnValue()).to.equals('?search=test&limit=1&page=2');
+        expect(query.page).to.equals(2);
         expect(query.limit).to.exist();
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         nextSpy.restore();
@@ -68,17 +70,18 @@ describe('Web Controller: admin - model list', function() {
 
     it('goes to previous page', function(done) {
         var query = {
-            page: 4
+            page: 4,
+            search: 'test'
         };
 
         var previousSpy = Sinon.spy(ModelList, 'getPreviousPageHelper');
         ModelList.getPreviousPageHelper(query);
 
         var querySpyCall = ModelList.getPreviousPageHelper.getCall(0);
-        expect(querySpyCall.returnValue()).to.equals('?page=3');
+        expect(querySpyCall.returnValue()).to.equals('?page=3&search=test');
         expect(query.page).to.equals(3);
         expect(query.limit).to.not.exist();
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         previousSpy.restore();
@@ -87,16 +90,17 @@ describe('Web Controller: admin - model list', function() {
 
     it('stays in the same page if on its first', function(done) {
         var query = {
-            page: 1
+            page: 1,
+            search: 'test'
         };
         var previousSpy =Sinon.spy(ModelList, 'getPreviousPageHelper');
         ModelList.getPreviousPageHelper(query);
 
         var querySpyCall = ModelList.getPreviousPageHelper.getCall(0);
-        expect(querySpyCall.returnValue()).to.equals('?page=1');
+        expect(querySpyCall.returnValue()).to.equals('?page=1&search=test');
         expect(query.page).to.equals(1);
         expect(query.limit).to.not.exist();
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         previousSpy.restore();
@@ -106,17 +110,18 @@ describe('Web Controller: admin - model list', function() {
     it('goes to the last page', function(done) {
         var count = 201;
         var query = {
-            limit: 5
+            limit: 5,
+            search: 'test'
         };
 
         var lastSpy = Sinon.spy(ModelList, 'getLastPageHelper');
         ModelList.getLastPageHelper(query, count);
 
         var querySpyCall = ModelList.getLastPageHelper.getCall(0);
-        expect(querySpyCall.returnValue()).to.equals('?limit=5&page=41');
+        expect(querySpyCall.returnValue()).to.equals('?limit=5&search=test&page=41');
         expect(query.page).to.equals(41);
         expect(query.limit).to.equals(5);
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         lastSpy.restore();
@@ -125,16 +130,17 @@ describe('Web Controller: admin - model list', function() {
 
     it('goes to the first page', function(done) {
         var query = {
-            page: 20
+            page: 20,
+            search: 'test'
         };
         var firstSpy = Sinon.spy(ModelList, 'getFirstPageHelper');
         ModelList.getFirstPageHelper(query);
 
         var querySpyCall = ModelList.getFirstPageHelper.getCall(0);
-        expect(querySpyCall.returnValue()).to.equals('?page=1');
+        expect(querySpyCall.returnValue()).to.equals('?page=1&search=test');
         expect(query.page).to.equals(1);
         expect(query.limit).to.not.exist();
-        expect(query.search).to.not.exist();
+        expect(query.search).to.exist();
         expect(query.sort).to.not.exist();
         expect(query.descending).to.not.exist();
         firstSpy.restore();
@@ -157,9 +163,10 @@ describe('Web Controller: admin - model list', function() {
         done();
     });
 
-    it('creates query for each sort option ignoring other params except limit', function(done) {
+    it('creates query for each sort option ignoring other params except limit and search', function(done) {
         var sortOptions = internals.sortOptions;
         var query = {
+            search: 'test',
             limit: 10,
             sort: 'email',
             page: 5,
@@ -171,7 +178,7 @@ describe('Web Controller: admin - model list', function() {
         sortOptions.forEach(function(option) {
             expect(option.name).to.exist();
             expect(option.value).to.exist();
-            expect(option.value).to.equals('?limit=10&sort=' + option.name.toLowerCase());
+            expect(option.value).to.equals('?search=test&limit=10&sort=' + option.name.toLowerCase());
             expect(option.selected).to.exist();
         });
 
@@ -197,8 +204,9 @@ describe('Web Controller: admin - model list', function() {
         done();
     });
 
-    it('creates query for each limit option ignoring other params except sort', function(done) {
+    it('creates query for each limit option ignoring other params except sort and search', function(done) {
         var query = {
+            search: 'test',
             limit: 10,
             sort: 'email',
             page: 5,
@@ -215,7 +223,7 @@ describe('Web Controller: admin - model list', function() {
                 expect(option.value).to.equals('');
                 expect(option.selected).to.not.exist();
             } else {
-                expect(option.value).to.equals('?sort=email&limit=' + option.name);
+                expect(option.value).to.equals('?search=test&sort=email&limit=' + option.name);
                 expect(option.selected).to.exist();
             }
         });

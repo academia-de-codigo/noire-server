@@ -32,7 +32,7 @@
             <div class="ui basic segment">
                 <div class="ui search">
                     <div class="ui icon input">
-                        <input id="search" class="prompt" type="text" placeholder="Search roles...">
+                        <input id="search" class="prompt" type="text" {{#if searchQuery}}data-query={{searchQuery}} {{/if}} {{#if searchValue}} value="{{searchValue}}" {{/if}} autocomplete="off" placeholder="Search roles...">
                         <i class="search link icon"></i>
                     </div>
                 </div>

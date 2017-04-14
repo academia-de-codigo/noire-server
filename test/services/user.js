@@ -60,6 +60,19 @@ describe('Service: user', function() {
         });
     });
 
+    it('counts users with a search criteria', function(done) {
+
+        var criteria = {
+            search: 't u' //finds guesT User and tesT User
+        };
+
+        UserService.count(criteria).then(function(result) {
+
+            expect(result).to.equals(2);
+            done();
+        });
+    });
+
     it('lists users', function(done) {
 
         UserService.list().then(function(results) {

@@ -61,6 +61,19 @@ describe('Service: role', function() {
         });
     });
 
+    it('counts roles with search criteria', function(done) {
+
+        var criteria = {
+            search: 'administrator'
+        };
+
+        RoleService.count(criteria).then(function(result) {
+
+            expect(result).to.equals(1);
+            done();
+        });
+    });
+
     it('lists roles', function(done) {
 
         RoleService.list().then(function(results) {
@@ -80,7 +93,7 @@ describe('Service: role', function() {
     it('lists roles with a search clause', function(done) {
 
         var criteria = {
-            search: '%adm%'
+            search: 'adm'
         };
         RoleService.list(criteria).then(function(results) {
             expect(results).to.be.an.array();

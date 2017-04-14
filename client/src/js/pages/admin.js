@@ -38,7 +38,8 @@ function setupSearchBehaviour() {
 function setupDropdownBehaviour() {
     dropdown.dropdown({
         action: function(text, value) {
-            window.location.href = $.fn.api.settings.api['list from dropdown'].replace(/{query}/, value);
+
+            window.location.href = $.fn.api.settings.api['list with query'].replace(/{query}/, value);
         }
     });
 
@@ -72,8 +73,19 @@ function setupRoleTableBehaviour() {
 }
 
 function executeQuery() {
+
     var value = $(searchValue).val().trim();
-    if (value) {
-        window.location.href = $.fn.api.settings.api['list with search'].replace(/{value}/, value);
+    var previousQuery = searchValue.attr('data-query');
+
+    if (!value) {
+        window.location.href = previousQuery;
+        return;
     }
+
+    value = previousQuery ?
+        previousQuery + '&search=' + value :
+        '?search=' + value;
+
+
+    window.location.href = $.fn.api.settings.api['list with query'].replace(/{query}/, value);
 }
