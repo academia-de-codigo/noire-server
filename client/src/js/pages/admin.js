@@ -78,7 +78,7 @@ function executeQuery() {
     var previousQuery = searchValue.attr('data-query');
 
     if (!value) {
-        window.location.href = previousQuery;
+        window.location.href = previousQuery || window.location.pathname;
         return;
     }
 
