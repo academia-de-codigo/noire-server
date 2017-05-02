@@ -32,7 +32,7 @@
             <div class="ui basic segment">
                 <div class="ui search">
                     <div class="ui icon input">
-                        <input id="search" class="prompt" type="text" {{#if searchQuery}}data-query={{searchQuery}} {{/if}} {{#if searchValue}} value="{{searchValue}}" {{/if}} autocomplete="off" placeholder="Search users...">
+                        <input id="search" class="prompt" type="text" {{#if searchQuery}} data-query= {{searchQuery}} {{/if}} {{#if searchValue}} value="{{searchValue}}" {{/if}} autocomplete="off" placeholder="Search users...">
                         <i class="search link icon"></i>
                     </div>
                 </div>
@@ -75,22 +75,83 @@
                         {{#each users}}
                             <tr data-id="{{this.id}}">
                                 <!-- disabling this element prevents click events -->
-                                <td {{#unless this.active}} class="disabled" {{/unless}}>
+                                <td {{#if this.active}} class="user-row link" {{else}} class="disabled" {{/if}}>
                                     <img class="ui avatar image {{#unless this.active}} disabled {{/unless}}" src="{{this.avatar}}" alt="avatar">
                                 </td>
-                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.username}}</td>
-                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.name}}</td>
-                                <td {{#unless this.active}} class="disabled" {{/unless}}>{{this.email}}</td>
+                                <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.username}}</td>
+                                <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.name}}</td>
+                                <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.email}}</td>
                                 <td>
                                     <i class="large blue link write icon"></i>
                                     {{#if this.active}}
-                                        <i class="large disabled link remove user icon"></i>
+                                        <i class="large black link remove user activation icon"></i>
+                                        <i class="large disabled trash user icon"></i>
                                     {{else}}
-                                        <i class="large green link user icon"></i>
+                                        <i class="large green link user activation icon"></i>
+                                        <i class="large red link trash user icon"></i>
                                     {{/if}}
-                                    <i class="large red link trash user icon"></i>
                                 </td>
                             </tr>
+
+
+                            <div id="status-user-{{this.id}}" class="ui modal">
+                                <i class="close icon"></i>
+                                <div class="header">
+                                    User Status
+                                </div>
+                                <div class="image content">
+                                    <div class="ui medium image">
+                                        <img src="{{this.avatar}}">
+                                    </div>
+                                    <div class="description">
+                                        {{#if this.active}}
+                                        <div class="ui header">You are about to set {{this.username}}'s status to inactive</div>
+                                        <p>The user won't be able to login or access the account.</p>
+                                        <p>Do you want to proceed?</p>
+                                        {{else}}
+                                        <div class="ui header">You are about to set {{this.username}}'s status to active</div>
+                                        <p>User will regain access to the account.</p>
+                                        <p>Do you want to proceed?</p>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <div class="ui black deny button">
+                                        No
+                                    </div>
+                                    <div class="ui positive right labeled icon button">
+                                        Yes
+                                        <i class="checkmark icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="delete-user-{{this.id}}" class="ui modal activation">
+                                <i class="close icon"></i>
+                                <div class="header">
+                                    Delete User
+                                </div>
+                                <div class="image content">
+                                    <div class="ui medium image">
+                                        <img src="{{this.avatar}}">
+                                    </div>
+                                    <div class="description">
+                                        <div class="ui header">You are about to delete {{this.username}}'s account.</div>
+                                        <p>This action can't be reverted.</p>
+                                        <p>Do you want to proceed?</p>
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <div class="ui black deny button">
+                                        No
+                                    </div>
+                                    <div class="ui positive right labeled icon button">
+                                        Yes
+                                        <i class="checkmark icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
                         {{/each}}
                     </tbody>
                     <tfoot>
@@ -117,5 +178,6 @@
             </div>
         </div>
     </div>
+
 
 </div>

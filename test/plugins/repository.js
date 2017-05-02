@@ -44,7 +44,7 @@ describe('Plugin: repository', function() {
         });
     });
 
-    it('sould create a repository object for a specific model', function(done) {
+    it('should create a repository object for a specific model', function(done) {
 
         var fakeServer = {
             log: function() {},

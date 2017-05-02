@@ -32,7 +32,7 @@
             <div class="ui basic segment">
                 <div class="ui search">
                     <div class="ui icon input">
-                        <input id="search" class="prompt" type="text" {{#if searchQuery}}data-query={{searchQuery}} {{/if}} {{#if searchValue}} value="{{searchValue}}" {{/if}} autocomplete="off" placeholder="Search roles...">
+                        <input id="search" class="prompt" type="text" {{#if searchQuery}} data-query= {{searchQuery}} {{/if}} {{#if searchValue}} value="{{searchValue}}" {{/if}} autocomplete="off" placeholder="Search roles...">
                         <i class="search link icon"></i>
                     </div>
                 </div>
@@ -72,13 +72,38 @@
                     <tbody>
                         {{#each roles}}
                             <tr data-id="{{this.id}}">
-                                <td>{{this.name}}</td>
-                                <td>{{this.description}}</td>
+                                <td class="role-row">{{this.name}}</td>
+                                <td class="role-row">{{this.description}}</td>
                                 <td>
                                     <i class="large blue link write icon"></i>
-                                    <i class="large red link trash user icon"></i>
+                                    <i class="large red link trash role icon"></i>
                                 </td>
                             </tr>
+                            <div id="delete-role-{{this.id}}" class="ui modal activation">
+                                <i class="close icon"></i>
+                                <div class="header">
+                                    Delete Role
+                                </div>
+                                <div class="image content">
+                                    <div class="ui medium image">
+                                        <i class="book icon"></i>
+                                    </div>
+                                    <div class="description">
+                                        <div class="ui header">You are about to delete {{this.name}} from the roles' list.</div>
+                                        <p id="role-warning" hidden> <i class="warning sign icon"></i> There are users and/or permissions associated with this role</p>
+                                        <p>Do you want to proceed?</p>
+                                    </div>
+                                </div>
+                                <div class="actions">
+                                    <div class="ui black deny button">
+                                        No
+                                    </div>
+                                    <div class="ui positive right labeled icon button">
+                                        Yes
+                                        <i class="checkmark icon"></i>
+                                    </div>
+                                </div>
+                            </div>
                         {{/each}}
                     </tbody>
                     <tfoot>

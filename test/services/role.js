@@ -321,22 +321,6 @@ describe('Service: role', function() {
         });
     });
 
-    it('does not delete a role with user relations', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.delete(1).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_RELATION);
-            txSpy.restore();
-            done();
-        });
-    });
-
     it('updates an existing role', function(done) {
 
         var id = 4;
