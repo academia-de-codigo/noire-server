@@ -85,10 +85,10 @@
                                     <i class="large blue link write icon"></i>
                                     {{#if this.active}}
                                         <i class="large black link remove user activation icon"></i>
-                                        <i class="large disabled trash user icon"></i>
+                                        <i id="delete-user-{{this.id}}"class="large disabled trash user icon"></i>
                                     {{else}}
                                         <i class="large green link user activation icon"></i>
-                                        <i class="large red link trash user icon"></i>
+                                        <i id="delete-user-{{this.id}}"class="large red link trash user icon"></i>
                                     {{/if}}
                                 </td>
                             </tr>

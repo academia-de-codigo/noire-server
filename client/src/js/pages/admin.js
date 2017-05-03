@@ -109,10 +109,20 @@ function setupDeleteRoleModal(target, id) {
     }).modal('show');
 }
 
+
 function setupDeleteUserButtonBehaviour() {
     deleteUserButton.on('click', function(event) {
         var userId = $(event.currentTarget.closest('tr')).attr('data-id');
-        setupDeleteUserModal(deleteUserButton, userId);
+        var button = $('#delete-user-' + userId);
+        setupDeleteUserModal(button, userId);
+    });
+}
+
+function setupDeleteRoleButtonBehaviour() {
+    deleteRoleButton.on('click', function(event) {
+        var roleId = $(event.currentTarget.closest('tr')).attr('data-id');
+        var button = $('#delete-role-' + roleId);
+        setupDeleteRoleModal(button, roleId);
     });
 }
 
@@ -121,14 +131,6 @@ function setupActivationButtonBehaviour() {
     activationButton.on('click', function(event) {
         var userId = $(event.currentTarget.closest('tr')).attr('data-id');
         setupUserStatusModal(activationButton, userId);
-    });
-}
-
-function setupDeleteRoleButtonBehaviour() {
-
-    deleteRoleButton.on('click', function(event) {
-        var roleId = $(event.currentTarget.closest('tr')).attr('data-id');
-        setupDeleteRoleModal(deleteRoleButton, roleId);
     });
 }
 
