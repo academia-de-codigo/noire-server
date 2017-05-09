@@ -4,7 +4,8 @@ require('../commons/nav');
 
 var commons = require('../commons');
 
-var userTable, roleTable, dropdown, search, searchValue, activationButton, deleteUserButton, deleteRoleButton;
+var userTable, roleTable, resourceTable, dropdown, search,
+    searchValue, activationButton, deleteUserButton, deleteRoleButton;
 
 $(document).ready(function() {
 
@@ -16,12 +17,15 @@ $(document).ready(function() {
     setupActivationButtonBehaviour();
     setupDeleteUserButtonBehaviour();
     setupDeleteRoleButtonBehaviour();
+    setupResourceTableBehaviour();
+    setupSelectAllButton();
 
 });
 
 function grabDomElements() {
     userTable = $('.ui.user.table');
     roleTable = $('.ui.role.table');
+    resourceTable = $('.ui.resource.table');
     dropdown = $('.ui.dropdown');
     search = $('.ui.search');
     searchValue = $('#search');
@@ -30,7 +34,10 @@ function grabDomElements() {
     deleteRoleButton = $('.link.trash.role.icon');
 }
 
-
+function setupSelectAllButton() {
+    console.log($('.checkbox'));
+    $('.checkbox').checkbox('attach events', '.select-all.button' );
+}
 
 function setupSearchBehaviour() {
 
@@ -51,6 +58,12 @@ function setupDropdownBehaviour() {
 
             window.location.href = $.fn.api.settings.api['list with query'].replace(/{query}/, value);
         }
+    });
+}
+
+function setupResourceTableBehaviour() {
+    resourceTable.on('click', 'tbody tr td', function(event) {
+        $(event.currentTarget).find('.action-check').toggle();
     });
 }
 

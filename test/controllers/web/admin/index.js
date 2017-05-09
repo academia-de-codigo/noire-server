@@ -38,6 +38,14 @@ internals.roles = [{
     }]
 }];
 
+internals.resources = [{
+    id: 0,
+    name: 'user'
+}, {
+    id: 1,
+    name: 'role'
+}];
+
 describe('Web Controller: admin', function() {
 
     it('gets the main admin page', function(done) {
@@ -207,6 +215,62 @@ describe('Web Controller: admin', function() {
 
             listRoles.restore();
             countRoles.restore();
+            done();
+        });
+    });
+
+    it('gets the resources admin page', function(done) {
+
+        var request = {
+            params: {
+                partial: 'resources'
+            },
+            query: {},
+            log: function() {}
+        };
+
+        var resourceCount = 2;
+        var countResources = Sinon.stub(ResourceService, 'count').returns(resourceCount);
+        var listResources = Sinon.stub(ResourceService, 'list').returns(Promise.resolve(internals.resources));
+
+        var reply = function() {};
+        reply.view = function(page, context) {
+            expect(page).to.equals('pages/admin');
+            expect(ResourceService.list.calledOnce).to.be.true();
+            expect(ResourceService.count.calledOnce).to.be.true();
+            expect(context.resources).to.equals(internals.resources);
+            expect(context.getAdminPartial()).to.equals('admin/resource-list');
+            listResources.restore();
+            countResources.restore();
+            done();
+        };
+
+        AdminCtrl.get(request, reply);
+    });
+
+    it('handles errors getting the resources admin page', function(done) {
+
+        var request = {
+            params: {
+                partial: 'resources'
+            },
+            query: {},
+            log: function() {}
+        };
+
+        var resourceCount = 2;
+        var countResources = Sinon.stub(ResourceService, 'count').returns(resourceCount);
+        var listResources = Sinon.stub(ResourceService, 'list').returns(Promise.reject('error'));
+
+        AdminCtrl.get(request, function(response) {
+
+            expect(response.isBoom).to.be.true();
+            expect(response.output.statusCode).to.equals(500);
+            expect(response.output.payload.error).to.equals('Internal Server Error');
+            expect(response.output.payload.message).to.equals('An internal server error occurred');
+
+            listResources.restore();
+            countResources.restore();
             done();
         });
     });
