@@ -16,7 +16,7 @@
     "clean": "dist/"
   },
   "permission": 744,
-  "autoInstall": false,
+  "autoInstall": true,
   "rtl": false,
   "components": [
     "reset",
@@ -69,5 +69,5 @@
     "state",
     "visibility"
   ],
-  "version": "2.2.9"
+  "version": "2.2.10"
 }

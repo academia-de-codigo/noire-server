@@ -1,5 +1,5 @@
-# frontend build
-client/semantic/dist
+# semantic source files frontend build
+client/semantic
 client/dist
 
 # database files
