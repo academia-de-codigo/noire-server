@@ -15,10 +15,10 @@
     "secret": "node lib/utils/auth.js secret",
     "token": "node lib/utils/auth.js token",
     "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
-    "webpack": "npm run clean; webpack --hide-modules true --config webpack.config.js",
+    "webpack": "webpack --hide-modules true --config webpack.config.js",
     "webpack:watch": "webpack --config webpack.config.js --watch",
-    "build": "npm run semantic; npm run webpack",
-    "clean": "rm -rf client/dist/"
+    "build": "npm run clean; npm run semantic; npm run webpack",
+    "clean": "rm -rf client/dist/; rm -rf client/semantic/dist"
   },
   "repository": {
     "type": "git",
