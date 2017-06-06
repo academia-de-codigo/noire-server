@@ -73,16 +73,16 @@ Edit files in `lib/config`
 * `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
 * `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
 
-### Run the unit tests
-
-`npm test`
-
 ### Reset the database to it's original state
 
 `npm run reset`
 
 ### Build Semantic-UI
-`npm run semantic`
+`npm run build`
+
+### Run the unit tests
+
+`npm test`
 
 ### Launch the server
 
