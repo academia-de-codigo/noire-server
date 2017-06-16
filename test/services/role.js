@@ -422,7 +422,11 @@ describe('Service: role', function() {
         RoleService.addUsers(4, 2).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([2]);
+            expect(result).to.be.an.array();
+            expect(result.length).to.equals(1);
+            expect(result[0]).instanceof(Objection.Model);
+            expect(result[0].role_id).to.equals(4);
+            expect(result[0].user_id).to.equals(2);
             txSpy.restore();
             done();
         });
@@ -434,7 +438,15 @@ describe('Service: role', function() {
         RoleService.addUsers(4, [1, 2, 3]).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([1, 2, 3]);
+            expect(result).to.be.an.array();
+            expect(result.length).to.equals(3);
+            result.forEach(function(model) {
+                expect(model).instanceof(Objection.Model);
+                expect(model.role_id).to.equals(4);
+            });
+            expect(result.map(function(model) {
+                return model.user_id;
+            })).to.equals([1, 2, 3]);
             txSpy.restore();
             done();
         });
@@ -525,7 +537,7 @@ describe('Service: role', function() {
         RoleService.removeUsers(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([{}]);
+            expect(result).to.equals([1]);
             txSpy.restore();
             done();
         });
@@ -632,7 +644,9 @@ describe('Service: role', function() {
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addPermission(1, action, resource).then(function(result) {
 
-            expect(result).to.be.a.number();
+            expect(result).instanceof(Objection.Model);
+            expect(result.role_id).to.equals(1);
+            expect(result.permission_id).to.equals(10);
 
             Repository.permission.model.query().findById(10).eager('resource').then(function(permission) {
 
@@ -670,7 +684,9 @@ describe('Service: role', function() {
         var txSpy = Sinon.spy(Repository, 'tx');
         RoleService.addPermission(1, action, resource).then(function(result) {
 
-            expect(result).to.be.a.number();
+            expect(result).instanceof(Objection.Model);
+            expect(result.role_id).to.equals(1);
+            expect(result.permission_id).to.equals(9);
 
             Repository.permission.model.query().findById(9).eager('resource').then(function(permission) {
 
@@ -726,7 +742,7 @@ describe('Service: role', function() {
         RoleService.removePermissions(1, 1).then(function(result) {
 
             expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([{}]);
+            expect(result).to.equals([1]);
             txSpy.restore();
             done();
 
