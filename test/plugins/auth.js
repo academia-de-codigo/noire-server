@@ -8,7 +8,7 @@ var Exiting = require('exiting');
 var Path = require('path');
 var HSError = require('../../lib/error');
 var Manager = require('../../lib/manager');
-var UserService = require('../../lib/services/user');
+var UserService = require('../../lib/modules/authorization/services/user');
 var Auth = require('../../lib/plugins/auth');
 var Config = require('../../lib/config');
 

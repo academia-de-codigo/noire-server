@@ -10,10 +10,9 @@ module.exports = {
     paths: [
         'test/error.js',
         'test/manager.js',
-        'test/controllers',
+        'test/modules',
         'test/models',
-        'test/plugins',
-        'test/services'
+        'test/plugins'
     ],
     globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };

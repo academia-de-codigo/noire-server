@@ -7,7 +7,7 @@ var Exiting = require('exiting');
 var Manager = require('../../lib/manager');
 var Config = require('../../lib/config');
 var Auth = require('../../lib/plugins/auth');
-var UserService = require('../../lib/services/user');
+var UserService = require('../../lib/modules/authorization/services/user');
 var Sinon = require('sinon');
 
 var lab = exports.lab = Lab.script(); // export the test script

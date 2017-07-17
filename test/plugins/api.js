@@ -6,7 +6,7 @@ var Manager = require('../../lib/manager');
 var Package = require('../../package.json');
 var Path = require('path');
 var Config = require('../../lib/config');
-var LoginCtrl = require('../../lib/controllers/api/login');
+var LoginCtrl = require('../../lib/modules/authorization/controllers/api/login');
 
 var lab = exports.lab = Lab.script(); // export the test script
 
