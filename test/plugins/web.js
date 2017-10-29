@@ -108,7 +108,7 @@ describe('Plugin: web', function() {
             },
             views: function() {},
             route: function(routes) {
-                expect(routes).to.equals(WebRoutes.endpoints);
+                expect(routes).to.shallow.equals(WebRoutes.endpoints);
             }
         };
 

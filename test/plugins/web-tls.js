@@ -93,7 +93,7 @@ describe('Plugin: web-tls', function() {
             },
             views: function() {},
             route: function(routes) {
-                expect(routes).to.equals(WebTlsRoutes.endpoints);
+                expect(routes).to.shallow.equals(WebTlsRoutes.endpoints);
             }
         };
 
