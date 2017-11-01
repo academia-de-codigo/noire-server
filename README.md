@@ -10,7 +10,7 @@ Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 # Noire Server
 
-Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
+Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
 
 ### View Layer
 * Accept data

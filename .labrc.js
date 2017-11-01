@@ -8,11 +8,11 @@ module.exports = {
     'coverage-path': 'lib',
     'coverage-exclude': 'config',
     paths: [
-        'test/error.js',
-        'test/manager.js',
-        'test/modules',
-        'test/models',
-        'test/plugins'
+        'test/errors',
+        // 'test/manager.js',
+        // 'test/modules',
+        // 'test/models',
+        // 'test/plugins'
     ],
     globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };
