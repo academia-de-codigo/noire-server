@@ -9,7 +9,7 @@ module.exports = {
     'coverage-exclude': 'config',
     paths: [
         'test/errors',
-        // 'test/manager.js',
+        'test/utils',
         // 'test/modules',
         // 'test/models',
         // 'test/plugins'
