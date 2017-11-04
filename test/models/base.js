@@ -1,82 +1,81 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Objection = require('objection');
-var BaseModel = require('../../lib/models/base');
+const Lab = require('lab');
+const Objection = require('objection');
+const BaseModel = require('../../lib/models/base');
 
-var lab = exports.lab = Lab.script(); // export the test script
-var before = lab.before;
-
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+const { before, describe, expect, it } = exports.lab = Lab.script();
 
 describe('Model: base', function() {
 
-    var baseModel;
+    let baseModel;
 
-    before(function(done) {
+    before(() => {
         baseModel = new BaseModel();
-        done();
     });
 
-    it('it fectches relation models from the models directory', function(done) {
-        var path = BaseModel.modelPaths[0];
-        expect(path).to.endsWith('/lib/models');
-        done();
+    it('fectches relation models from the models directory', () => {
+
+        expect(BaseModel.modelPaths[0]).to.endsWith('/lib/models');
     });
 
-    it('should persist timestamp fields', function(done) {
+    it('should persist timestamp fields', () => {
+
         expect(BaseModel.pickJsonSchemaProperties).to.be.false();
-        done();
     });
 
-    it('extends from objection model', function(done) {
+    it('extends from objection model', () => {
 
         expect(baseModel).to.be.an.instanceof(Objection.Model);
-        done();
     });
 
-    it('should set created timestamp before record creation', function(done) {
+    it('should set created timestamp before creating new record', () => {
 
+        // exercise
         baseModel.$beforeInsert();
+
+        // verify
         expect(baseModel.created_at).to.exist();
         expect(Date.parse(baseModel.created_at)).to.be.a.number();
-        done();
     });
 
-    it('should set updated timestamp before record update', function(done) {
+    it('should set updated timestamp before record update', () => {
 
+        // exercise
         baseModel.$beforeUpdate();
+
+        // verify
         expect(baseModel.updated_at).to.exist();
         expect(Date.parse(baseModel.updated_at)).to.be.a.number();
-        done();
     });
 
-    it('should remove created timestamp after record creation', function(done) {
+    it('should remove created timestamp after creating new record', () => {
 
+        // exercise
         baseModel.$beforeInsert();
         baseModel.$afterInsert();
+
+        // verify
         expect(baseModel.created_at).not.to.exist();
-        done();
     });
 
-    it('should remove updated timestamp after record update', function(done) {
+    it('should remove updated timestamp after record update', () => {
 
+        // exercise
         baseModel.$beforeUpdate();
         baseModel.$afterUpdate();
+
+        // verify
         expect(baseModel.updated_at).not.to.exist();
-        done();
     });
 
-    it('should remove all timestamps after record get', function(done) {
+    it('should remove all timestamps after record get', () => {
 
+        // exercise
         baseModel.$beforeInsert();
         baseModel.$beforeUpdate();
         baseModel.$afterGet();
+
+        // verify
         expect(baseModel.updated_at).not.to.exist();
         expect(baseModel.created_at).not.to.exist();
-        done();
     });
-
 });

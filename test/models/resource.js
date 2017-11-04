@@ -1,38 +1,34 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var ResourceModel = require('../../lib/models/resource');
-var Model = require('../../lib/models/base');
+const Lab = require('lab');
+const ResourceModel = require('../../lib/models/resource');
+const BaseModel = require('../../lib/models/base');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('Model: resource', () => {
 
-describe('Model: resource', function() {
+    it('extends from base model', () => {
 
-    it('extends from base model', function(done) {
-
+        // exercise
         var resourceModel = new ResourceModel();
-        expect(resourceModel).to.be.an.instanceof(Model);
-        done();
+
+        // verify
+        expect(resourceModel).to.be.an.instanceof(BaseModel);
     });
 
-    it('should persist to a table named resource', function(done) {
+    it('should persist to a table named resource', () => {
+
         expect(ResourceModel.tableName).to.equals('resource');
-        done();
     });
 
-    it('should contain a schema', function(done) {
+    it('should contain a schema', () => {
+
         expect(ResourceModel.jsonSchema).to.be.an.object();
-        done();
     });
 
-    it('should contain relation mappings to permission model', function(done) {
+    it('should contain relation mappings to permission model', () => {
+
         expect(ResourceModel.relationMappings).to.be.an.object();
         expect(ResourceModel.relationMappings.permissions).to.exist();
-        expect(ResourceModel.relationMappings.permissions.relation).to.equals(Model.HasManyRelation);
-        done();
+        expect(ResourceModel.relationMappings.permissions.relation).to.equals(BaseModel.HasManyRelation);
     });
 });

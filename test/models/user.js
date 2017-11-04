@@ -1,38 +1,34 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var UserModel = require('../../lib/models/user');
-var Model = require('../../lib/models/base');
+const Lab = require('lab');
+const BaseModel = require('../../lib/models/base');
+const UserModel = require('../../lib/models/user');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('Model: user', () => {
 
-describe('Model: user', function() {
+    it('extends from base model', () => {
 
-    it('extends from base model', function(done) {
+        // exercise
+        let userModel = new UserModel();
 
-        var userModel = new UserModel();
-        expect(userModel).to.be.an.instanceof(Model);
-        done();
+        // verify
+        expect(userModel).to.be.an.instanceof(BaseModel);
     });
 
-    it('should persist to a table named user', function(done) {
+    it('should persist to a table named user', () => {
+
         expect(UserModel.tableName).to.equals('user');
-        done();
     });
 
-    it('should contain a schema', function(done) {
+    it('should contain a schema', () => {
+
         expect(UserModel.jsonSchema).to.be.an.object();
-        done();
     });
 
-    it('should contain many-to-many relation mappings to role model', function(done) {
+    it('should contain many-to-many relation mappings to role model', () => {
+
         expect(UserModel.relationMappings).to.be.an.object();
         expect(UserModel.relationMappings.roles).to.exist();
-        expect(UserModel.relationMappings.roles.relation).to.equals(Model.ManyToManyRelation);
-        done();
+        expect(UserModel.relationMappings.roles.relation).to.equals(BaseModel.ManyToManyRelation);
     });
 });

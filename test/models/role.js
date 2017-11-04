@@ -1,45 +1,41 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var RoleModel = require('../../lib/models/role');
-var Model = require('../../lib/models/base');
+const Lab = require('lab');
+const RoleModel = require('../../lib/models/role');
+const BaseModel = require('../../lib/models/base');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('Model: role', () => {
 
-describe('Model: role', function() {
+    it('extends from base model', () => {
 
-    it('extends from base model', function(done) {
+        // exercise
+        let roleModel = new RoleModel();
 
-        var roleModel = new RoleModel();
-        expect(roleModel).to.be.an.instanceof(Model);
-        done();
+        // verify
+        expect(roleModel).to.be.an.instanceof(BaseModel);
     });
 
-    it('should persist to a table named role', function(done) {
+    it('should persist to a table named role', () => {
+
         expect(RoleModel.tableName).to.equals('role');
-        done();
     });
 
-    it('should contain a schema', function(done) {
+    it('should contain a schema', () => {
+
         expect(RoleModel.jsonSchema).to.be.an.object();
-        done();
     });
 
-    it('should contain many-to-many relation mappings to role model', function(done) {
+    it('should contain many-to-many relation mappings to role model', () => {
+
         expect(RoleModel.relationMappings).to.be.an.object();
         expect(RoleModel.relationMappings.users).to.exist();
-        expect(RoleModel.relationMappings.users.relation).to.equals(Model.ManyToManyRelation);
-        done();
+        expect(RoleModel.relationMappings.users.relation).to.equals(BaseModel.ManyToManyRelation);
     });
 
-    it('should contain many-to-many relation mappings to permission model', function(done) {
+    it('should contain many-to-many relation mappings to permission model', () => {
+
         expect(RoleModel.relationMappings).to.be.an.object();
         expect(RoleModel.relationMappings.permissions).to.exist();
-        expect(RoleModel.relationMappings.permissions.relation).to.equals(Model.ManyToManyRelation);
-        done();
+        expect(RoleModel.relationMappings.permissions.relation).to.equals(BaseModel.ManyToManyRelation);
     });
 });

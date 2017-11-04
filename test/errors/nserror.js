@@ -4,7 +4,7 @@ const NSError = require('../../lib/errors/nserror');
 
 const { describe, expect, it } = exports.lab = Lab.script();
 
-describe('hapi-starter errors', () => {
+describe('Errors', () => {
 
     it('do nothing if error is boom', () => {
 
