@@ -1,9 +1,9 @@
 const Path = require('path');
-const Hapi = require('hapi');
 const Lab = require('lab');
+const Exiting = require('exiting');
 const Manager = require('../../lib/utils/manager');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 const internals = {};
 
@@ -13,6 +13,12 @@ internals.composeOptions = {
 
 describe('Manager', () => {
 
+    before(() => {
+
+        // Silence log messages
+        Exiting.log = function() { };
+    });
+
     beforeEach(() => {
 
         Manager.reset();
@@ -20,53 +26,42 @@ describe('Manager', () => {
 
     it('returns server object', async () => {
 
-        // setup
-        var manifest = {
-            connections: [{
-                port: 0
-            }]
-        };
-
         // exercise
-        const server = await Manager.start(manifest, internals.composeOptions);
+        const server = await Manager.start({}, internals.composeOptions);
 
         // verify
-        expect(server).to.be.instanceof(Hapi.Server);
+        expect(server.info).to.be.an.object();
+        expect(server.info.port).to.be.a.number();
     });
 
     it('starts server on specified port', async () => {
 
         // setup
         var manifest = {
-            connections: [{
+            server: {
                 port: 8080
-            }]
+            }
         };
 
         // exercise
         const server = await Manager.start(manifest, internals.composeOptions);
 
         // verify
+        expect(server.info).to.be.an.object();
         expect(server.info.port).to.equal(8080);
     });
 
     it('stops a started server', async () => {
 
         // setup
-        var manifest = {
-            connections: [{
-                port: 0
-            }]
-        };
-
         let called = false;
         const preStop = function() {
             called = true;
         };
 
         // exercise
-        const server = await Manager.start(manifest, internals.composeOptions);
-        server.on('stop', preStop);
+        const server = await Manager.start({}, internals.composeOptions);
+        server.events.on('stop', preStop);
         await Manager.stop();
 
         // verify
@@ -75,16 +70,9 @@ describe('Manager', () => {
 
     it('returns proper server state', async () => {
 
-        // setup
-        var manifest = {
-            connections: [{
-                port: 0
-            }]
-        };
-
         // exercise
         let initialState = Manager.getState();
-        await Manager.start(manifest, internals.composeOptions);
+        await Manager.start({}, internals.composeOptions);
         let startedState = Manager.getState();
         await Manager.stop();
         let stoppedState = Manager.getState();
