@@ -82,4 +82,27 @@ describe('Manager', () => {
         expect(startedState).to.equals('started');
         expect(stoppedState).to.equals('stopped');
     });
+
+    it('handles plugin registration failures', async () => {
+
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        const fakePlugin = {
+            register: async function() {
+                throw new Error(PLUGIN_ERROR);
+            },
+            name: 'fakePlugin',
+            pkg: {}
+        };
+        const manifest = {
+            register: {
+                plugins: [{
+                    plugin: fakePlugin
+                }]
+            }
+        };
+
+        // exercise and validate
+        await expect(Manager.start(manifest, internals.composeOptions)).to.reject(PLUGIN_ERROR);
+    });
 });
