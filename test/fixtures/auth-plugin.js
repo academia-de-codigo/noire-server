@@ -1,17 +1,7 @@
-var Package = require('../../package.json');
+const Boom = require('boom');
+const Package = require('../../package.json');
 
 exports.authenticate = true;
-
-exports.validate = function(request, reply) {
-
-    if (!exports.authenticate) {
-        return reply('error');
-    }
-
-    return reply.continue({
-        credentials: exports.credentials
-    });
-};
 
 exports.credentials = {
     id: 1,
@@ -19,19 +9,25 @@ exports.credentials = {
     scope: ['admin', 'user']
 };
 
-exports.register = function(server, options, next) {
-
-    server.auth.scheme('mock', function() {
-        return {
-            authenticate: exports.validate
-        };
-    });
-
-    server.auth.strategy('jwt', 'mock', 'try');
-    next();
+exports.validate = function(request, h) {
+    return exports.authenticate ?
+        h.authenticated({ credentials: exports.credentials }) :
+        h.unauthenticated(Boom.unauthorized('error'));
 };
 
-exports.register.attributes = {
+const register = function(server) {
+
+    server.auth.scheme('mock', () => {
+
+        return { authenticate: exports.validate };
+    });
+
+    server.auth.strategy('default', 'mock');
+    server.auth.default('default');
+};
+
+exports.plugin = {
+    register: register,
     name: 'auth',
     pkg: Package
 };

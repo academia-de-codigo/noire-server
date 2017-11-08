@@ -8,7 +8,7 @@ const { before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 const internals = {};
 
 internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../lib')
+    relativeTo: Path.resolve(__dirname, '../../lib')
 };
 
 describe('Manager', () => {
