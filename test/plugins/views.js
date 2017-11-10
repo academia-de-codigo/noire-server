@@ -2,6 +2,7 @@ const Lab = require('lab');
 const Hapi = require('hapi');
 const Vision = require('vision');
 const Path = require('path');
+const Package = require('../../package.json');
 const Handlebars = require('handlebars');
 const Views = require('../../lib/plugins/views');
 
@@ -15,10 +16,13 @@ internals.viewOptions = {
     layout: true,
     path: Path.join(__dirname, '/../fixtures'),
     isCached: false,
+    context: {
+        project: Package.name
+    }
 };
 
 internals.viewFixture = 'page';
-internals.fakeTemplate = 'pages/'+ internals.viewFixture;
+internals.fakeTemplate = 'pages/' + internals.viewFixture;
 
 describe('Plugin: views', () => {
 
@@ -45,6 +49,92 @@ describe('Plugin: views', () => {
 
         // cleanup
         Vision.plugin.register = visionRegister;
+    });
+
+    it('ignores non view responses', async () => {
+
+        // setup
+        const fakeResult = 'ok';
+        const fakeRoute = {
+            method: 'GET',
+            path: '/',
+            handler: () => fakeResult
+        };
+        server.views(internals.viewOptions);
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject('/');
+
+        // validate
+        expect(response.result).to.equals(fakeResult);
+    });
+
+    it('adds global context property to the view context', async () => {
+
+        // setup
+        const fakeRoute = {
+            method: 'GET',
+            path: '/',
+            handler: (request, h) => {
+                return h.view(internals.fakeTemplate);
+            }
+        };
+        server.views(internals.viewOptions);
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject('/');
+
+        // validate
+        expect(response.result).to.be.a.string();
+        expect(response.result).to.include(Package.name);
+    });
+
+    it('adds version number to a new local view context', async () => {
+
+        // setup
+        const fakeRoute = {
+            method: 'GET',
+            path: '/',
+            handler: (request, h) => {
+                return h.view(internals.fakeTemplate);
+            }
+        };
+        server.views(internals.viewOptions);
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject('/');
+
+        // validate
+        expect(response.result).to.be.a.string();
+        expect(response.result).to.include(Package.version);
+    });
+
+    it('adds version number an existing local view context', async () => {
+
+        // setup
+        const fakeRoute = {
+            method: 'GET',
+            path: '/',
+            handler: (request, h) => {
+                return h.view(internals.fakeTemplate);
+            }
+        };
+        server.views(internals.viewOptions);
+        server.route(fakeRoute);
+        server.ext('onPostHandler', (request, h) => {
+            request.response.source.context = {}; // create a new view context
+            return h.continue;
+        });
+
+        // exercise
+        const response = await server.inject('/');
+
+        // validate
+        expect(response.result).to.be.a.string();
+        expect(response.result).to.include(Package.version);
     });
 
     it('adds logged in user to view context if authenticated', async () => {
