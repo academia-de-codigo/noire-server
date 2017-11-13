@@ -13,7 +13,8 @@ module.exports = {
         'test/models',
         'test/plugins/route-errors.js',
         'test/plugins/assets.js',
-        'test/plugins/views.js'
+        'test/plugins/views.js',
+        'test/plugins/db.js'
         // 'test/modules',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720

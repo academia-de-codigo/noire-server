@@ -1,318 +1,233 @@
-var Mockery = require('mockery'); // mock global node require
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Hapi = require('hapi');
-var Path = require('path');
-var Manager = require('../../lib/manager');
+const Hapi = require('hapi');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const Config = require('../../lib/config');
+const KnexConfig = require('../../knexfile');
+const mock = require('mock-require');
 
-var lab = exports.lab = Lab.script(); // export the test script
-var before = lab.before;
-var after = lab.after;
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+const internals = {};
 
-var internals = {};
-internals.manifest = {
-    registrations: [{
-        plugin: './plugins/db'
-    }]
-};
+describe('Plugin: db', () => {
 
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
+    let configStub;
+    let knexConfigStub;
+    let rawQueryStub;
+    let knexStub;
 
-describe('Plugin: db', function() {
+    beforeEach(() => {
+        configStub = Sinon.stub(Config, 'environment').value('testing');
+        knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfig);
+        rawQueryStub = Sinon.stub().resolves([{ result: 2 }]);
+        knexStub = Sinon.stub().returns({ raw: rawQueryStub });
+    });
 
-    var mockConfig;
-    var mockKnexConfig, mockKnex, mockObjection, mockKnexInstance;
-    var dbTestResult = 2;
-    var mockError = null;
-    var ENV_DEV = 'development';
-    var ENV_STAGING = 'staging';
+    afterEach(() => {
 
-    before(function(done) {
+        configStub.restore();
+        knexConfigStub.restore();
+        mock.stopAll();
+    });
 
-        Mockery.enable({
-            warnOnReplace: false,
-            warnOnUnregistered: false
-        });
+    it('initializes the knex db library', async () => {
 
-        mockConfig = {
-            environment: ENV_DEV,
+        // setup
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const server = Hapi.server();
+
+        // exercise
+        await server.register(Database);
+
+        // verify
+        expect(knexStub.called).to.be.true();
+        expect(knexStub.getCall(0).args[0]).to.equals(internals.knexConfig);
+        expect(rawQueryStub.getCall(0).args[0]).to.startsWith('select');
+    });
+
+    it('handles db connection error', async () => {
+
+        // setup
+        const error = 'fakeError';
+        rawQueryStub = Sinon.stub().rejects(new Error(error));
+        knexStub = Sinon.stub().returns({ raw: rawQueryStub });
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const server = Hapi.server();
+
+        // exercise and verify
+        await expect(server.register(Database)).to.reject(Error, error);
+    });
+
+    it('handles missing connection', async () => {
+
+        // setup
+        knexConfigStub = Sinon.stub(KnexConfig, 'testing').value({});
+        mock('knex', Sinon.stub());
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const server = Hapi.server();
+
+        // exercise and verify
+        await expect(server.register(Database)).to.reject(Error, 'no connection configured');
+    });
+
+    it('handles missing database name', async () => {
+
+        // setup
+        knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfigMissingDb);
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const server = Hapi.server();
+
+        // exercise and verify
+        await expect(server.register(Database)).to.reject(Error, 'no database configured');
+    });
+
+    it('handles db connection test unexpected result', async () => {
+
+        // setup
+        rawQueryStub = Sinon.stub().resolves([{ result: 0 }]);
+        knexStub = Sinon.stub().returns({ raw: rawQueryStub });
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const server = Hapi.server();
+
+        // exercise
+        await expect(server.register(Database)).to.reject(Error, 'database connection test returned wrong result');
+    });
+
+    it('logs initialization errors', async () => {
+
+        // setup
+        const error = 'fakeError';
+        const knexStub = Sinon.stub().throws(new Error(error));
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const logSpy = Sinon.spy();
+
+        // exercise and verify
+        await expect(Database.plugin.register({ log: logSpy })).to.reject(Error, error);
+        expect(logSpy.called).to.be.true();
+        expect(logSpy.getCall(0).args[0]).to.be.an.array();
+        expect(logSpy.getCall(0).args[0]).to.include('server');
+        expect(logSpy.getCall(0).args[0]).to.include('db');
+        expect(logSpy.getCall(0).args[0]).to.include('error');
+        expect(logSpy.getCall(0).args[1]).to.equals(error);
+    });
+
+    it('logs database connection start', async () => {
+
+        // setup
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const logSpy = Sinon.spy();
+        const mockServer = {
+            log: logSpy,
+            decorate: function() { },
+            ext: function() { }
         };
 
-        mockKnexConfig = {};
-        mockKnexConfig[mockConfig.environment] = mockKnexConfig[ENV_STAGING] = {
-            client: 'mock',
-            connection: {
-                database: 'mock'
-            },
-            debug: {}
-        };
+        // exercise
+        await Database.plugin.register(mockServer);
 
-        mockKnexInstance = {
-            raw: function(query) {
-                expect(query).to.startWith('select');
-                return {
-                    then: function(next, nextErr) {
+        //verify
+        expect(logSpy.called).to.be.true();
+        expect(logSpy.getCall(0).args[0]).to.be.an.array();
+        expect(logSpy.getCall(0).args[0]).to.include('server');
+        expect(logSpy.getCall(0).args[0]).to.include('db');
+        expect(logSpy.getCall(0).args[0]).to.include('start');
+        expect(logSpy.getCall(0).args[1]).to.equals(internals.knexConfig);
+    });
 
-                        if (mockError) {
-                            return nextErr({
-                                message: mockError
-                            });
-                        }
+    it('logs database connection stop', async () => {
 
-                        var dbResponse;
-                        if (mockConfig.environment === ENV_DEV) {
-                            dbResponse = [{
-                                result: dbTestResult
-                            }];
-                        } else {
-                            dbResponse = {
-                                rows: [{
-                                    result: dbTestResult
-                                }]
-                            };
-                        }
-                        next(dbResponse);
-                    }
-                };
-            },
-            destroy: function(next) {
-                next();
+        // setup
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const logSpy = Sinon.spy();
+        const mockServer = {
+            log: logSpy,
+            decorate: function() { },
+            ext: function(hook, cb) {
+                if (hook !== 'onPreStop') {
+                    return;
+                }
+
+                cb(mockServer);
             }
         };
 
-        mockKnex = function(config) {
-            expect(config).to.equals(mockKnexConfig[mockConfig.environment]);
-            return mockKnexInstance;
+        // exercise
+        await Database.plugin.register(mockServer);
+
+        //verify
+        expect(logSpy.called).to.be.true();
+        expect(logSpy.getCall(0).args[0]).to.be.an.array();
+        expect(logSpy.getCall(0).args[0]).to.include('server');
+        expect(logSpy.getCall(0).args[0]).to.include('db');
+        expect(logSpy.getCall(0).args[0]).to.include('stop');
+    });
+
+    it('decorates the server with knex and objection', async () => {
+
+        // setup
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const decorateSpy = Sinon.spy();
+        const mockServer = {
+            log: function() { },
+            decorate: decorateSpy,
+            ext: function() { }
         };
 
-        mockObjection = {
-            Model: {
-                knex: function() {}
+        // exercise
+        await Database.plugin.register(mockServer);
+
+        //verify
+        expect(decorateSpy.called).to.be.true();
+        expect(decorateSpy.getCall(0).args[0]).to.equals('server');
+        expect(decorateSpy.getCall(0).args[1]).to.equals('db');
+        expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
+        expect(decorateSpy.getCall(0).args[2].query).to.exist();
+        expect(decorateSpy.getCall(0).args[2].model).to.exist();
+    });
+
+    it('destroys knex after server stop', async () => {
+
+        // setup
+        const destroyStub = Sinon.stub();
+        knexStub = Sinon.stub().returns({ raw: rawQueryStub, destroy: destroyStub });
+        mock('knex', knexStub);
+        const Database = mock.reRequire('../../lib/plugins/db');
+        const mockServer = {
+            log: function() { },
+            decorate: function() { },
+            ext: function(hook, cb) {
+                if (hook !== 'onPostStop') {
+                    return;
+                }
+
+                cb();
             }
         };
 
-        Mockery.registerMock('../config', mockConfig);
-        Mockery.registerMock('../../knexfile', mockKnexConfig);
-        Mockery.registerMock('knex', mockKnex);
-        Mockery.registerMock('objection', mockObjection);
-        done();
+        // exercise
+        await Database.plugin.register(mockServer);
+
+        //verify
+        expect(destroyStub.called).to.be.true();
     });
-
-    after(function(done) {
-
-        Mockery.deregisterAll();
-        Mockery.disable();
-        done();
-    });
-
-    it('initializes the knex db library with sqlite', {
-        parallel: false
-    }, function(done) {
-
-        mockConfig.environment = ENV_DEV;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-            expect(server).to.be.instanceof(Hapi.Server);
-            Manager.stop(done);
-        });
-    });
-
-    it('initializes the knex db library with postgresql', {
-        parallel: false
-    }, function(done) {
-
-        mockConfig.environment = ENV_STAGING;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            mockConfig.environment = ENV_DEV;
-            expect(err).to.not.exist();
-            expect(server).to.be.instanceof(Hapi.Server);
-            Manager.stop(done);
-        });
-    });
-
-    it('handles db connection error', {
-        parallel: false
-    }, function(done) {
-
-        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
-
-        var fakeServer = {};
-        fakeServer.log = function(tags, data) {
-            expect(tags).to.contains('db');
-            expect(tags).to.contains('error');
-            expect(data).to.equals(mockError);
-        };
-
-        fakeServer.register = function(plugin, next) {
-            return next();
-        };
-
-        mockConfig.environment = ENV_DEV;
-        mockError = 'database pool connection error';
-        Db.register(fakeServer, null, function(err) {
-
-            mockError = null;
-            expect(err).to.not.exist();
-            done();
-        });
-    });
-
-    it('handles db connection test unexpected result with sqlite', {
-        parallel: false
-    }, function(done) {
-
-        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
-
-        var fakeServer = {};
-        fakeServer.log = function(tags, data) {
-            expect(tags).to.contains('db');
-            expect(tags).to.contains('error');
-            expect(data).to.equals('database connection test returned wrong result');
-        };
-
-        fakeServer.register = function(plugin, next) {
-            return next();
-        };
-
-        mockConfig.environment = ENV_DEV;
-        dbTestResult = 3;
-        Db.register(fakeServer, null, function(err) {
-
-            expect(err).to.not.exist();
-            dbTestResult = 2;
-            done();
-        });
-    });
-
-    it('handles db connection test unexpected result with postgresql', {
-        parallel: false
-    }, function(done) {
-
-        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
-
-        var fakeServer = {};
-        fakeServer.log = function(tags, data) {
-            expect(tags).to.contains('db');
-            expect(tags).to.contains('error');
-            expect(data).to.equals('database connection test returned wrong result');
-        };
-
-        fakeServer.register = function(plugin, next) {
-            return next();
-        };
-
-        mockConfig.environment = ENV_STAGING;
-        dbTestResult = 3;
-        Db.register(fakeServer, null, function(err) {
-
-            mockConfig.environment = ENV_DEV;
-            dbTestResult = 2;
-            expect(err).to.not.exist();
-            done();
-        });
-    });
-
-    it('logs database connection start', {
-        parallel: false
-    }, function(done) {
-
-        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
-
-        var fakeServer = {};
-        fakeServer.log = function(tags, data) {
-            expect(tags).to.contains('db');
-            expect(tags).to.contains('start');
-            expect(data).to.equals(mockKnexConfig[mockConfig.environment]);
-        };
-
-        fakeServer.decorate = fakeServer.ext = function() {};
-
-        fakeServer.register = function(plugin, next) {
-            return next();
-        };
-
-        Db.register(fakeServer, null, function(err) {
-
-            expect(err).to.not.exist();
-            done();
-        });
-
-    });
-
-    it('decorates the server with knex and objection', {
-        parallel: false
-    }, function(done) {
-
-        var Db = require('../../lib/plugins/db'); // Have to require this after knex is mocked by mockery
-
-        var fakeServer = {};
-        fakeServer.decorate = function(type, property, method) {
-            expect(type).to.equals('server');
-            expect(property).to.equals('db');
-            expect(method.query).to.equals(mockKnexInstance);
-            expect(method.model).to.equals(mockObjection.Model);
-        };
-
-        fakeServer.register = function(plugin, next) {
-            return next();
-        };
-
-        fakeServer.ext = fakeServer.log = function() {};
-
-        Db.register(fakeServer, null, function(err) {
-
-            expect(err).to.not.exist();
-            done();
-        });
-    });
-
-    it('logs database connection stop', {
-        parallel: false
-    }, function(done) {
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-            expect(server).to.be.instanceof(Hapi.Server);
-
-            var orig = server.log;
-            server.log = function(tags) {
-                server.log = orig;
-                expect(tags).to.contains('db');
-                expect(tags).to.contains('stop');
-            };
-
-            Manager.stop(done);
-        });
-
-    });
-
-    it('destroys knex after server stop', {
-        parallel: false
-    }, function(done) {
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            var orig = mockKnexInstance.destroy;
-            mockKnexInstance.destroy = function(next) {
-                mockKnexInstance.destroy = orig;
-                expect(next).to.be.a.function();
-                next();
-            };
-
-            expect(err).to.not.exist();
-            expect(server).to.be.instanceof(Hapi.Server);
-            Manager.stop(done);
-        });
-    });
-
 });
+
+internals.knexConfig = {
+    client: 'mock',
+    connection: {
+        database: 'mock'
+    }
+};
+
+internals.knexConfigMissingDb = {
+    client: 'mock',
+    connection: {}
+};
