@@ -4,11 +4,17 @@ const Inert = require('inert');
 const Assets = require('../../lib/plugins/assets');
 const Path = require('path');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 describe('Plugin: assets', () => {
 
     let server;
+    let inertRegister;
+
+    beforeEach(() => {
+        inertRegister = Inert.plugin.register;
+
+    });
 
     beforeEach(async () => {
 
@@ -20,6 +26,11 @@ describe('Plugin: assets', () => {
             }
         });
         await server.register(Assets);
+    });
+
+    afterEach(() => {
+        // make sure inert monkey patching is removed
+        Inert.plugin.register = inertRegister;
     });
 
     it('returns the favicon', async () => {
@@ -75,7 +86,6 @@ describe('Plugin: assets', () => {
 
         // setup
         const PLUGIN_ERROR = 'plugin error';
-        let inertRegister = Inert.plugin.register;
         Inert.plugin.register = async function() {
             throw new Error(PLUGIN_ERROR);
         };
@@ -83,8 +93,5 @@ describe('Plugin: assets', () => {
 
         // exercise and validate
         await expect(server.register(Assets)).to.reject(PLUGIN_ERROR);
-
-        // cleanup
-        Inert.plugin.register = inertRegister;
     });
 });
