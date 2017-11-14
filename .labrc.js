@@ -14,7 +14,8 @@ module.exports = {
         'test/plugins/route-errors.js',
         'test/plugins/assets.js',
         'test/plugins/views.js',
-        'test/plugins/db.js'
+        'test/plugins/db.js',
+        'test/plugins/repository.js'
         // 'test/modules',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
