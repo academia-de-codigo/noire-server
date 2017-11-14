@@ -138,18 +138,15 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const findByIdStub = {
-            findById: Sinon.stub()
-        };
-        queryStub = Sinon.stub(Model, 'query').returns(findByIdStub);
-        findByIdStub.findById.withArgs(fakeUser.id).resolves(fakeUser);
+        const findByIdStub = Sinon.stub().withArgs(fakeUser.id).resolves(fakeUser);
+        queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
 
         // exercise
         const user = await userRepository.findOne(fakeUser.id);
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(findByIdStub.findById.calledOnce).to.be.true();
+        expect(findByIdStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUser);
     });
 
@@ -161,10 +158,11 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        queryStub = Sinon.stub(Model, 'query').throws(new Error(error));
+        const findByIdStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
 
         // exercise and validate
-        await expect(userRepository.findOne(1)).to.reject(Error, error);
+        expect(userRepository.findOne(1)).to.reject(Error, error);
     });
 
     it('should return all records within limit', async () => {
@@ -175,25 +173,25 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const limitStub = { limit: Sinon.stub() };
-        const offsetStub = { offset: Sinon.stub() };
-        const orderByStub = { orderBy: Sinon.stub() };
-        limitStub.limit.withArgs(UserModel.LIMIT_DEFAULT).returns(offsetStub);
-        limitStub.limit.throws(new Error('wrong limit criteria'));
-        offsetStub.offset.withArgs(Sinon.match.number).returns(orderByStub);
-        offsetStub.offset.throws(new Error('wrong offset criteria'));
-        orderByStub.orderBy.withArgs(Sinon.match.string, Sinon.match.string).resolves(fakeUsers);
-        orderByStub.orderBy.throws(new Error('wrong orderby criteria'));
-        queryStub = Sinon.stub(Model, 'query').returns(limitStub);
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const orderByStub = Sinon.stub();
+        limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
+        orderByStub.withArgs(Sinon.match.string, Sinon.match.string).resolves(fakeUsers);
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+        orderByStub.throws(new Error('wrong orderby criteria'));
 
         // exercise
         const user = await userRepository.findAll();
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.limit.calledOnce).to.be.true();
-        expect(offsetStub.offset.calledOnce).to.be.true();
-        expect(orderByStub.orderBy.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -201,37 +199,31 @@ describe('Plugin: repository', () => {
 
         // setup
         const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const fakeCriteria = {
-            limit: 2,
-            page: 2,
-            sort: 'field',
-            descending: 'desc'
-        };
+        const fakeCriteria = { limit: 2, page: 2, sort: 'field', descending: 'desc' };
         const options = { models: ['user'] };
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const limitStub = { limit: Sinon.stub() };
-        const offsetStub = { offset: Sinon.stub() };
-        const orderByStub = { orderBy: Sinon.stub() };
-        limitStub.limit.withArgs(fakeCriteria.limit).returns(offsetStub);
-        limitStub.limit.throws(new Error('wrong limit criteria'));
-        offsetStub.offset.withArgs(Sinon.match.number).returns(orderByStub);
-        offsetStub.offset.throws(new Error('wrong offset criteria'));
-        orderByStub.orderBy.withArgs(fakeCriteria.sort, fakeCriteria.descending).resolves(fakeUsers);
-        orderByStub.orderBy.throws(new Error('wrong orderby criteria'));
-        queryStub = Sinon.stub(Model, 'query').returns(limitStub);
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const orderByStub = Sinon.stub();
+        limitStub.withArgs(fakeCriteria.limit).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
+        orderByStub.withArgs(fakeCriteria.sort, fakeCriteria.descending).resolves(fakeUsers);
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+        orderByStub.throws(new Error('wrong orderby criteria'));
 
         // exercise
         const user = await userRepository.findAll(fakeCriteria);
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.limit.calledOnce).to.be.true();
-        expect(offsetStub.offset.calledOnce).to.be.true();
-        expect(orderByStub.orderBy.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
-
     });
 
     it('should return records within limit with a number as criteria', async () => {
@@ -243,25 +235,25 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const limitStub = { limit: Sinon.stub() };
-        const offsetStub = { offset: Sinon.stub() };
-        const orderByStub = { orderBy: Sinon.stub() };
-        limitStub.limit.withArgs(fakeCriteria).returns(offsetStub);
-        limitStub.limit.throws(new Error('wrong limit criteria'));
-        offsetStub.offset.withArgs(Sinon.match.number).returns(orderByStub);
-        offsetStub.offset.throws(new Error('wrong offset criteria'));
-        orderByStub.orderBy.withArgs(Sinon.match.string, Sinon.match.string).resolves(fakeUsers);
-        orderByStub.orderBy.throws(new Error('wrong orderby criteria'));
-        queryStub = Sinon.stub(Model, 'query').returns(limitStub);
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const orderByStub = Sinon.stub();
+        limitStub.withArgs(fakeCriteria).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
+        orderByStub.withArgs(Sinon.match.string, Sinon.match.string).resolves(fakeUsers);
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+        orderByStub.throws(new Error('wrong orderby criteria'));
 
         // exercise
         const user = await userRepository.findAll(fakeCriteria);
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.limit.calledOnce).to.be.true();
-        expect(offsetStub.offset.calledOnce).to.be.true();
-        expect(orderByStub.orderBy.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -274,25 +266,25 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const limitStub = { limit: Sinon.stub() };
-        const offsetStub = { offset: Sinon.stub() };
-        const orderByStub = { orderBy: Sinon.stub() };
-        limitStub.limit.withArgs(UserModel.LIMIT_DEFAULT).returns(offsetStub);
-        limitStub.limit.throws(new Error('wrong limit criteria'));
-        offsetStub.offset.withArgs(Sinon.match.number).returns(orderByStub);
-        offsetStub.offset.throws(new Error('wrong offset criteria'));
-        orderByStub.orderBy.withArgs(fakeCriteria, Sinon.match.string).resolves(fakeUsers);
-        orderByStub.orderBy.throws(new Error('wrong orderby criteria'));
-        queryStub = Sinon.stub(Model, 'query').returns(limitStub);
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const orderByStub = Sinon.stub();
+        limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
+        orderByStub.withArgs(fakeCriteria, Sinon.match.string).resolves(fakeUsers);
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+        orderByStub.throws(new Error('wrong orderby criteria'));
 
         // exercise
         const user = await userRepository.findAll(fakeCriteria);
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.limit.calledOnce).to.be.true();
-        expect(offsetStub.offset.calledOnce).to.be.true();
-        expect(orderByStub.orderBy.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -304,7 +296,10 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        queryStub = Sinon.stub(Model, 'query').throws(new Error(error));
+        const orderByStub = Sinon.stub().rejects(new Error(error));
+        const offsetStub = Sinon.stub().returns({ orderBy: orderByStub });
+        const limitStub = Sinon.stub().returns({ offset: offsetStub });
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
 
         // exercise and validate
         await expect(userRepository.findAll()).to.reject(Error, error);
@@ -318,12 +313,10 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const insertStub = {
-            insert: Sinon.stub()
-        };
-        insertStub.insert.withArgs(fakeUser).resolves();
-        insertStub.insert.rejects(new Error('invalid insert query'));
-        queryStub = Sinon.stub(Model, 'query').returns(insertStub);
+        const insertStub = Sinon.stub();
+        insertStub.withArgs(fakeUser).resolves();
+        insertStub.rejects(new Error('invalid insert query'));
+        queryStub = Sinon.stub(Model, 'query').returns({ insert: insertStub });
 
         // exercise
         await userRepository.add(fakeUser);
@@ -340,7 +333,8 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        queryStub = Sinon.stub(Model, 'query').throws(new Error(error));
+        const insertStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ insert: insertStub });
 
         // exercise and validate
         await expect(userRepository.add('user')).to.reject(Error, error);
@@ -354,18 +348,15 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const updateStub = {
-            updateAndFetch: Sinon.stub()
-        };
-        fakeUser.$query.returns(updateStub);
-        updateStub.updateAndFetch.resolves();
+        const updateStub = Sinon.stub().resolves();
+        fakeUser.$query.returns({ updateAndFetch: updateStub });
 
         // exercise
         await userRepository.update(fakeUser);
 
         // validate
         expect(fakeUser.$query.calledOnce).to.be.true();
-        expect(updateStub.updateAndFetch.calledOnce).to.be.true();
+        expect(updateStub.calledOnce).to.be.true();
     });
 
     it('handles error updating an exiting record', async () => {
@@ -377,7 +368,8 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        fakeUser.$query.throws(new Error(error));
+        const updateStub = Sinon.stub().rejects(new Error(error));
+        fakeUser.$query.returns({ updateAndFetch: updateStub });
 
         // exercise and validate
         await expect(userRepository.update(fakeUser)).to.reject(Error, error);
@@ -390,19 +382,17 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const deleteByIdStub = {
-            deleteById: Sinon.stub()
-        };
-        queryStub = Sinon.stub(Model, 'query').returns(deleteByIdStub);
-        deleteByIdStub.deleteById.withArgs(fakeId).resolves();
-        deleteByIdStub.deleteById.rejects(new Error('invalid query'));
+        const deleteByIdStub = Sinon.stub();
+        deleteByIdStub.withArgs(fakeId).resolves();
+        deleteByIdStub.rejects(new Error('invalid query'));
+        queryStub = Sinon.stub(Model, 'query').returns({ deleteById: deleteByIdStub });
 
         // exercise
         await userRepository.remove(fakeId);
 
         // validate
         expect(queryStub.calledOnce).to.be.true();
-        expect(deleteByIdStub.deleteById.calledOnce).to.be.true();
+        expect(deleteByIdStub.calledOnce).to.be.true();
     });
 
     it('handles error removing an exiting record', async () => {
@@ -413,7 +403,8 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        queryStub = Sinon.stub(Model, 'query').throws(new Error(error));
+        const deleteByIdStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ deleteById: deleteByIdStub });
 
         // exercise and validate
         await expect(userRepository.remove(1)).to.reject(Error, error);
@@ -443,7 +434,7 @@ describe('Plugin: repository', () => {
         const server = Hapi.server();
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        queryStub = Sinon.stub(Model, 'query').throws(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').rejects(new Error(error));
 
         // exercise and validate
         await expect(userRepository.query()).to.reject(Error, error);
@@ -480,6 +471,6 @@ describe('Plugin: repository', () => {
         txStub.throws(new Error(error));
 
         // exercise
-        await expect(Repository.tx(UserModel, RoleModel, ()=> {})).to.reject(Error, error);
+        await expect(Repository.tx(UserModel, RoleModel, () => { })).to.reject(Error, error);
     });
 });
