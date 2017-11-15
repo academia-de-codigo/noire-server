@@ -24,44 +24,79 @@ describe('Manager', () => {
         Manager.reset();
     });
 
-    it('returns server object', async () => {
-
-        // exercise
-        const server = await Manager.start({}, internals.composeOptions);
-
-        // verify
-        expect(server.info).to.be.an.object();
-        expect(server.info.port).to.be.a.number();
-    });
-
-    it('starts server on specified port', async () => {
+    it('returns servers object for single server', async () => {
 
         // setup
-        var manifest = {
-            server: {
-                port: 8080
-            }
-        };
+        const server = 'server';
+        const manifest = { server: { app: { name: server } } };
 
         // exercise
-        const server = await Manager.start(manifest, internals.composeOptions);
+        const servers = await Manager.start(manifest, internals.composeOptions);
 
         // verify
-        expect(server.info).to.be.an.object();
-        expect(server.info.port).to.equal(8080);
+        expect(servers[server].info).to.be.an.object();
+        expect(servers[server].info.port).to.be.a.number();
+        expect(servers[server].settings.app.name).to.equals(manifest.server.app.name);
+    });
+
+    it('returns servers object for multiple servers', async () => {
+
+        // setup
+        const server1 = 'server1';
+        const server2 = 'server2';
+        const manifests = [
+            { server: { app: { name: server1 } } },
+            { server: { app: { name: server2 } } }
+        ];
+
+        // exercise
+        const servers = await Manager.start(manifests, internals.composeOptions);
+
+        // verify
+        expect(servers[server1].info).to.be.an.object();
+        expect(servers[server1].info.port).to.be.a.number();
+        expect(servers[server1].settings.app.name).to.equals(manifests[0].server.app.name);
+        expect(servers[server2].info).to.be.an.object();
+        expect(servers[server2].info.port).to.be.a.number();
+        expect(servers[server2].settings.app.name).to.equals(manifests[1].server.app.name);
+    });
+
+    it('starts servers on specified ports', async () => {
+
+        // setup
+        const server1 = 'server1';
+        const server2 = 'server2';
+        const manifests = [
+            { server: { port: 8888, app: { name: server1 } } },
+            { server: { port: 8889, app: { name: server2 } } }
+        ];
+
+        // exercise
+        const servers = await Manager.start(manifests, internals.composeOptions);
+
+        // verify
+        expect(servers[server1].info).to.be.an.object();
+        expect(servers[server1].info.port).to.equal(8888);
+        expect(servers[server2].info).to.be.an.object();
+        expect(servers[server2].info.port).to.equal(8889);
     });
 
     it('stops a started server', async () => {
 
         // setup
+        const server = 'server';
+        const manifests = [
+            { server: { app: { name: server } } },
+            { server: { app: { name: 'another server' } } }
+        ];
         let called = false;
         const preStop = function() {
             called = true;
         };
 
         // exercise
-        const server = await Manager.start({}, internals.composeOptions);
-        server.events.on('stop', preStop);
+        const servers = await Manager.start(manifests, internals.composeOptions);
+        servers[server].events.on('stop', preStop);
         await Manager.stop();
 
         // verify
@@ -70,9 +105,12 @@ describe('Manager', () => {
 
     it('returns proper server state', async () => {
 
+        // setup
+        const manifest = { server: { app: { name: 'server' } } };
+
         // exercise
         let initialState = Manager.getState();
-        await Manager.start({}, internals.composeOptions);
+        await Manager.start(manifest, internals.composeOptions);
         let startedState = Manager.getState();
         await Manager.stop();
         let stoppedState = Manager.getState();
@@ -94,15 +132,21 @@ describe('Manager', () => {
             name: 'fakePlugin',
             pkg: {}
         };
-        const manifest = {
+        const manifests = [{
+            server: {
+                app: {
+                    name: 'server1'
+                }
+            },
             register: {
                 plugins: [{
                     plugin: fakePlugin
                 }]
             }
-        };
+        }];
+        manifests.push({ server: { app: { name: 'server2' } } });
 
         // exercise and validate
-        await expect(Manager.start(manifest, internals.composeOptions)).to.reject(PLUGIN_ERROR);
+        await expect(Manager.start(manifests, internals.composeOptions)).to.reject(PLUGIN_ERROR);
     });
 });
