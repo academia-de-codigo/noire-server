@@ -1,65 +1,13 @@
-var Promise = require('bluebird');
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Path = require('path');
-var Url = require('url');
-var Exiting = require('exiting');
-var Manager = require('../../lib/manager');
-var Config = require('../../lib/config');
-var Auth = require('../../lib/plugins/auth');
-var UserService = require('../../lib/modules/authorization/services/user');
-var Sinon = require('sinon');
+const Hapi = require('hapi');
+const Lab = require('lab');
+const Path = require('path');
+const Url = require('url');
+const Config = require('../../lib/config');
+const Redirect = require('../../lib/plugins/redirect');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
-
-var internals = {};
-internals.manifest = {
-    connections: [{
-        host: 'localhost',
-        port: 0,
-        labels: ['web']
-    }, {
-        host: 'localhost',
-        port: 0,
-        labels: ['web-tls'],
-        tls: Config.tls
-    }, {
-        host: 'localhost',
-        port: 0,
-        labels: ['api'],
-        tls: Config.tls
-    }],
-    registrations: [{
-        plugin: '../test/fixtures/auth-plugin',
-        options: {
-            select: ['web', 'web-tls']
-        }
-    }, {
-        plugin: './plugins/web',
-        options: {
-            select: ['web', 'web-tls'],
-        }
-    }, {
-        plugin: {
-            register: './plugins/redirect',
-            options: {
-                tlsRoutes: Config.redirect.tlsOnly
-            }
-        },
-        options: {
-            select: ['web', 'web-tls']
-        }
-    }, {
-        plugin: './plugins/views'
-    }]
-};
+const internals = {};
 
 internals.webUrl = {
     protocol: 'http',
@@ -82,178 +30,142 @@ internals.apiUrl = {
     port: Config.connections.api.port,
 };
 
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
+describe('Plugin: redirect', () => {
 
-internals.user = {
-    id: 1,
-    username: 'test',
-    roles: [{
-        name: 'user'
-    }]
-};
+    let web;
+    let webTls;
 
-describe('Plugin: redirect', function() {
+    beforeEach(async () => {
 
-    before(function(done) {
-        Exiting.reset();
-        done();
+        web = Hapi.server({ app: { name: 'web' } });
+        webTls = Hapi.server({ app: { name: 'webTls' } });
+
+        await web.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
+        await webTls.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
     });
 
-    afterEach(function(done) {
+    it('redirects web api requests to api server', async () => {
 
-        // Manager might not be properly stopped when tests fail
-        if (Manager.getState() === 'started') {
-            Manager.stop(done);
-        } else {
-            done();
-        }
+        // setup
+        const redirectUrl = Url.format(internals.apiUrl) + Path.resolve(Config.prefixes.api, 'version');
 
+        // exercise
+        const response = await web.inject(Path.resolve(Config.prefixes.api, 'version'));
+
+        // validate
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('http api requests redirected to https', function(done) {
+    it('redirects http admin requests to https', async () => {
 
-        var redirectUrl = Url.format(internals.apiUrl) + Path.resolve(Config.prefixes.api, 'version');
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.admin;
 
-            expect(err).to.not.exist();
-            var web = server.select('web');
-            web.inject(Path.resolve(Config.prefixes.api, 'version'), function(response) {
+        // exercise
+        const response = await web.inject(Config.prefixes.admin);
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-
-        });
-
+        // validate
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('http admin requests redirected to https', function(done) {
+    it('redirects http profile requests to https', async () => {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.admin;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.profile;
 
-            expect(err).to.not.exist();
-            var web = server.select('web');
-            web.inject(Config.prefixes.admin, function(response) {
+        // exercise
+        const response = await web.inject(Config.prefixes.profile);
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-            });
-
-        });
-
+        // validate
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('http profile requests redirected to https', function(done) {
+    it('redirects http login requests to https', async () => {
 
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
+        // setup
+        const redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.login;
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.profile;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // exercise
+        const response = await web.inject(Config.prefixes.login);
 
-            expect(err).to.not.exist();
-            var web = server.select('web');
-
-            web.inject({
-                method: 'GET',
-                url: Config.prefixes.profile,
-                headers: {
-                    authorization: Auth.getToken(internals.user.id)
-                }
-            }, function(response) {
-
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-
-                findByIdStub.restore();
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-        });
-
+        // validate
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('http login requests redirected to https', function(done) {
+    it('redirects http root requests to home', async () => {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.login;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const redirectUrl = Url.format(internals.webUrl) + '/home';
 
-            expect(err).to.not.exist();
-            var web = server.select('web');
-            web.inject(Config.prefixes.login, function(response) {
+        // exercise
+        const response = await web.inject('/');
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-
-        });
+        // validation
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('http root request redirected to home', function(done) {
+    it('https root request redirected to home', async () => {
 
-        var redirectUrl = Url.format(internals.webUrl) + '/home';
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.home;
 
-            expect(err).to.not.exist();
-            var web = server.select('web');
-            web.inject('/', function(response) {
+        // exercise
+        const response = await webTls.inject('/');
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-
-        });
+        // validation
+        expect(response.statusCode).to.equal(301);
+        expect(response.statusMessage).to.equal('Moved Permanently');
+        expect(response.headers.location).to.equal(redirectUrl);
     });
 
-    it('https root request redirected to home', function(done) {
+    it('does not redirect https valid route', async () => {
 
-        var redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.home;
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const fakeResult = 'ok';
+        const fakeRoute = { path: Config.prefixes.home, method: 'GET', handler: () => fakeResult };
+        webTls.route(fakeRoute);
 
-            expect(err).to.not.exist();
-            var webTls = server.select('web-tls');
-            webTls.inject('/', function(response) {
+        // exercise
+        const response = await webTls.inject(Config.prefixes.home);
 
-                expect(response.statusCode).to.equal(301);
-                expect(response.statusMessage).to.equal('Moved Permanently');
-                expect(response.headers.location).to.equal(redirectUrl);
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-
-        });
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.result).to.equal(fakeResult);
     });
 
-    it('https valid route', function(done) {
+    it('does not redirect on request to unknown server', async () => {
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const server = Hapi.server({ app: {} });
+        await server.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
 
-            expect(err).to.not.exist();
-            var webTls = server.select('web-tls');
-            webTls.inject(Config.prefixes.home, function(response) {
+        // exercise
+        const response = await server.inject(Config.prefixes.admin);
 
-                expect(response.statusCode).to.equal(200);
-                expect(response.result).to.be.a.string();
-                Manager.stop(done); // done() callback is required to end the test.
-
-            });
-
-        });
+        // validate
+        expect(response.statusCode).to.equal(404);
     });
 
+    it('does not redirect on request to api server', async () => {
+
+        // setup
+        const server = Hapi.server({ app: { name: 'api' } });
+        await server.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
+
+        // exercise
+        const response = await server.inject(Config.prefixes.admin);
+
+        // validate
+        expect(response.statusCode).to.equal(404);
+    });
 });
