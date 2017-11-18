@@ -1,7 +1,7 @@
 const Path = require('path');
 const Lab = require('lab');
 const Exiting = require('exiting');
-const Manager = require('../../lib/utils/manager');
+const Manager = require(Path.join(process.cwd(), 'lib/utils/manager'));
 
 const { before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 

@@ -1,6 +1,7 @@
+const Path = require('path');
 const Lab = require('lab');
 const Sinon = require('sinon');
-const HomeCtrl = require('../../../../lib/modules/home/controllers/home');
+const HomeCtrl = require(Path.join(process.cwd(), 'lib/modules/home/controllers/home'));
 
 const { describe, expect, it } = exports.lab = Lab.script();
 

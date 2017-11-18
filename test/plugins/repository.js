@@ -1,10 +1,11 @@
+const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Sinon = require('sinon');
 const Objection = require('objection');
-const Repository = require('../../lib/plugins/repository');
-const UserModel = require('../../lib/models/user');
-const RoleModel = require('../../lib/models/role');
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
+const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
 
 const Model = Objection.Model;
 const { afterEach, describe, expect, it } = exports.lab = Lab.script();

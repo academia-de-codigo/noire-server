@@ -2,9 +2,9 @@ const Lab = require('lab');
 const Hapi = require('hapi');
 const Vision = require('vision');
 const Path = require('path');
-const Package = require('../../package.json');
 const Handlebars = require('handlebars');
-const Views = require('../../lib/plugins/views');
+const Package = require(Path.join(process.cwd(), 'package.json'));
+const Views = require(Path.join(process.cwd(), 'lib/plugins/views'));
 
 const { afterEach, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 

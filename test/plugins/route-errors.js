@@ -1,9 +1,10 @@
+const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Joi = require('joi');
-const Errors = require('../../lib/plugins/route-errors');
-const Assets = require('../../lib/plugins/assets');
-const Auth = require('../fixtures/auth-plugin');
+const Errors = require(Path.join(process.cwd(), 'lib/plugins/route-errors'));
+const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
+const Auth = require(Path.join(process.cwd(), 'test/fixtures/auth-plugin'));
 
 const { afterEach, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 

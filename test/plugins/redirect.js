@@ -2,8 +2,8 @@ const Hapi = require('hapi');
 const Lab = require('lab');
 const Path = require('path');
 const Url = require('url');
-const Config = require('../../lib/config');
-const Redirect = require('../../lib/plugins/redirect');
+const Config = require(Path.join(process.cwd(), 'lib/config'));
+const Redirect = require(Path.join(process.cwd(), 'lib/plugins/redirect'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 

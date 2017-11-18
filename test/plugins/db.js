@@ -1,8 +1,9 @@
+const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Sinon = require('sinon');
-const Config = require('../../lib/config');
-const KnexConfig = require('../../knexfile');
+const Config = require(Path.join(process.cwd(), 'lib/config'));
+const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
 const mock = require('mock-require');
 
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();

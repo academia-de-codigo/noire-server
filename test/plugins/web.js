@@ -1,6 +1,4 @@
-var Promise = require('bluebird');
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
+const Lab = require('lab');
 var Path = require('path');
 var Exiting = require('exiting');
 var Sinon = require('sinon');
@@ -13,17 +11,9 @@ var Web = require('../../lib/plugins/web');
 var WebRoutes = require('../../lib/routes/web');
 var Package = require('../../package.json');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { afterEach, before, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
-
-var internals = {};
-
+const internals = {};
 internals.manifest = {
     connections: [{
         port: 0,
