@@ -18,6 +18,7 @@ module.exports = {
         'test/plugins/repository.js',
         'test/plugins/redirect.js',
         'test/modules/home/controllers',
+        'test/modules/authorization/controllers/web/profile.js',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };
