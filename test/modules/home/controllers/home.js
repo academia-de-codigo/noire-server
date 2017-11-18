@@ -1,29 +1,21 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var HomeCtrl = require('../../../../lib/modules/home/controllers/home');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const HomeCtrl = require('../../../../lib/modules/home/controllers/home');
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('Web Controller: home', () => {
 
-describe('Web Controller: home', function() {
+    it('gets the home page', () => {
 
-    it('gets the home page', function(done) {
+        // setup
+        const fakeView = Sinon.stub().withArgs('pages/home');
+        const h = { view: fakeView };
 
-        var request = {
-            params: {},
-            log: function() {}
-        };
+        // exercise
+        HomeCtrl.get(null, h);
 
-        var reply = function() {};
-        reply.view = function(page) {
-            expect(page).to.equals('pages/home');
-            done();
-        };
-
-        HomeCtrl.get(request, reply);
+        // validate
+        expect(fakeView.calledOnce).to.be.true();
     });
 });

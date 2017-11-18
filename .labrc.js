@@ -16,8 +16,8 @@ module.exports = {
         'test/plugins/views.js',
         'test/plugins/db.js',
         'test/plugins/repository.js',
-        'test/plugins/redirect.js'
-        // 'test/modules',
+        'test/plugins/redirect.js',
+        'test/modules/home/controllers',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };
