@@ -44,9 +44,9 @@ module.exports = {
         client: 'postgresql',
         connection: {
             host: '127.0.0.1',
-            database: 'hapi_starter',
-            user: 'hapi_starter',
-            password: 'hapi_starter'
+            database: 'noire',
+            user: 'noire',
+            password: 'noire'
         },
         pool: {
             min: 2,
@@ -65,9 +65,9 @@ module.exports = {
         client: 'postgresql',
         connection: {
             host: '127.0.0.1',
-            database: 'hapi_starter',
-            user: 'hapi_starter',
-            password: 'hapi_starter'
+            database: 'noire',
+            user: 'noire',
+            password: 'noire'
         },
         pool: {
             min: 2,
