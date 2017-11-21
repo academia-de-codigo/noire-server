@@ -171,16 +171,15 @@ describe('Plugin: repository', () => {
         const userRepository = Repository['user'];
         const limitStub = Sinon.stub();
         const offsetStub = Sinon.stub();
-        const orderByStub = Sinon.stub();
         const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
         limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
-        orderByStub.withArgs(Sinon.match.string, Sinon.match.string).returns({ search: searchStub });
-        searchStub.resolves(fakeUsers);
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs().returns({ modify: modifyStub });
+        modifyStub.resolves(fakeUsers);
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
         limitStub.throws(new Error('wrong limit criteria'));
         offsetStub.throws(new Error('wrong offset criteria'));
-        orderByStub.throws(new Error('wrong orderby criteria'));
 
         // exercise
         const user = await userRepository.findAll();
@@ -189,7 +188,6 @@ describe('Plugin: repository', () => {
         expect(queryStub.calledOnce).to.be.true();
         expect(limitStub.calledOnce).to.be.true();
         expect(offsetStub.calledOnce).to.be.true();
-        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -205,10 +203,15 @@ describe('Plugin: repository', () => {
         const offsetStub = Sinon.stub();
         const orderByStub = Sinon.stub();
         const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
         limitStub.withArgs(fakeCriteria.limit).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
-        orderByStub.withArgs(fakeCriteria.sort, fakeCriteria.descending).returns({ search: searchStub });
-        searchStub.withArgs(fakeCriteria.search).resolves(fakeUsers);
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs(fakeCriteria.search).returns({ modify: modifyStub });
+        orderByStub.withArgs(fakeCriteria.sort, fakeCriteria.descending).returns();
+        modifyStub.callsFake((cb) => {
+            cb({ orderBy: orderByStub });
+            return fakeUsers;
+        });
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
         limitStub.throws(new Error('wrong limit criteria'));
         offsetStub.throws(new Error('wrong offset criteria'));
@@ -222,8 +225,8 @@ describe('Plugin: repository', () => {
         expect(queryStub.calledOnce).to.be.true();
         expect(limitStub.calledOnce).to.be.true();
         expect(offsetStub.calledOnce).to.be.true();
-        expect(orderByStub.calledOnce).to.be.true();
         expect(searchStub.calledOnce).to.be.true();
+        expect(orderByStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -237,16 +240,15 @@ describe('Plugin: repository', () => {
         const userRepository = Repository['user'];
         const limitStub = Sinon.stub();
         const offsetStub = Sinon.stub();
-        const orderByStub = Sinon.stub();
         const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
         limitStub.withArgs(fakeCriteria).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
-        orderByStub.withArgs('', Sinon.match.string).returns({ search: searchStub });
-        searchStub.withArgs().resolves(fakeUsers);
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs().returns({modify: modifyStub});
+        modifyStub.returns(fakeUsers);
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
         limitStub.throws(new Error('wrong limit criteria'));
         offsetStub.throws(new Error('wrong offset criteria'));
-        orderByStub.throws(new Error('wrong orderby criteria'));
         searchStub.throws(new Error('wrong search criteria'));
 
         // exercise
@@ -256,7 +258,7 @@ describe('Plugin: repository', () => {
         expect(queryStub.calledOnce).to.be.true();
         expect(limitStub.calledOnce).to.be.true();
         expect(offsetStub.calledOnce).to.be.true();
-        expect(orderByStub.calledOnce).to.be.true();
+        expect(modifyStub.calledOnce).to.be.true();
         expect(searchStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
@@ -273,10 +275,15 @@ describe('Plugin: repository', () => {
         const offsetStub = Sinon.stub();
         const orderByStub = Sinon.stub();
         const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
         limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ orderBy: orderByStub });
-        orderByStub.withArgs(fakeCriteria, Sinon.match.string).returns({ search: searchStub });
-        searchStub.withArgs().resolves(fakeUsers);
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs().returns({ modify: modifyStub});
+        orderByStub.withArgs(fakeCriteria, Sinon.match.string).returns();
+        modifyStub.callsFake((cb) => {
+            cb({ orderBy: orderByStub });
+            return fakeUsers;
+        });
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
         limitStub.throws(new Error('wrong limit criteria'));
         offsetStub.throws(new Error('wrong offset criteria'));
@@ -292,6 +299,7 @@ describe('Plugin: repository', () => {
         expect(offsetStub.calledOnce).to.be.true();
         expect(orderByStub.calledOnce).to.be.true();
         expect(searchStub.calledOnce).to.be.true();
+        expect(modifyStub.calledOnce).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 
@@ -302,9 +310,9 @@ describe('Plugin: repository', () => {
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const searchStub = Sinon.stub().rejects(new Error(error));
-        const orderByStub = Sinon.stub().returns({ search: searchStub });
-        const offsetStub = Sinon.stub().returns({ orderBy: orderByStub });
+        const modifyStub = Sinon.stub().rejects(new Error(error));
+        const searchStub = Sinon.stub().returns({ modify: modifyStub });
+        const offsetStub = Sinon.stub().returns({ search: searchStub });
         const limitStub = Sinon.stub().returns({ offset: offsetStub });
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
 
