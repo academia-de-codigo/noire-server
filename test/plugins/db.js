@@ -35,7 +35,7 @@ describe('Plugin: db', () => {
 
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
 
         // exercise
@@ -54,7 +54,7 @@ describe('Plugin: db', () => {
         rawQueryStub = Sinon.stub().rejects(new Error(error));
         knexStub = Sinon.stub().returns({ raw: rawQueryStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
 
         // exercise and verify
@@ -64,9 +64,10 @@ describe('Plugin: db', () => {
     it('handles missing connection', async () => {
 
         // setup
+        knexConfigStub.restore(); // stubbing twice breaks restore
         knexConfigStub = Sinon.stub(KnexConfig, 'testing').value({});
         mock('knex', Sinon.stub());
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
 
         // exercise and verify
@@ -76,9 +77,10 @@ describe('Plugin: db', () => {
     it('handles missing database name', async () => {
 
         // setup
+        knexConfigStub.restore(); // stubbing twice breaks restore
         knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfigMissingDb);
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
 
         // exercise and verify
@@ -91,7 +93,7 @@ describe('Plugin: db', () => {
         rawQueryStub = Sinon.stub().resolves([{ result: 0 }]);
         knexStub = Sinon.stub().returns({ raw: rawQueryStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
 
         // exercise
@@ -104,7 +106,7 @@ describe('Plugin: db', () => {
         const error = 'fakeError';
         const knexStub = Sinon.stub().throws(new Error(error));
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const logSpy = Sinon.spy();
 
         // exercise and verify
@@ -121,7 +123,7 @@ describe('Plugin: db', () => {
 
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const logSpy = Sinon.spy();
         const mockServer = {
             log: logSpy,
@@ -145,7 +147,7 @@ describe('Plugin: db', () => {
 
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const logSpy = Sinon.spy();
         const mockServer = {
             log: logSpy,
@@ -174,7 +176,7 @@ describe('Plugin: db', () => {
 
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const decorateSpy = Sinon.spy();
         const mockServer = {
             log: function() { },
@@ -200,7 +202,7 @@ describe('Plugin: db', () => {
         const destroyStub = Sinon.stub();
         knexStub = Sinon.stub().returns({ raw: rawQueryStub, destroy: destroyStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire('../../lib/plugins/db');
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const mockServer = {
             log: function() { },
             decorate: function() { },
