@@ -1,707 +1,533 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var Knex = require('knex');
-var Objection = require('objection');
-var KnexConfig = require('../../../../knexfile');
-var UserService = require('../../../../lib/modules/authorization/services/user');
-var Repository = require('../../../../lib/plugins/repository');
-var UserModel = require('../../../../lib/models/user');
-var RoleModel = require('../../../../lib/models/role');
-var Auth = require('../../../../lib/plugins/auth');
-var HSError = require('../../../../lib/error');
+const Lab = require('lab');
+const Hapi = require('hapi');
+const Sinon = require('sinon');
+const Knex = require('knex');
+const Objection = require('objection');
+const Path = require('path');
+const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
+const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
+const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
+const Auth = require(Path.join(process.cwd(), 'lib/plugins/auth'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var beforeEach = lab.beforeEach;
-var expect = Code.expect;
+describe('Service: user', () => {
 
+    let getTokenStub;
+    let cryptStub;
+    let txSpy;
 
-describe('Service: user', function() {
-
-    var knex;
-
-    beforeEach(function(done) {
-
-        var options = {
-            models: ['user', 'role']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
+    beforeEach(async () => {
 
         /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
+        const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
-        knex.migrate.latest().then(function() {
-            return knex.seed.run();
-        }).then(function() {
+        await knex.migrate.latest();
+        await knex.seed.run();
 
-            Objection.Model.knex(knex);
-            Repository.register(fakeServer, options, function() {
+        Objection.Model.knex(knex);
 
-                done();
-            });
-        });
+        const server = Hapi.server();
+        server.register({ plugin: Repository, options: { models: ['user', 'role'] } });
+
+        txSpy = Sinon.spy(Repository, 'tx');
     });
 
-    it('counts users', function(done) {
+    afterEach(() => {
 
-        UserService.count().then(function(result) {
+        if (getTokenStub) {
+            getTokenStub.restore();
+        }
 
-            expect(result).to.equals(4);
-            done();
-        });
-    });
-
-    it('counts users with a search criteria', function(done) {
-
-        var criteria = {
-            search: 't u' //finds guesT User and tesT User
-        };
-
-        UserService.count(criteria).then(function(result) {
-
-            expect(result).to.equals(2);
-            done();
-        });
-    });
-
-    it('lists users', function(done) {
-
-        UserService.list().then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.roles).to.not.exists();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id).to.exists();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exists();
-            });
-            done();
-        });
-    });
-
-    it('lists users with a search clause', function(done) {
-
-        var criteria = {
-            search: 'tes'
-        };
-        UserService.list(criteria).then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results.roles).to.not.exists();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id === 2).to.be.true();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exists();
-            });
-        });
-        done();
-
-    });
-
-    it('lists users with limit', function(done) {
-
-        var criteria = {
-            limit: 2
-        };
-        UserService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(2);
-            expect(results.roles).to.not.exist();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id).to.exists();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exist();
-            });
-            done();
-        });
-    });
-
-    it('lists users with offset', function(done) {
-        var criteria = {
-            page: 4,
-            limit: 1
-        };
-        UserService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results.roles).to.not.exist();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id > 3).to.be.true();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exist();
-            });
-            done();
-        });
-    });
-
-    it('lists users ordered by column', function(done) {
-        var criteria = {
-            sort: 'username'
-        };
-        UserService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.roles).to.not.exist();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id).to.exists();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exists();
-            });
-            done();
-        });
-    });
-
-    it('lists users ordered by id, descending', function(done) {
-        var criteria = {
-            sort: 'id',
-            descending: true
-        };
-        UserService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.roles).to.not.exist();
-            expect(results[0].id > results[1].id).to.be.true();
-            results.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id).to.exists();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exists();
-            });
-            done();
-        });
-    });
-
-    it('fetch valid user by id', function(done) {
-
-        UserService.findById(1).then(function(result) {
-            expect(result).to.be.an.object();
-            expect(result).to.be.instanceof(UserModel);
-            expect(result.id).to.equals(1);
-            expect(result.username).to.equals('admin');
-            expect(result.email).to.be.equals('admin@gmail.com');
-            expect(result.password).to.not.exists();
-            done();
-        });
-    });
-
-    it('fetch invalid user by id', function(done) {
-
-        UserService.findById(999).then(function(result) {
-
-            expect(result).to.not.exist();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
-    });
-
-    it('populate role associations when fetching user by id', function(done) {
-        UserService.findById(1).then(function(result) {
-            expect(result).to.be.instanceof(UserModel);
-            expect(result.roles).to.be.an.array();
-            expect(result.roles.length).to.equals(3);
-            result.roles.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id).to.exists();
-                expect(role.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('fetch valid user by username', function(done) {
-
-        UserService.findByUserName('admin').then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results[0]).to.be.instanceof(UserModel);
-            expect(results[0].roles).to.not.exists();
-            expect(results[0].id).to.equals(1);
-            expect(results[0].username).to.equals('admin');
-            expect(results[0].email).to.be.equals('admin@gmail.com');
-            expect(results[0].password).to.not.exists();
-            done();
-        });
-    });
-
-    it('fetch invalid user by username', function(done) {
-
-        UserService.findByUserName('invalid user name').then(function(result) {
-
-            expect(result).to.be.an.array();
-            expect(result).to.be.empty();
-            done();
-        });
-    });
-
-    it('fetch valid user by name', function(done) {
-
-        UserService.findByName('Admin User').then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results[0]).to.be.instanceof(UserModel);
-            expect(results[0].roles).to.not.exists();
-            expect(results[0].id).to.equals(1);
-            expect(results[0].name).to.equals('Admin User');
-            expect(results[0].password).to.not.exists();
-            done();
-        });
-    });
-
-    it('fetch invalid user by name', function(done) {
-
-        UserService.findByName('invalid user name').then(function(result) {
-
-            expect(result).to.be.an.array();
-            expect(result).to.be.empty();
-            done();
-        });
-    });
-
-    it('fetch valid user by email', function(done) {
-
-        UserService.findByEmail('admin@gmail.com').then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results[0]).to.be.instanceof(UserModel);
-            expect(results[0].roles).to.not.exists();
-            expect(results[0].id).to.exists();
-            expect(results[0].username).to.be.a.string();
-            expect(results[0].email).to.be.equals('admin@gmail.com');
-            expect(results[0].password).to.not.exists();
-            done();
-        });
-    });
-
-    it('fetch invalid user by email', function(done) {
-
-        UserService.findByEmail('invalid user email').then(function(result) {
-
-            expect(result).to.be.an.array();
-            expect(result).to.be.empty();
-            done();
-        });
-    });
-
-    it('authenticate user with valid credentials', function(done) {
-
-        var fakeToken = 'fake token';
-        Sinon.stub(Auth, 'getToken').withArgs(1).returns(fakeToken);
-
-        UserService.findByUserName('admin').then(function(result) {
-
-            expect(result[0].username).to.equals('admin');
-            expect(result[0].active).to.equals(1); //sqlite for true
-            UserService.authenticate('admin', 'admin').then(function(result) {
-
-                expect(result).to.equals(fakeToken);
-                Auth.getToken.restore();
-                done();
-            });
-
-        });
-    });
-
-    it('should not authenticate inactive user', function(done) {
-
-        UserService.findByUserName('guest').then(function(result) {
-
-            expect(result[0].username).to.equals('guest');
-            expect(result[0].active).to.equals(0); // sqlite for false
-            UserService.authenticate('guest', 'guest').then(function(result) {
-
-                expect(result).to.not.exists();
-            }).catch(function(error) {
-
-                expect(error).to.equals(HSError.AUTH_INVALID_USERNAME);
-                done();
-            });
-
-        });
-    });
-
-    it('should not authenticate invalid username', function(done) {
-
-        UserService.authenticate('x', 'admin').then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.AUTH_INVALID_USERNAME);
-            done();
-        });
-    });
-
-    it('should not authenticate invalid password', function(done) {
-
-        UserService.authenticate('admin', 'invalid password').then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.AUTH_INVALID_PASSWORD);
-            done();
-        });
-    });
-
-    it('add a new user', function(done) {
-
-        var newUser = {
-            username: 'test2',
-            email: 'test2@gmail.com',
-            password: 'test2',
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        var cryptSpy = Sinon.spy(Auth, 'crypt');
-
-        UserService.add(newUser).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(cryptSpy.calledOnce).to.be.true();
-            expect(result).to.exists();
-            expect(result.id).to.exists();
-            expect(result.username).to.equals(newUser.username);
-            expect(result.email).to.equals(newUser.email);
-            expect(result.password).to.exists();
-            expect(result.active).to.exists();
-            expect(result.active).to.be.false();
+        if (txSpy) {
             txSpy.restore();
-            cryptSpy.restore();
+        }
 
-            done();
+        if (cryptStub) {
+            cryptStub.restore();
+        }
+    });
+
+    it('counts users', async () => {
+
+        // exercise
+        const result = await UserService.count();
+
+        // validate
+        expect(result).to.equals(4);
+    });
+
+    it('counts users with a search criteria', async () => {
+
+        // setup
+        const criteria = { search: 't u' }; //finds guest and test users
+
+        // exercise
+        const result = await UserService.count(criteria);
+
+        // validate
+        expect(result).to.equals(2);
+    });
+
+    it('lists users', async () => {
+
+        // exercise
+        const results = await UserService.list();
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.roles).to.not.exists();
+        results.forEach(user => {
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exists();
         });
     });
 
-    it('does not add an existing user', function(done) {
+    it('lists users with a search clause', async () => {
 
-        var newUser = {
-            username: 'test',
-            email: 'test@gmail.com',
-            password: 'test'
-        };
+        // setup
+        const criteria = { search: 'tes' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.add(newUser).then(function(result) {
+        // exercise
+        const results = await UserService.list(criteria);
 
-            expect(result).to.not.exists();
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results.roles).to.not.exists();
+        expect(results[0]).to.be.instanceof(UserModel);
+        expect(results[0].id === 2).to.be.true();
+        expect(results[0].username).to.be.a.string();
+        expect(results[0].email).to.be.a.string();
+        expect(results[0].password).to.not.exists();
+    });
 
-        }).catch(function(error) {
+    it('lists users with limit', async () => {
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
+        // setup
+        const criteria = { limit: 2 };
+
+        // exercise
+        const results = await UserService.list(criteria);
+
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(2);
+        expect(results.roles).to.not.exist();
+        results.forEach(user => {
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exist();
         });
     });
 
-    it('does not add a user with no password', function(done) {
+    it('lists users with offset', async () => {
 
-        var newUser = {
-            username: 'test',
-            email: 'test@gmail.com'
-        };
+        // setup
+        const criteria = { page: 4, limit: 1 };
 
-        UserService.add(newUser).then(function(result) {
+        // exercise
+        const results = await UserService.list(criteria);
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
-            done();
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results.roles).to.not.exist();
+        results.forEach(user => {
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id > 3).to.be.true();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exist();
         });
     });
 
-    it('does not add a user with the same email as existing user', function(done) {
+    it('lists users ordered by column', async () => {
 
-        var newUser = {
-            username: 'test2',
-            email: 'test@gmail.com',
-            password: 'test2'
-        };
+        // setup
+        const criteria = { sort: 'username' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.add(newUser).then(function(result) {
+        // exercise
+        const results = await UserService.list(criteria);
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.roles).to.not.exist();
+        results.forEach(user => {
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exists();
         });
     });
 
-    it('updates an existing user with new password', function(done) {
+    it('lists users order by id descending', async () => {
 
-        var id = 2;
-        var user = {
-            username: 'test2',
-            name: 'test2',
-            email: 'test2@gmail.com',
-            password: 'test2',
-            active: true
-        };
+        // setup
+        const criteria = { sort: 'id', descending: true };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        var cryptSpy = Sinon.spy(Auth, 'crypt');
+        // exercise
+        const results = await UserService.list(criteria);
 
-        UserService.update(id, user).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(cryptSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(UserModel);
-            expect(result.id).to.equals(id);
-            expect(result.username).to.equals(user.username);
-            expect(result.name).to.equals(user.name);
-            expect(result.email).to.equals(user.email);
-            expect(result.password).to.exists();
-            expect(result.active).to.satisfy(function(value) {
-                return value === true || value === 1;
-            });
-            txSpy.restore();
-            cryptSpy.restore();
-
-            done();
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.roles).to.not.exists();
+        results.forEach((user, index) => {
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exists();
+            expect(user.id).to.equals(results.length - index);
         });
     });
 
+    it('gets valid user by id', async () => {
 
-    it('updates an existing user without changing password', function(done) {
+        // setup
+        const id = 1;
+        const user = { username: 'admin', email: 'admin@gmail.com' };
 
-        var id = 2;
-        var user = {
-            username: 'test2',
-            name: 'test2',
-            email: 'test2@gmail.com',
-            active: true
-        };
+        // exercise
+        const result = await UserService.findById(id);
 
-        var txSpy = Sinon.spy(Repository, 'tx');
+        // validate
+        expect(result).to.be.an.object();
+        expect(result).to.be.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+        expect(result.email).to.be.equals(user.email);
+        expect(result.password).to.not.exists();
+    });
 
-        UserService.update(id, user).then(function(result) {
+    it('handles error getting invalid user by id', () => {
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(UserModel);
-            expect(result.id).to.equals(id);
-            expect(result.username).to.equals(user.username);
-            expect(result.name).to.equals(user.name);
-            expect(result.email).to.equals(user.email);
-            expect(result.password).to.exists();
-            expect(result.active).to.satisfy(function(value) {
-                return value === true || value === 1;
-            });
-            txSpy.restore();
-            done();
+        // exercise and validate
+        expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('populates role associations when fetching user by id', async () => {
+
+        // exercise
+        const result = await UserService.findById(1);
+
+        // validate
+        expect(result).to.be.instanceof(UserModel);
+        expect(result.roles).to.be.an.array();
+        expect(result.roles.length).to.equals(3);
+        result.roles.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
         });
     });
 
-    it('updates an existing user same username and id as request parameters string', function(done) {
+    it('gets valid user by username', async () => {
 
-        var id = '2';
-        var user = {
-            username: 'test'
-        };
+        // setup
+        const user = { username: 'admin', email: 'admin@gmail.com' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.update(id, user).then(function(result) {
+        // exercise
+        const result = await UserService.findByUserName(user.username);
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(UserModel);
-            expect(result.id).to.equals(Number.parseInt(id));
-            expect(result.username).to.equals(user.username);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(result).to.be.instanceof(UserModel);
+        expect(result.roles).to.not.exists();
+        expect(result.id).to.equals(1);
+        expect(result.username).to.equals(user.username);
+        expect(result.email).to.be.equals(user.email);
+        expect(result.password).to.not.exists();
     });
 
-    it('updates an existing user with same username and email', function(done) {
+    it('handles error getting invalid user by username', () => {
 
-        var id = 2;
-        var user = {
-            username: 'test',
-            email: 'test@gmail.com',
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.update(id, user).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(UserModel);
-            expect(result.id).to.equals(id);
-            expect(result.username).to.equals(user.username);
-            expect(result.email).to.equals(user.email);
-            expect(result.password).to.exists();
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
     });
 
-    it('handles user update with no active property', function(done) {
+    it('gets valid user by name', async () => {
 
-        var id = 2;
-        var user = {
-            username: 'test2',
-            name: 'test2',
-            email: 'test2@gmail.com',
-            password: 'test2',
-        };
+        // setup
+        const user = { id: 1, name: 'Admin User' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        var cryptSpy = Sinon.spy(Auth, 'crypt');
+        // exercise
+        const results = await UserService.findByName(user.name);
 
-        UserService.update(id, user).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(cryptSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(UserModel);
-            expect(result.id).to.equals(id);
-            expect(result.username).to.equals(user.username);
-            expect(result.name).to.equals(user.name);
-            expect(result.email).to.equals(user.email);
-            expect(result.password).to.exists();
-            expect(result.active).to.satisfy(function(value) {
-                return value === true || value === 1;
-            });
-            txSpy.restore();
-            cryptSpy.restore();
-
-            done();
-        });
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results[0]).to.be.instanceof(UserModel);
+        expect(results[0].roles).to.not.exists();
+        expect(results[0].id).to.equals(user.id);
+        expect(results[0].name).to.equals(user.name);
+        expect(results[0].password).to.not.exists();
     });
 
-    it('does not update a non existing user', function(done) {
+    it('gets invalid user by name', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.update(900, {}).then(function(result) {
+        // exercise
+        const result = await UserService.findByName('invalid');
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(result).to.be.an.array();
+        expect(result).to.be.empty();
     });
 
-    it('does not update a user with same username as existing user', function(done) {
+    it('gets valid user by email', async () => {
 
-        var id = 2;
-        var user = {
-            username: 'admin'
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.update(id, user).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
-    });
-
-    it('does not update a user with same email as existing user', function(done) {
-
-        var id = 2;
-        var user = {
-            username: 'test',
+        // setup
+        const user = {
+            id: 1,
             email: 'admin@gmail.com'
         };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.update(id, user).then(function(result) {
+        // exercise
+        const result = await UserService.findByEmail(user.email);
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(result).to.be.instanceof(UserModel);
+        expect(result.roles).to.not.exists();
+        expect(result.id).to.equals(user.id);
+        expect(result.email).to.be.equals(user.email);
+        expect(result.password).to.not.exists();
     });
 
-    it('deletes an existing user', function(done) {
+    it('handles error getting invalid user by email', () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.delete(3).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.not.exist();
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
     });
 
-    it('does not delete a non existing user', function(done) {
+    it('authenticates user with valid credentials', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.delete(9999).then(function(result) {
+        // setup
+        const fakeUser = { id: 1, username: 'admin', password: 'admin' };
+        const fakeToken = 'fake token';
+        getTokenStub = Sinon.stub(Auth, 'getToken');
+        getTokenStub.withArgs(fakeUser.id).returns(fakeToken);
 
-            expect(result).to.not.exist();
+        // exercise
+        const token = await UserService.authenticate(fakeUser.username, fakeUser.password);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(token).to.equals(fakeToken);
     });
 
-    it('does not delete an active user', function(done) {
+    it('does not authenticate inactive user', () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        UserService.delete(2).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_STATE);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        expect(UserService.authenticate('guest', 'guest')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
     });
 
+    it('does not authenticate invalid username', () => {
+
+        // exercise and validate
+        expect(UserService.authenticate('invalid', 'admin')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
+    });
+
+    it('does not authenticate invalid password', () => {
+
+        // exercise and validate
+        expect(UserService.authenticate('admin', 'invalid')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
+    });
+
+    it('adds a new user', async () => {
+
+        // setup
+        const fakeHash = 'hash';
+        const newUser = { username: 'test2', email: 'test2@gmail.com', password: 'test2' };
+        cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
+
+        // exercise
+        const result = await UserService.add(newUser);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(cryptStub.calledOnce).to.be.true();
+        expect(result).to.exists();
+        expect(result.id).to.exists();
+        expect(result.username).to.equals(newUser.username);
+        expect(result.email).to.equals(newUser.email);
+        expect(result.password).to.exists();
+        expect(result.active).to.exists();
+        expect(result.active).to.be.false();
+        expect(result.password).to.equals(fakeHash);
+    });
+
+    it('does not add an existing user', async () => {
+
+        // setup
+        cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
+
+        // exercise and validate
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
+
+    it('does not add a user with no password', async () => {
+
+        // setup
+        cryptStub = Sinon.stub(Auth, 'crypt').rejects(NSError.AUTH_CRYPT_ERROR());
+
+        // exercise and validate
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR);
+    });
+
+    it('does not add a user with the same email as existing user', async () => {
+
+        // setup
+        cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
+
+        // exercise and validate
+        await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
+
+    it('updates an existing user with new password', async () => {
+
+        // setup
+        const id = 2;
+        const fakeHash = 'hash';
+        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2', active: true };
+        cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
+
+        // exercise
+        const result = await UserService.update(id, user);
+
+        expect(txSpy.calledOnce).to.be.true();
+        expect(cryptStub.calledOnce).to.be.true();
+        expect(result).to.be.an.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+        expect(result.name).to.equals(user.name);
+        expect(result.email).to.equals(user.email);
+        expect(result.password).to.equals(fakeHash);
+        expect(result.active).to.satisfy(value =>
+            // accommodate boolean in both sqlite and postgres
+            value === true || value === 1
+        );
+    });
+
+    it('updates an existing user without changing password', async () => {
+
+        // setup
+        const id = 2;
+        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', active: true };
+
+        // exercise
+        const result = await UserService.update(id, user);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(result).to.be.an.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+        expect(result.name).to.equals(user.name);
+        expect(result.email).to.equals(user.email);
+        expect(result.password).to.exists();
+        expect(result.active).to.satisfy(value =>
+            // accommodate boolean in both sqlite and postgres
+            value === true || value === 1
+        );
+    });
+
+    it('updates an existing user same username and id as request parameters string', async () => {
+
+        // setup
+        const id = 2;
+        const user = { username: 'test' };
+
+        // exercise
+        const result = await UserService.update(id, user);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(result).to.be.an.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+    });
+
+    it('updates an existing user with same username and email', async () => {
+
+        // setup
+        const id = 2;
+        const user = { username: 'test', email: 'test@gmail.com' };
+
+        // exercise
+        const result = await UserService.update(id, user);
+
+        expect(txSpy.calledOnce).to.be.true();
+        expect(result).to.be.an.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+        expect(result.email).to.equals(user.email);
+        expect(result.password).to.exists();
+    });
+
+    it('handles user update with no active property', async () => {
+
+        // setup
+        const id = 2;
+        const fakeHash = 'hash';
+        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2' };
+        const cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
+
+        const result = await UserService.update(id, user);
+
+        expect(txSpy.calledOnce).to.be.true();
+        expect(cryptStub.calledOnce).to.be.true();
+        expect(result).to.be.an.instanceof(UserModel);
+        expect(result.id).to.equals(id);
+        expect(result.username).to.equals(user.username);
+        expect(result.name).to.equals(user.name);
+        expect(result.email).to.equals(user.email);
+        expect(result.password).to.equals(fakeHash);
+        expect(result.active).to.satisfy(value =>
+            // accommodate boolean in both sqlite and postgres
+            value === true || value === 1
+        );
+    });
+
+    it('does not update a non existing user', async () => {
+
+        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('does not update a user with same username as existing user', async () => {
+
+        await expect(UserService.update(2, { username: 'admin' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
+
+    it('does not update a user with same email as existing user', async () => {
+
+        await expect(UserService.update(2, { username: 'test', email: 'admin@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
+
+    it('deletes an existing user', async () => {
+
+        // exercise
+        const result = await UserService.delete(3);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(result).to.not.exist();
+    });
+
+    it('does not delete a non existing user', async () => {
+
+        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('does not delete an active user', async () => {
+
+        await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE);
+    });
 });
