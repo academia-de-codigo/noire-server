@@ -210,10 +210,10 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by id', () => {
+    it('handles error getting invalid user by id', async () => {
 
         // exercise and validate
-        expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+        await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('populates role associations when fetching user by id', async () => {
@@ -249,10 +249,10 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by username', () => {
+    it('handles error getting invalid user by username', async () => {
 
         // exercise and validate
-        expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+        await expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('gets valid user by name', async () => {
@@ -302,10 +302,10 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by email', () => {
+    it('handles error getting invalid user by email', async () => {
 
         // exercise and validate
-        expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+        await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('authenticates user with valid credentials', async () => {
@@ -323,22 +323,22 @@ describe('Service: user', () => {
         expect(token).to.equals(fakeToken);
     });
 
-    it('does not authenticate inactive user', () => {
+    it('does not authenticate inactive user', async () => {
 
         // exercise and validate
-        expect(UserService.authenticate('guest', 'guest')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
+        await expect(UserService.authenticate('guest', 'guest')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
     });
 
-    it('does not authenticate invalid username', () => {
+    it('does not authenticate invalid username', async () => {
 
         // exercise and validate
-        expect(UserService.authenticate('invalid', 'admin')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
+        await expect(UserService.authenticate('invalid', 'admin')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
     });
 
-    it('does not authenticate invalid password', () => {
+    it('does not authenticate invalid password', async () => {
 
         // exercise and validate
-        expect(UserService.authenticate('admin', 'invalid')).to.reject(Error, NSError.AUTH_INVALID_USERNAME);
+        await expect(UserService.authenticate('admin', 'invalid')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
     });
 
     it('adds a new user', async () => {
@@ -373,7 +373,7 @@ describe('Service: user', () => {
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('does not add a user with no password', async () => {
@@ -382,7 +382,7 @@ describe('Service: user', () => {
         cryptStub = Sinon.stub(Auth, 'crypt').rejects(NSError.AUTH_CRYPT_ERROR());
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR);
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR().messsage);
     });
 
     it('does not add a user with the same email as existing user', async () => {
@@ -391,7 +391,7 @@ describe('Service: user', () => {
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+        await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('updates an existing user with new password', async () => {
@@ -510,17 +510,17 @@ describe('Service: user', () => {
 
     it('does not update a non existing user', async () => {
 
-        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not update a user with same username as existing user', async () => {
 
-        await expect(UserService.update(2, { username: 'admin' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+        await expect(UserService.update(2, { username: 'admin' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('does not update a user with same email as existing user', async () => {
 
-        await expect(UserService.update(2, { username: 'test', email: 'admin@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+        await expect(UserService.update(2, { username: 'test', email: 'admin@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('deletes an existing user', async () => {
@@ -535,11 +535,11 @@ describe('Service: user', () => {
 
     it('does not delete a non existing user', async () => {
 
-        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not delete an active user', async () => {
 
-        await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE);
+        await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE().message);
     });
 });
