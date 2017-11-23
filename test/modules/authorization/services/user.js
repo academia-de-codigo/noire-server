@@ -235,7 +235,7 @@ describe('Service: user', () => {
     it('gets valid user by username', async () => {
 
         // setup
-        const user = { username: 'admin', email: 'admin@gmail.com' };
+        const user = { id: 1, username: 'admin', email: 'admin@gmail.com' };
 
         // exercise
         const result = await UserService.findByUserName(user.username);
@@ -243,7 +243,7 @@ describe('Service: user', () => {
         // validate
         expect(result).to.be.instanceof(UserModel);
         expect(result.roles).to.not.exists();
-        expect(result.id).to.equals(1);
+        expect(result.id).to.equals(user.id);
         expect(result.username).to.equals(user.username);
         expect(result.email).to.be.equals(user.email);
         expect(result.password).to.not.exists();
@@ -353,8 +353,11 @@ describe('Service: user', () => {
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(cryptStub.calledOnce).to.be.true();
         expect(result).to.exists();
+        expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.exists();
         expect(result.username).to.equals(newUser.username);
         expect(result.email).to.equals(newUser.email);
@@ -403,6 +406,8 @@ describe('Service: user', () => {
         const result = await UserService.update(id, user);
 
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(cryptStub.calledOnce).to.be.true();
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
@@ -427,6 +432,8 @@ describe('Service: user', () => {
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
         expect(result.username).to.equals(user.username);
@@ -449,7 +456,8 @@ describe('Service: user', () => {
         const result = await UserService.update(id, user);
 
         // validate
-        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
         expect(result.username).to.equals(user.username);
@@ -465,6 +473,8 @@ describe('Service: user', () => {
         const result = await UserService.update(id, user);
 
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
         expect(result.username).to.equals(user.username);
@@ -483,6 +493,8 @@ describe('Service: user', () => {
         const result = await UserService.update(id, user);
 
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(cryptStub.calledOnce).to.be.true();
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
