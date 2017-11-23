@@ -20,6 +20,7 @@ module.exports = {
         'test/modules/home/controllers',
         'test/modules/authorization/controllers/web/profile.js',
         'test/modules/authorization/services/user.js',
+        'test/modules/authorization/services/resource.js',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };

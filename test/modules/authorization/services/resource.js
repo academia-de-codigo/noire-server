@@ -1,371 +1,279 @@
-var Code = require('code');
-var Lab = require('lab');
-var Knex = require('knex');
-var Sinon = require('sinon');
-var Objection = require('objection');
-var KnexConfig = require('../../../../knexfile');
-var ResourceService = require('../../../../lib/modules/authorization/services/resource');
-var Repository = require('../../../../lib/plugins/repository');
-var ResourceModel = require('../../../../lib/models/resource');
-var HSError = require('../../../../lib/error');
+const Lab = require('lab');
+const Hapi = require('hapi');
+const Knex = require('knex');
+const Sinon = require('sinon');
+const Objection = require('objection');
+const Path = require('path');
+const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
+const ResourceService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/resource'));
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const ResourceModel = require(Path.join(process.cwd(), 'lib/models/resource'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var beforeEach = lab.beforeEach;
-var expect = Code.expect;
+describe('Service: resource', () => {
 
-describe('Service: resource', function() {
+    let txSpy;
 
-    var knex;
-
-    beforeEach(function(done) {
-
-        var options = {
-            models: ['resource', 'permission']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
+    beforeEach(async () => {
 
         /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
+        const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
-        knex.migrate.latest().then(function() {
+        await knex.migrate.latest();
+        await knex.seed.run();
 
-            return knex.seed.run();
+        Objection.Model.knex(knex);
 
-        }).then(function() {
+        const server = Hapi.server();
+        server.register({ plugin: Repository, options: { models: ['resource', 'permission'] } });
 
-            Objection.Model.knex(knex);
-            Repository.register(fakeServer, options, function() {
-
-                done();
-            });
-        });
+        txSpy = Sinon.spy(Repository, 'tx');
     });
 
-    it('counts resources', function(done) {
+    afterEach(() => {
 
-        ResourceService.count().then(function(result) {
-
-            expect(result).to.equals(4);
-            done();
-        });
-    });
-
-    it('counts resources with search criteria', function(done) {
-
-        var criteria = {
-            search: 'user'
-        };
-
-        ResourceService.count(criteria).then(function(result) {
-
-            expect(result).to.equals(1);
-            done();
-        });
-    });
-
-    it('lists resources', function(done) {
-
-        ResourceService.list().then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id).to.exists();
-                expect(resource.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('lists resources with a search clause', function(done) {
-
-        var criteria = {
-            search: 'use'
-        };
-        ResourceService.list(criteria).then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id === 1).to.be.true();
-                expect(resource.name).to.be.a.string();
-            });
-        });
-        done();
-
-    });
-
-    it('lists resources with limit', function(done) {
-
-        var criteria = {
-            limit: 2
-        };
-
-        ResourceService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(2);
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id).to.exists();
-                expect(resource.id < 3).to.be.true();
-                expect(resource.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('lists resources with offset', function(done) {
-        var criteria = {
-            page: 4,
-            limit: 1
-        };
-
-        ResourceService.list(criteria).then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id > 3).to.be.true();
-                expect(resource.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('lists resources ordered by column', function(done) {
-        var criteria = {
-            sort: 'name'
-        };
-
-        ResourceService.list(criteria).then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id).to.exist();
-                expect(resource.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('lists resources ordered by id, descending', function(done) {
-        var criteria = {
-            sort: 'id',
-            descending: true
-        };
-
-        ResourceService.list(criteria).then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results[0].id > results[1].id).to.be.true();
-            results.forEach(function(resource) {
-                expect(resource).to.be.instanceof(ResourceModel);
-                expect(resource.id).to.exist();
-                expect(resource.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('fetch valid resource by id', function(done) {
-
-        ResourceService.findById(1).then(function(result) {
-            expect(result).to.be.an.object();
-            expect(result).to.be.instanceof(ResourceModel);
-            expect(result.id).to.equals(1);
-            expect(result.name).to.equals('user');
-            done();
-        });
-    });
-
-    it('fetch invalid resource by id', function(done) {
-
-        ResourceService.findById(999).then(function(result) {
-
-            expect(result).to.not.exist();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
-    });
-
-    it('fetch valid resource by name', function(done) {
-
-        ResourceService.findByName('user').then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results[0]).to.be.instanceof(ResourceModel);
-            expect(results[0].id).to.equals(1);
-            expect(results[0].name).to.equals('user');
-            done();
-        });
-    });
-
-    it('fetch invalid resource by name', function(done) {
-
-        ResourceService.findByName('invalid resource name').then(function(result) {
-
-            expect(result).to.be.an.array();
-            expect(result).to.be.empty();
-            done();
-        });
-    });
-
-    it('adds a new resource', function(done) {
-
-        var resource = {
-            id: 10,
-            name: 'newresource'
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-
-        ResourceService.add(resource).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(txSpy.args[0].length).to.equals(2);
-            expect(txSpy.args[0][0]).to.equals(ResourceModel);
-            expect(result).to.be.an.instanceof(ResourceModel);
-            expect(result.id).to.equals(resource.id);
-            expect(result.name).to.equals(resource.name);
+        if (txSpy) {
             txSpy.restore();
-            done();
+        }
+    });
+
+    it('counts resources', async () => {
+
+        // exercise
+        const result = await ResourceService.count();
+
+        // validate
+        expect(result).to.equals(4);
+    });
+
+    it('counts resources with search criteria', async () => {
+
+        // setup
+        const criteria = { search: 'user' };
+
+        // exercise
+        const result = await ResourceService.count(criteria);
+
+        // validate
+        expect(result).to.equals(1);
+    });
+
+    it('lists resources', async () => {
+
+        // exercise
+        const results = await ResourceService.list();
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.id).to.exists();
+            expect(resource.name).to.be.a.string();
         });
     });
 
-    it('does not add an existing resource', function(done) {
+    it('lists resources with a search clause', async () => {
 
-        var resource = {
-            name: 'user'
-        };
+        // setup
+        const criteria = { search: 'use' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.add(resource).then(function(result) {
+        // exercise
+        const results = await ResourceService.list(criteria);
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results[0]).to.be.instanceof(ResourceModel);
+        expect(results[0].id === 1).to.be.true();
+        expect(results[0].name).to.be.a.string();
+    });
 
-            expect(result).to.not.exists();
+    it('lists resources with limit', async () => {
 
-        }).catch(function(error) {
+        // setup
+        const criteria = { limit: 2 };
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
+        // exercise
+        const results = await ResourceService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(2);
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.id).to.exists();
+            expect(resource.id < 3).to.be.true();
+            expect(resource.name).to.be.a.string();
         });
     });
 
-    it('deletes an existing resource', function(done) {
+    it('lists resources with offset', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.delete(3).then(function(result) {
+        // setup
+        const criteria = { page: 4, limit: 1 };
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.not.exists();
-            txSpy.restore();
-            done();
+        // exercise
+        const results = await ResourceService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.id > 3).to.be.true();
+            expect(resource.name).to.be.a.string();
         });
     });
 
-    it('does not delete a non existing resource', function(done) {
+    it('lists resources ordered by column', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.delete(999).then(function(result) {
+        // setup
+        const criteria = { sort: 'name' };
 
-            expect(result).to.not.exists();
+        // exercise
+        const results = await ResourceService.list(criteria);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.id).to.exist();
+            expect(resource.name).to.be.a.string();
         });
     });
 
-    it('does not delete a resource if permissions using it exist', function(done) {
+    it('lists resources ordered by id, descending', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.delete(1).then(function(result) {
+        // setup
+        const criteria = { sort: 'id', descending: true };
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_RELATION);
-            txSpy.restore();
-            done();
+        // exercise
+        const results = await ResourceService.list(criteria);
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results[0].id > results[1].id).to.be.true();
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.id).to.exist();
+            expect(resource.name).to.be.a.string();
         });
     });
 
-    it('updates an existing resource', function(done) {
+    it('gets valid resource by id', async () => {
 
-        var resource = {
-            id: 3,
-            name: 'newname'
-        };
+        // setup
+        const id = 1;
+        const resource = { name: 'user' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.update(resource.id, resource).then(function(result) {
+        // exercise
+        const result = await ResourceService.findById(id);
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(ResourceModel);
-            expect(result.id).to.equals(resource.id);
-            expect(result.name).to.equals(resource.name);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(result).to.be.an.object();
+        expect(result).to.be.instanceof(ResourceModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals(resource.name);
     });
 
-    it('does not update a non existing resource', function(done) {
+    it('handles error getting invalid resource by id', () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.update(999, {
-            name: 'non existing resource'
-        }).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        expect(ResourceService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
     });
 
-    it('does not update a resource with same name as an existing resource', function(done) {
+    it('gets valid resource by name', async () => {
 
-        var resource = {
-            id: 3,
-            name: 'user'
-        };
-        var txSpy = Sinon.spy(Repository, 'tx');
-        ResourceService.update(resource.id, resource).then(function(result) {
+        // setup
+        const resource = { id: 1, name: 'user' };
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        // exercise
+        const result = await ResourceService.findByName('user');
+        expect(result).to.be.instanceof(ResourceModel);
+        expect(result.id).to.equals(resource.id);
+        expect(result.name).to.equals(resource.name);
     });
 
+    it('handles error getting invalid resource by name', () => {
+
+        // exercise and validate
+        expect(ResourceService.findByName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('adds a new resource', async () => {
+
+        // setup
+        const resource = { id: 10, name: 'newresource' };
+
+        // exercise
+        const result = await ResourceService.add(resource);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(ResourceModel);
+        expect(result).to.be.an.instanceof(ResourceModel);
+        expect(result.id).to.equals(resource.id);
+        expect(result.name).to.equals(resource.name);
+    });
+
+    it('does not add an existing resource', async () => {
+
+        // exercise and validate
+        await expect(ResourceService.add({ name: 'user' })).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
+
+    it('deletes an existing resource', async () => {
+
+        // exercise
+        const result = await ResourceService.delete(3);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(result).to.not.exists();
+    });
+
+    it('does not delete a non existing resource', async () => {
+
+        // exercise and validate
+        await expect(ResourceService.delete(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('does not delete a resource if permissions using it exist', async () => {
+
+        // exercise and validate
+        await expect(ResourceService.delete(1)).to.reject(Error, NSError.RESOURCE_RELATION);
+    });
+
+    it('updates an existing resource', async () => {
+
+        // setup
+        const id = 3;
+        const resource = { name: 'newname' };
+
+        // exercise
+        const result = await ResourceService.update(id, resource);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(ResourceModel);
+        expect(result).to.be.an.instanceof(ResourceModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals(resource.name);
+    });
+
+    it('does not update a non existing resource', async () => {
+
+        // exercise and validate
+        await expect(ResourceService.update(999, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND);
+    });
+
+    it('does not update a resource with same name as an existing resource', async () => {
+
+        // exercise and validate
+        await expect(ResourceService.update(3, 'user')).to.reject(Error, NSError.RESOURCE_DUPLICATE);
+    });
 });
