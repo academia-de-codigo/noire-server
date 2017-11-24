@@ -64,7 +64,7 @@ describe('Plugin: repository', () => {
         expect(repository.model).to.equals(UserModel);
     });
 
-    it('handles error when creating a repository for invalid model', async () => {
+    it('throws error when creating a repository for invalid model', async () => {
 
         // exercise
         await server.register(Repository);
@@ -159,7 +159,7 @@ describe('Plugin: repository', () => {
         queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
 
         // exercise and validate
-        expect(userRepository.findOne(1)).to.reject(Error, error);
+        await expect(userRepository.findOne(1)).to.reject(Error, error);
     });
 
     it('returns all records within limit', async () => {
