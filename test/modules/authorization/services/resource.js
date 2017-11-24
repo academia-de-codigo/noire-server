@@ -178,10 +178,10 @@ describe('Service: resource', () => {
         expect(result.name).to.equals(resource.name);
     });
 
-    it('handles error getting invalid resource by id', () => {
+    it('handles getting invalid resource by id', async () => {
 
         // exercise and validate
-        expect(ResourceService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('gets valid resource by name', async () => {
@@ -196,10 +196,10 @@ describe('Service: resource', () => {
         expect(result.name).to.equals(resource.name);
     });
 
-    it('handles error getting invalid resource by name', () => {
+    it('handles getting invalid resource by name', async () => {
 
         // exercise and validate
-        expect(ResourceService.findByName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.findByName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('adds a new resource', async () => {
@@ -235,7 +235,7 @@ describe('Service: resource', () => {
         expect(result).to.not.exists();
     });
 
-    it('does not delete a non existing resource', async () => {
+    it('handles deleting a non existing resource', async () => {
 
         // exercise and validate
         await expect(ResourceService.delete(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
@@ -265,7 +265,7 @@ describe('Service: resource', () => {
         expect(result.name).to.equals(resource.name);
     });
 
-    it('does not update a non existing resource', async () => {
+    it('handles updating a non existing resource', async () => {
 
         // exercise and validate
         await expect(ResourceService.update(999, { name: 'newname' })).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
