@@ -1,192 +1,179 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Knex = require('knex');
-var Sinon = require('sinon');
-var Objection = require('objection');
-var KnexConfig = require('../../../../knexfile');
-var RoleService = require('../../../../lib/modules/authorization/services/role');
-var Repository = require('../../../../lib/plugins/repository');
-var UserModel = require('../../../../lib/models/user');
-var RoleModel = require('../../../../lib/models/role');
-var HSError = require('../../../../lib/error');
+const Lab = require('lab');
+const Hapi = require('hapi');
+const Knex = require('knex');
+const Sinon = require('sinon');
+const Objection = require('objection');
+const Path = require('path');
+const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
+const RoleService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/role'));
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
+const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
-
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var beforeEach = lab.beforeEach;
-var expect = Code.expect;
-
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 describe('Service: role', function() {
 
-    var knex;
+    let txSpy;
 
-    beforeEach(function(done) {
-
-        var options = {
-            models: ['user', 'role', 'resource', 'permission']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
+    beforeEach(async () => {
 
         /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
+        const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
-        knex.migrate.latest().then(function() {
+        await knex.migrate.latest();
+        await knex.seed.run();
 
-            return knex.seed.run();
+        Objection.Model.knex(knex);
 
-        }).then(function() {
+        const server = Hapi.server();
+        server.register({ plugin: Repository, options: { models: ['user', 'role', 'resource', 'permission'] } });
 
-            Objection.Model.knex(knex);
-            Repository.register(fakeServer, options, function() {
-
-                done();
-            });
-        });
-    });
-
-    it('counts roles', function(done) {
-
-        RoleService.count().then(function(result) {
-
-            expect(result).to.equals(4);
-            done();
-        });
-    });
-
-    it('counts roles with search criteria', function(done) {
-
-        var criteria = {
-            search: 'administrator'
-        };
-
-        RoleService.count(criteria).then(function(result) {
-
-            expect(result).to.equals(1);
-            done();
-        });
-    });
-
-    it('lists roles', function(done) {
-
-        RoleService.list().then(function(results) {
-
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.users).to.not.exists();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id).to.exists();
-                expect(role.name).to.be.a.string();
-            });
-            done();
-        });
-    });
-
-    it('lists roles with a search clause', function(done) {
-
-        var criteria = {
-            search: 'adm'
-        };
-        RoleService.list(criteria).then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results.users).to.not.exists();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id === 1).to.be.true();
-                expect(role.name).to.be.a.string();
-            });
-        });
-        done();
+        txSpy = Sinon.spy(Repository, 'tx');
 
     });
 
-    it('lists roles with limit', function(done) {
+    afterEach(() => {
 
-        var criteria = {
-            limit: 2
-        };
+        if (txSpy) {
+            txSpy.restore();
+        }
+    });
 
-        RoleService.list(criteria).then(function(results) {
+    it('counts roles', async () => {
 
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(2);
-            expect(results.users).to.not.exists();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id).to.exists();
-                expect(role.name).to.be.a.string();
-            });
-            done();
+        // exercise
+        const result = await RoleService.count();
+
+        // validate
+        expect(result).to.equals(4);
+    });
+
+    it('counts roles with a search criteria', async () => {
+
+        // setup
+        const criteria = { search: 'administrator' };
+
+        // exercise
+        const result = await RoleService.count(criteria);
+
+        // validate
+        expect(result).to.equals(1);
+    });
+
+    it('lists roles', async () => {
+
+        // exercise
+        const results = await RoleService.list();
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.users).to.not.exists();
+        results.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
         });
     });
 
-    it('lists roles with offset', function(done) {
-        var criteria = {
-            page: 4,
-            limit: 1
-        };
-        RoleService.list(criteria).then(function(results) {
+    it('lists roles with a search clause', async () => {
 
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results.users).to.not.exist();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id > 3).to.be.true();
-                expect(role.name).to.be.a.string();
-            });
-            done();
+        // setup
+        const criteria = { search: 'adm' };
+
+        // exercise
+        const results = await RoleService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results.users).to.not.exists();
+        expect(results[0]).to.be.instanceof(RoleModel);
+        expect(results[0].id === 1).to.be.true();
+        expect(results[0].name).to.be.a.string();
+    });
+
+    it('lists roles with limit', async () => {
+
+        // setup
+        const criteria = { limit: 2 };
+
+        // exercise
+        const results = await RoleService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(2);
+        expect(results.users).to.not.exists();
+        results.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
         });
     });
 
-    it('lists roles ordered by column', function(done) {
-        var criteria = {
-            sort: 'name'
-        };
-        RoleService.list(criteria).then(function(results) {
+    it('lists roles with offset', async () => {
 
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.users).to.not.exist();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id).to.exists();
-                expect(role.name).to.be.a.string();
-            });
-            done();
+        // setup
+        const criteria = { page: 4, limit: 1 };
+
+        // exercise
+        const results = await RoleService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results.users).to.not.exist();
+        results.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id > 3).to.be.true();
+            expect(role.name).to.be.a.string();
         });
     });
 
-    it('lists roles ordered by column, descending', function(done) {
-        var criteria = {
-            sort: 'id',
-            descending: true
-        };
+    it('lists roles ordered by column', async () => {
 
-        RoleService.list(criteria).then(function(results) {
+        // setup
+        const criteria = { sort: 'name' };
 
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(4);
-            expect(results.users).to.not.exist();
-            expect(results[0].id > results[1].id).to.be.true();
-            results.forEach(function(role) {
-                expect(role).to.be.instanceof(RoleModel);
-                expect(role.id).to.exists();
-                expect(role.name).to.be.a.string();
-            });
-            done();
+        // exercise
+        const results = await RoleService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.users).to.not.exist();
+        results.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
         });
     });
 
+    it('lists roles ordered by column descending', async () => {
+
+        // setup
+        const criteria = { sort: 'id', descending: true };
+
+        // exercise
+        const results = await RoleService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.users).to.not.exist();
+        expect(results[0].id > results[1].id).to.be.true();
+        results.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
+        });
+    });
+
+    /*
     it('fetch valid role by id', function(done) {
 
         RoleService.findById(1).then(function(result) {
@@ -841,5 +828,5 @@ describe('Service: role', function() {
             done();
         });
     });
-
+    */
 });
