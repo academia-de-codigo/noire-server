@@ -210,7 +210,7 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by id', async () => {
+    it('handles getting invalid user by id', async () => {
 
         // exercise and validate
         await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
@@ -249,7 +249,7 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by username', async () => {
+    it('handles getting invalid user by username', async () => {
 
         // exercise and validate
         await expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
@@ -302,7 +302,7 @@ describe('Service: user', () => {
         expect(result.password).to.not.exists();
     });
 
-    it('handles error getting invalid user by email', async () => {
+    it('handles geting invalid user by email', async () => {
 
         // exercise and validate
         await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
@@ -508,7 +508,7 @@ describe('Service: user', () => {
         );
     });
 
-    it('does not update a non existing user', async () => {
+    it('handles updating a non existing user', async () => {
 
         await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
@@ -530,16 +530,20 @@ describe('Service: user', () => {
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.not.exist();
     });
 
-    it('does not delete a non existing user', async () => {
+    it('handles deleting a non existing user', async () => {
 
+        // exercise and validate
         await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not delete an active user', async () => {
 
+        // exercise and validate
         await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE().message);
     });
 });

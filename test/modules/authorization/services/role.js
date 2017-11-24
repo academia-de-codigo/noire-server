@@ -9,6 +9,8 @@ const RoleService = require(Path.join(process.cwd(), 'lib/modules/authorization/
 const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
 const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
 const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
+const PermissionModel = require(Path.join(process.cwd(), 'lib/models/permission'));
+const ResourceModel = require(Path.join(process.cwd(), 'lib/models/resource'));
 const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
@@ -173,660 +175,389 @@ describe('Service: role', function() {
         });
     });
 
-    /*
-    it('fetch valid role by id', function(done) {
+    it('gets valid role by id', async () => {
 
-        RoleService.findById(1).then(function(result) {
-            expect(result).to.be.an.object();
-            expect(result).to.be.instanceof(RoleModel);
-            expect(result.id).to.equals(1);
-            expect(result.name).to.equals('admin');
-            expect(result.description).to.equals('administrator');
-            done();
-        });
+        // setup
+        const id = 1;
+        const role = { name: 'admin', description: 'administrator' };
+
+        // exercise
+        const result = await RoleService.findById(id);
+
+        // validate
+        expect(result).to.be.an.object();
+        expect(result).to.be.instanceof(RoleModel);
+        expect(result.id).to.equals(1);
+        expect(result.name).to.equals(role.name);
+        expect(result.description).to.equals(role.description);
     });
 
-    it('fetch invalid role by id', function(done) {
+    it('handles getting invalid role by id', async () => {
 
-        RoleService.findById(999).then(function(result) {
-
-            expect(result).to.not.exist();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('populate user associations when fetching role by id', function(done) {
-        RoleService.findById(2).then(function(result) {
-            expect(result).to.be.instanceof(RoleModel);
-            expect(result.users).to.be.an.array();
-            expect(result.users.length).to.equals(2);
-            result.users.forEach(function(user) {
-                expect(user).to.be.instanceof(UserModel);
-                expect(user.id).to.exists();
-                expect(user.username).to.be.a.string();
-                expect(user.email).to.be.a.string();
-                expect(user.password).to.not.exists();
-            });
-            done();
-        });
+    it('gets valid role by name', async () => {
+
+        // setup
+        const role = { id: 1, name: 'admin', description: 'administrator' };
+
+        // exercise
+        const result = await RoleService.findByName('admin');
+        expect(result).to.be.instanceof(RoleModel);
+        expect(result.users).to.not.exists();
+        expect(result.permissions).to.not.exists();
+        expect(result.id).to.equals(role.id);
+        expect(result.name).to.equals(role.name);
+        expect(result.description).to.equals(role.description);
     });
 
-    it('fetch valid role by name', function(done) {
+    it('handles getting invalid role by name', async () => {
 
-        RoleService.findByName('admin').then(function(results) {
-            expect(results).to.be.an.array();
-            expect(results.length).to.equals(1);
-            expect(results[0]).to.be.instanceof(RoleModel);
-            expect(results[0].users).to.not.exists();
-            expect(results[0].id).to.equals(1);
-            expect(results[0].name).to.equals('admin');
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.findByName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('fetch invalid role by name', function(done) {
+    it('adds a new role', async () => {
 
-        RoleService.findByName('invalid role name').then(function(result) {
+        // setup
+        const role = { name: 'newrole', description: 'description' };
 
-            expect(result).to.be.an.array();
-            expect(result).to.be.empty();
-            done();
-        });
+        // exercise
+        const result = await RoleService.add(role);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(result).to.be.an.instanceof(RoleModel);
+        expect(result.id).to.exists();
+        expect(result.name).to.equals(role.name);
+        expect(result.description).to.equals(role.description);
     });
 
-    it('adds a new role', function(done) {
+    it('does not add an existing role', async () => {
 
-        var role = {
-            name: 'newrole',
-            description: 'description'
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-
-        RoleService.add(role).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(txSpy.args[0].length).to.equals(2);
-            expect(txSpy.args[0][0]).to.equals(RoleModel);
-            expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.exists();
-            expect(result.name).to.equals(role.name);
-            expect(result.description).to.equals(role.description);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.add({ name: 'admin' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
-    it('does not add an existing role', function(done) {
+    it('deletes an existing role', async () => {
 
-        var role = {
-            name: 'admin'
-        };
+        // exercise
+        const result = await RoleService.delete(4);
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.add(role).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(result).to.not.exists();
     });
 
-    it('deletes an existing role', function(done) {
+    it('does not delete a non existing role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.delete(4).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.not.exists();
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not delete a non existing role', function(done) {
+    it('updates an existing role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.delete(100).then(function(result) {
+        // setup
+        const id = 4;
+        const role = { name: 'newname' };
 
-            expect(result).to.not.exists();
+        // exercise
+        const result = await RoleService.update(id, role);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(result).to.be.an.instanceof(RoleModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals(role.name);
     });
 
-    it('updates an existing role', function(done) {
+    it('updates an existing role with same name', async () => {
 
-        var id = 4;
-        var role = {
-            name: 'newname'
-        };
+        // setup
+        const id = 4;
+        const role = { name: 'guest2' };
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(id, role).then(function(result) {
+        // exercise
+        const result = await RoleService.update(id, role);
 
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.equals(id);
-            expect(result.name).to.equals(role.name);
-            txSpy.restore();
-            done();
-        });
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(result).to.be.an.instanceof(RoleModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals(role.name);
     });
 
-    it('updates an existing role with same name and id as request parameters string', function(done) {
+    it('handles updating a non existing role', async () => {
 
-        var id = '4';
-        var role = {
-            name: 'guest2'
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(id, role).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.equals(Number.parseInt(id));
-            expect(result.name).to.equals(role.name);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.update(9999, {})).to.reject(NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('updates an existing role with same name', function(done) {
+    it('does not update a role with same name as an existing role', async () => {
 
-        var id = 4;
-        var role = {
-            name: 'guest2'
-        };
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(id, role).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.instanceof(RoleModel);
-            expect(result.id).to.equals(id);
-            expect(result.name).to.equals(role.name);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.update(4, { name: 'admin' })).to.reject(NSError.RESOURCE_DUPLICATE().message);
     });
 
-    it('does not update a non existing role', function(done) {
+    it('adds a user to a role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(100, {
-            name: 'non existing role'
-        }).then(function(result) {
+        // setup
+        const roleId = 4;
+        const userIds = 2;
 
-            expect(result).to.not.exists();
+        // exercise
+        const result = await RoleService.addUsers(4, 2);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(UserModel);
+        expect(result).to.be.an.array();
+        expect(result.length).to.equals(1);
+        expect(result[0]).instanceof(Objection.Model);
+        expect(result[0].role_id).to.equals(roleId);
+        expect(result[0].user_id).to.equals(userIds);
     });
 
-    it('does not update a role with same name as an existing role', function(done) {
+    it('adds multiple users to role', async () => {
 
-        var id = 4;
-        var role = {
-            name: 'admin'
-        };
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.update(id, role).then(function(result) {
+        // setup
+        const roleId = 4;
+        const userIds = [1, 2, 3];
 
-            expect(result).to.not.exists();
+        // exercise
+        const result = await RoleService.addUsers(4, [1, 2, 3]);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(UserModel);
+        expect(result).to.be.an.array();
+        expect(result.length).to.equals(userIds.length);
+        result.forEach(model => {
+            expect(model).instanceof(Objection.Model);
+            expect(model.role_id).to.equals(roleId);
         });
+        expect(result.map(model => model.user_id)).to.equals(userIds);
     });
 
-    it('adds one user to role', function(done) {
+    it('handles adding user to non existing role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(4, 2).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.array();
-            expect(result.length).to.equals(1);
-            expect(result[0]).instanceof(Objection.Model);
-            expect(result[0].role_id).to.equals(4);
-            expect(result[0].user_id).to.equals(2);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.addUsers(9999, 2)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('adds multiple users to role', function(done) {
+    it('handles adding non existing user to role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(4, [1, 2, 3]).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.be.an.array();
-            expect(result.length).to.equals(3);
-            result.forEach(function(model) {
-                expect(model).instanceof(Objection.Model);
-                expect(model.role_id).to.equals(4);
-            });
-            expect(result.map(function(model) {
-                return model.user_id;
-            })).to.equals([1, 2, 3]);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.addUsers(4, 999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not add user to non existing role', function(done) {
+    it('does not add any user to role if at least one of the users does not exist', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(100, 2).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.addUsers(4, [1, 2, 3, 9999])).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not add non existing user to role', function(done) {
+    it('removes one user from role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(4, 100).then(function(result) {
+        // exercise
+        const result = await RoleService.removeUsers(1, 1);
 
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(UserModel);
+        expect(result).to.equals([1]);
     });
 
-    it('does not add any user to role if at least one of the users does not exist', function(done) {
+    it('removes multiple users from role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(4, [1, 2, 3, 100]).then(function(result) {
+        // exercise
+        const result = await RoleService.removeUsers(3, [2, 3]);
 
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(UserModel);
+        expect(result.length).to.equals(2);
     });
 
-    it('does not add user to role which already contains user', function(done) {
+    it('handles removing user from non existing role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(1, 1).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removeUsers(5, 1)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not add any user to role which already contains at least one of the users', function(done) {
+    it('handles removing non existing user from role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addUsers(1, [1, 2, 3]).then(function(result) {
-
-            expect(result).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removeUsers(3, 9999)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('removes one user from role', function(done) {
+    it('does not remove any user from role if at least one user does not exist', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(1, 1).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([1]);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removeUsers(1, [99, 2, 3])).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('removes multiple users from role', function(done) {
+    it('handles removing non related user from role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(3, [2, 3]).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result.length).to.equals(2);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removeUsers(4, 1)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not remove user from non existing role', function(done) {
+    it('does not remove any user from role if at least one is unrelated', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(5, 1).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removeUsers(2, [1, 2, 3])).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not remove non existing user from role', function(done) {
+    it('adds a new permission', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(3, 99).then(function(result) {
+        // setup
+        const roleId = 1;
+        const resource = 'test';
+        const permission = { id: 10, action: 'create' };
 
-            expect(result).to.no.exist();
+        // exercise
+        const result = await RoleService.addPermission(roleId, permission.action, resource);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(4);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(PermissionModel);
+        expect(txSpy.args[0][2]).to.equals(ResourceModel);
+        expect(result).instanceof(Objection.Model);
+        expect(result.role_id).to.equals(roleId);
+        expect(result.permission_id).to.equals(permission.id);
     });
 
-    it('does not remove any user from role if at least one user does not exist', function(done) {
+    it('adds a permission that already belongs to a role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(1, [99, 2, 3]).then(function(result) {
+        // setup
+        const roleId = 1;
+        const resource = 'role';
+        const permission = { id: 5, action: 'create' };
 
-            expect(result).to.no.exist();
+        // exercise
+        const result = await RoleService.addPermission(roleId, permission.action, resource);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(4);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(PermissionModel);
+        expect(txSpy.args[0][2]).to.equals(ResourceModel);
+        expect(result).instanceof(Objection.Model);
+        expect(result.role_id).to.equals(roleId);
+        expect(result.permission_id).to.equals(permission.id);
     });
 
-    it('does not remove non related user from role', function(done) {
+    it('adds a permission that already exists but is not used by the role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(4, 1).then(function(result) {
+        // setup
+        const roleId = 1;
+        const resource = 'noroles';
+        const permisison = { action: 'read' };
 
-            expect(result).to.not.exist();
+        // exercise
+        const result = await RoleService.addPermission(roleId, permisison.action, resource);
 
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(4);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(PermissionModel);
+        expect(txSpy.args[0][2]).to.equals(ResourceModel);
+        expect(result).instanceof(Objection.Model);
+        expect(result.role_id).to.equals(1);
+        expect(result.permission_id).to.equals(9);
     });
 
-    it('does not remove any user from role if at least one is unrelated', function(done) {
+    it('does not add a permission to a non existing role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removeUsers(2, [1, 2, 3]).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-
-        });
+        // exercise and validate
+        await expect(RoleService.addPermission(999, 'create', 'role')).reject(NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('adds a new permission', function(done) {
+    it('does not add a permission with invalid action', async () => {
 
-        var action = 'create';
-        var resource = 'test';
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addPermission(1, action, resource).then(function(result) {
-
-            expect(result).instanceof(Objection.Model);
-            expect(result.role_id).to.equals(1);
-            expect(result.permission_id).to.equals(10);
-
-            Repository.permission.model.query().findById(10).eager('resource').then(function(permission) {
-
-                expect(permission.id).to.be.a.number();
-                expect(permission.action).to.equals(action);
-                expect(permission.resource).to.exists();
-                expect(permission.resource.id).to.equals(permission.resource_id);
-                txSpy.restore();
-                done();
-            });
-        });
+        // exercise and validate
+        await expect(() => RoleService.addPermission(1, 'invalid', 'role')).throws(NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('adds a permission that already belongs to a role', function(done) {
+    it('does not add a permission with invalid resource', async () => {
 
-        var action = 'create';
-        var resource = 'role';
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addPermission(1, action, resource).then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_DUPLICATE);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.addPermission(1, 'create', 'invalid')).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('adds a permission that already exists but is not used by the role', function(done) {
+    it('removes a permission from role', async () => {
 
-        var action = 'read';
-        var resource = 'noroles';
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.addPermission(1, action, resource).then(function(result) {
+        // exercise
+        const result = await RoleService.removePermissions(1, 1);
 
-            expect(result).instanceof(Objection.Model);
-            expect(result.role_id).to.equals(1);
-            expect(result.permission_id).to.equals(9);
-
-            Repository.permission.model.query().findById(9).eager('resource').then(function(permission) {
-
-                expect(permission.id).to.be.a.number();
-                expect(permission.action).to.equals(action);
-                expect(permission.resource).to.exists();
-                expect(permission.resource.id).to.equals(permission.resource_id);
-                txSpy.restore();
-                done();
-            });
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(PermissionModel);
+        expect(result).to.equals([1]);
     });
 
-    it('handles adding a permission to a non existing role', function(done) {
+    it('removes multiple permissions from role', async () => {
 
-        RoleService.addPermission(999, 'create', 'role').then(function(result) {
+        // exercise
+        const result = await RoleService.removePermissions(2, [2, 3, 6]);
 
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(3);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(txSpy.args[0][1]).to.equals(PermissionModel);
+        expect(result.length).to.equals(3);
     });
 
-    it('handles adding a permission with invalid action', function(done) {
+    it('does not remove permission from non existing role', async () => {
 
-        RoleService.addPermission(1, 'invalid', 'role').then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removePermissions(5, 1)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('handles adding a permission with invalid resource', function(done) {
+    it('does not remove non existing permission from role', async () => {
 
-        RoleService.addPermission(1, 'create', 'invalid').then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removePermissions(1, 99)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('removes permission from role', function(done) {
+    it('does not remove any permission from role if at least one permission does not exist', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(1, 1).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result).to.equals([1]);
-            txSpy.restore();
-            done();
-
-        });
+        // exercise and validate
+        await expect(RoleService.removePermissions(1, [1, 2, 3, 99])).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('removes multiple permissions from role', function(done) {
+    it('does not remove non related permission from role', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(2, [2, 3, 6]).then(function(result) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(result.length).to.equals(3);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removePermissions(2, 4)).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not remove permission from non existing role', function(done) {
+    it('does not remove any permission from role if at least one is unrelated', async () => {
 
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(5, 1).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(RoleService.removePermissions(2, [2, 3, 4])).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
-
-    it('does not remove non existing permission from role', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(1, 99).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
-    });
-
-    it('does not remove any permission from role if at least one permission does not exist', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(1, [1, 2, 3, 99]).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
-    });
-
-    it('does not remove non related permission from role', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(2, 4).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-
-        });
-    });
-
-    it('does not remove any permission from role if at least one is unrelated', function(done) {
-
-        var txSpy = Sinon.spy(Repository, 'tx');
-        RoleService.removePermissions(2, [2, 3, 4]).then(function(result) {
-
-            expect(result).to.not.exist();
-
-        }).catch(function(error) {
-
-            expect(txSpy.calledOnce).to.be.true();
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            txSpy.restore();
-            done();
-        });
-    });
-    */
 });

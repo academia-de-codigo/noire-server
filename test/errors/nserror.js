@@ -1,6 +1,7 @@
 const Lab = require('lab');
 const Boom = require('boom');
-const NSError = require('../../lib/errors/nserror');
+const Path = require('path');
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
 const { describe, expect, it } = exports.lab = Lab.script();
 
