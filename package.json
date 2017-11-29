@@ -42,7 +42,7 @@
     "good-console": "^6.4.0",
     "good-squeeze": "^5.0.2",
     "handlebars": "^4.0.11",
-    "hapi": "^17.0.1",
+    "hapi": "^17.1.1",
     "hapi-auth-jwt2": "^7.3.0",
     "hapijs-status-monitor": "github:ziyasal/hapijs-status-monitor#multiple-connections",
     "hoek": "^5.0.1",
