@@ -6,7 +6,7 @@ const Handlebars = require('handlebars');
 const Package = require(Path.join(process.cwd(), 'package.json'));
 const Views = require(Path.join(process.cwd(), 'lib/plugins/views'));
 
-const { afterEach, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 const internals = {};
 internals.viewOptions = {
@@ -27,11 +27,6 @@ internals.fakeTemplate = 'pages/' + internals.viewFixture;
 describe('Plugin: views', () => {
 
     let server;
-    let visionRegister;
-
-    before(() => {
-        visionRegister = Vision.plugin.register;
-    });
 
     beforeEach(async () => {
 
@@ -39,12 +34,13 @@ describe('Plugin: views', () => {
         await server.register(Views);
     });
 
-    afterEach(() => {
-        // make sure monkey patch is removed
-        Vision.plugin.register = visionRegister;
-    });
+    it('handles vision plugin registration failures', async (flags) => {
 
-    it('handles vision plugin registration failures', async () => {
+        // cleanup
+        const visionRegister = Vision.plugin.register;
+        flags.onCleanup = function() {
+            Vision.plugin.register = visionRegister;
+        };
 
         // setup
         const PLUGIN_ERROR = 'plugin error';

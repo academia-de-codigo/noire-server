@@ -16,7 +16,6 @@ const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script
 
 describe('Service: user', () => {
 
-    let getTokenStub;
     let cryptStub;
     let txSpy;
 
@@ -38,10 +37,6 @@ describe('Service: user', () => {
     });
 
     afterEach(() => {
-
-        if (getTokenStub) {
-            getTokenStub.restore();
-        }
 
         if (txSpy) {
             txSpy.restore();
@@ -308,13 +303,16 @@ describe('Service: user', () => {
         await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('authenticates user with valid credentials', async () => {
+    it('authenticates user with valid credentials', async (flags) => {
 
         // setup
         const fakeUser = { id: 1, username: 'admin', password: 'admin' };
         const fakeToken = 'fake token';
-        getTokenStub = Sinon.stub(Auth, 'getToken');
+        const getTokenStub = Sinon.stub(Auth, 'getToken');
         getTokenStub.withArgs(fakeUser.id).returns(fakeToken);
+        flags.onCleanup = function() {
+            getTokenStub.restore();
+        };
 
         // exercise
         const token = await UserService.authenticate(fakeUser.username, fakeUser.password);

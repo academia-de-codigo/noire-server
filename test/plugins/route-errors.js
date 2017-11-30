@@ -6,26 +6,16 @@ const Errors = require(Path.join(process.cwd(), 'lib/plugins/route-errors'));
 const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
 const Auth = require(Path.join(process.cwd(), 'test/fixtures/auth-plugin'));
 
-const { afterEach, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 describe('Plugin: route-errors', () => {
 
     let server;
-    let authenticate;
-
-    before(() => {
-        authenticate = Auth.authenticate;
-    });
 
     beforeEach(async () => {
 
         server = Hapi.server();
         await server.register(Errors);
-    });
-
-    afterEach(() => {
-        // make sure monkey path is removed
-        Auth.authenticate = authenticate;
     });
 
     it('should not redirect on valid route with no errors', async () => {
@@ -145,10 +135,13 @@ describe('Plugin: route-errors', () => {
         expect(response.statusMessage).to.equal('Forbidden');
     });
 
-    it('should not redirect on failed authentication', async () => {
+    it('should not redirect on failed authentication', async (flags) => {
 
         // setup
         Auth.authenticate = false;
+        flags.onCleanup = function() {
+            Auth.authenticate = true;
+        };
         await server.register(Auth);
         const fakeRoute = {
             path: '/',
