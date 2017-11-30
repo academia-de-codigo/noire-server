@@ -1,360 +1,276 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var JWT = require('jsonwebtoken');
-var Promise = require('bluebird');
-var Bcrypt = require('bcrypt');
-var Exiting = require('exiting');
-var Path = require('path');
-var HSError = require('../../lib/error');
-var Manager = require('../../lib/manager');
-var UserService = require('../../lib/modules/authorization/services/user');
-var Auth = require('../../lib/plugins/auth');
-var Config = require('../../lib/config');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const JWT = require('jsonwebtoken');
+const Bcrypt = require('bcrypt');
+const Hapi = require('hapi');
+const HapiAuthJWT = require('hapi-auth-jwt2');
+const Path = require('path');
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const Auth = require(Path.join(process.cwd(), 'lib/plugins/auth'));
+const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
 
+const { before, describe, expect, it } = exports.lab = Lab.script();
 
-var lab = exports.lab = Lab.script(); // export the test script
+describe('Plugin: auth', () => {
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var beforeEach = lab.beforeEach;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
+    // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
+    const secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
 
-var internals = {};
-
-internals.manifest = {
-    connections: [{
-        port: 0
-    }],
-    registrations: [{
-        plugin: './plugins/auth'
-    }, {
-        plugin: './plugins/web'
-    }, {
-        plugin: './plugins/views'
-    }]
-};
-
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
-
-internals.user = {
-    id: 0,
-    username: 'test',
-    email: 'test@gmail.com',
-    password: 'test',
-    roles: [{
-        name: 'user'
-    }]
-};
-
-describe('Plugin: auth', function() {
-
-    before(function(done) {
-
-        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
-        internals.ID_INVALID = 2;
-
-        Exiting.reset();
-        done();
-
+    before(() => {
+        process.env.JWT_SECRET = secret;
     });
 
-    beforeEach(function(done) {
-        process.env.JWT_SECRET = internals.secret;
-        done();
-    });
+    it('handles hapi-auth-jwt2 plugin registration failure', async (flags) => {
 
-    afterEach(function(done) {
-        process.env.JWT_SECRET = '';
-
-        // Manager might not be properly stopped when tests fail
-        if (Manager.getState() === 'started') {
-            Manager.stop(done);
-        } else {
-            done();
-        }
-    });
-
-    it('handle hapi-auth-jwt2 plugin registration failure', function(done) {
-
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
+        // cleanup
+        let hapiAuthJWTRegister = HapiAuthJWT.plugin.register;
+        flags.onCleanup = function() {
+            HapiAuthJWT.plugin.register = hapiAuthJWTRegister;
         };
 
-        Auth.register(fakeServer, null, function(error) {
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        HapiAuthJWT.plugin.register = async function() {
+            throw new Error(PLUGIN_ERROR);
+        };
+        const server = Hapi.server();
 
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-        });
+        // exercise and validate
+        await expect(server.register(Auth)).to.reject(PLUGIN_ERROR);
+    });
+
+    it('handles registration without secret ', async (flags) => {
+
+        // setup
+        const PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
+        const server = Hapi.server();
+        process.env.JWT_SECRET = '';
+        flags.onCleanup = function() {
+            process.env.JWT_SECRET = secret;
+        };
+
+        // exercise
+        await expect(server.register(Auth)).to.reject(PLUGIN_ERROR);
 
     });
 
-    it('encrypts passwords', function(done) {
+    it('hashes passwords', async () => {
 
-        var password = 'password';
-        Auth.crypt(password).then(function(hash) {
+        // setup
+        const password = 'password';
 
-            expect(Bcrypt.compareSync(password, hash)).to.be.true();
-            done();
-        });
+        // exercise
+        const hash = await Auth.crypt(password);
+
+        // validate
+        expect(Bcrypt.compareSync(password, hash)).to.be.true();
     });
 
-    it('handles password encryption errors', function(done) {
+    it('handles password encryption errors', async (flags) => {
 
-        Sinon.stub(Bcrypt, 'hash').callsFake(function(password, rounds, next) {
-            next();
-        });
-
-        Auth.crypt('password').then(function(hash) {
-
-            expect(hash).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
+        // setup
+        Sinon.stub(Bcrypt, 'hash').throws();
+        flags.onCleanup = function() {
             Bcrypt.hash.restore();
-            done();
-        });
+        };
+
+        // exercise and validate
+        await expect(Auth.crypt('password')).to.reject(Error, NSError.AUTH_CRYPT_ERROR().message);
     });
 
-    it('compares password against hash', function(done) {
+    it('compares password against hash', async () => {
 
-        var password = 'password';
-        var hash = Bcrypt.hashSync(password, 10);
-        Auth.compare(password, hash).then(function(result) {
+        // setup
+        const password = 'password';
+        const hash = Bcrypt.hashSync(password, 10);
 
-            expect(result).to.be.true();
-            done();
-        });
+        // exercise
+        const result = await Auth.compare(password, hash);
+
+        // validate
+        expect(result).to.be.true();
     });
 
-    it('handles password compare errors', function(done) {
+    it('handles password compare errors', async () => {
 
-        Sinon.stub(Bcrypt, 'compare').callsFake(function(password, rounds, next) {
-            next();
-        });
-
-        Auth.compare().then(function(hash) {
-
-            expect(hash).to.not.exists();
-
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.AUTH_CRYPT_ERROR);
-            Bcrypt.compare.restore();
-            done();
-        });
+        // exercise and validate
+        await expect(Auth.compare()).to.reject(Error, NSError.AUTH_CRYPT_ERROR().message);
     });
 
-    it('get token and validate with correct secret', function(done) {
+    it('gets token and validate with correct secret', async () => {
 
-        var jwt = Auth.getToken(internals.user.id);
-        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+        // setup
+        const fakeId = 9999;
+
+        // exercise
+        const jwt = await Auth.getToken(fakeId);
+
+        // validate
+        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
 
             expect(err).not.to.exist();
-            expect(decoded.id).to.equals(internals.user.id);
+            expect(decoded.id).to.equals(fakeId);
             expect(decoded.exp).to.exist();
-
-            done();
         });
     });
 
-    it('get token without expiration date', function(done) {
+    it('gets token without expiration date', async () => {
 
-        var jwt = Auth.getToken(internals.user.id, true);
-        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
+        // setup
+        const fakeId = 9999;
+
+        // exercise
+        const jwt = await Auth.getToken(fakeId, true);
+
+        // validate
+        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
 
             expect(err).not.to.exist();
-            expect(decoded.id).to.equals(internals.user.id);
+            expect(decoded.id).to.equals(fakeId);
             expect(decoded.exp).to.not.exist();
-
-            done();
         });
-
     });
 
-    it('get token and validate with incorrect secret', function(done) {
+    it('gets token and validate with incorrect secret', async () => {
 
-        var jwt = Auth.getToken(internals.ID_INVALID);
-        JWT.verify(jwt, 'invalid secret', function(err, decoded) {
+        // setup
+        const fakeId = 9999;
+
+        // exercise
+        const jwt = await Auth.getToken(fakeId);
+        JWT.verify(jwt, 'invalid secret', (err, decoded) => {
 
             expect(err).to.exist();
             expect(err.name).to.equals('JsonWebTokenError');
             expect(err.message).to.equals('invalid signature');
             expect(decoded).to.not.exist();
-
-            done();
-        });
-
-    });
-
-    it('secret not present', function(done) {
-
-        var PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
-        process.env.JWT_SECRET = '';
-        Auth.register(null, null, function(error) {
-
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-        });
-
-    });
-
-    it('token not present', function(done) {
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-
-            server.inject(Config.prefixes.admin, function(response) {
-
-                var payload = response.result;
-
-                expect(response.statusCode, 'Status code').to.equal(401);
-                expect(payload.error).to.equals('Unauthorized');
-                expect(payload.message).to.equals('Missing authentication');
-                Manager.stop(done);
-            });
-
-        });
-
-    });
-
-    it('invalid token', function(done) {
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            var invalidJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTkxMjM0MTIzNCwiaWF0IjoxNDczNzA2NzYzLCJleHAiOjE0NzM3MzU1NjN9.xjivOc1Smbf9M8uQHNTBTbcDBavXMjL-0oNxV-yxog0';
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'GET',
-                url: Config.prefixes.admin,
-                headers: {
-                    authorization: invalidJwt
-                }
-            }, function(response) {
-
-                var payload = response.result;
-
-                expect(response.statusCode, 'Status code').to.equal(401);
-                expect(payload.error).to.equals('Unauthorized');
-                expect(payload.message).to.equals('Invalid token');
-                Manager.stop(done);
-            });
-
-        });
-
-    });
-
-    it('invalid credentials', function(done) {
-
-        var promise = Promise.reject(HSError.RESOURCE_NOT_FOUND);
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.returns(promise);
-
-        // for some reason i can not explain the auth plugin is not
-        // catching this..
-        promise.catch(function(err) {
-            expect(err).to.equals(HSError.RESOURCE_NOT_FOUND);
-        });
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'GET',
-                url: Config.prefixes.admin,
-                headers: {
-                    authorization: Auth.getToken(internals.ID_INVALID)
-                }
-            }, function(response) {
-
-                var payload = response.result;
-
-                expect(UserService.findById.calledOnce).to.be.true();
-                expect(response.statusCode, 'Status code').to.equal(401);
-                expect(payload.error).to.equals('Unauthorized');
-                expect(payload.message).to.equals('Invalid credentials');
-                findByIdStub.restore();
-                Manager.stop(done);
-            });
         });
     });
 
+    it('does not authenticate if token not present', async () => {
 
-    it('invalid scope', function(done) {
+        // setup
+        const server = Hapi.server();
+        const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        await server.register(Auth);
+        server.route(fakeRoute);
 
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
-
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'GET',
-                url: Config.prefixes.admin,
-                headers: {
-                    authorization: Auth.getToken(internals.user.id)
-                }
-            }, function(response) {
-
-                var payload = response.result;
-
-                expect(UserService.findById.calledOnce).to.be.true();
-                expect(response.statusCode, 'Status code').to.equal(403);
-                expect(payload.error).to.equals('Forbidden');
-                expect(payload.message).to.equals('Insufficient scope');
-                findByIdStub.restore();
-                Manager.stop(done);
-
-            });
-
-        });
-
+        // exercise
+        const response = await server.inject(fakeRoute.path);
+        expect(response.statusCode, 'Status code').to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Missing authentication');
     });
 
-    it('valid credentials', function(done) {
+    it('does not authenticate if invalid token', async () => {
 
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(internals.user.id).returns(Promise.resolve(internals.user));
+        // setup
+        const invalidJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTkxMjM0MTIzNCwiaWF0IjoxNDczNzA2NzYzLCJleHAiOjE0NzM3MzU1NjN9.xjivOc1Smbf9M8uQHNTBTbcDBavXMjL-0oNxV-yxog0';
+        const server = Hapi.server();
+        const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        await server.register(Auth);
+        server.route(fakeRoute);
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exist();
-
-            server.inject({
-                method: 'GET',
-                url: Config.prefixes.home,
-                headers: {
-                    authorization: Auth.getToken(internals.user.id)
-                }
-            }, function(response) {
-
-                expect(UserService.findById.calledOnce).to.be.true();
-                expect(response.statusCode, 'Status code').to.equal(200);
-                expect(response.request.auth.isAuthenticated).to.be.true();
-                expect(response.request.auth.credentials.id).to.equal(internals.user.id);
-                expect(response.request.auth.credentials.username).to.equal(internals.user.username);
-                expect(response.request.auth.credentials.email).to.equal(internals.user.email);
-                expect(response.request.auth.credentials.scope[0]).to.equal(internals.user.roles[0].name);
-                findByIdStub.restore();
-                Manager.stop(done);
-            });
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: { authorization: invalidJwt }
         });
+
+        expect(response.statusCode, 'Status code').to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Invalid token');
+    });
+
+    it('does not authenticate if invalid user id in token', async (flags) => {
+
+        // setup
+        const server = Hapi.server();
+        const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        await server.register(Auth);
+        Sinon.stub(UserService, 'findById').rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route(fakeRoute);
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: {
+                authorization: await Auth.getToken(9999)
+            }
+        });
+
+        // validate
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode, 'Status code').to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Invalid credentials');
+    });
+
+    it('does not authenticate if invalid scope', async (flags) => {
+
+        // setup
+        const server = Hapi.server();
+        const fakeRoute = { path: '/', method: 'GET', config: { auth: { scope: 'admin' } }, handler: () => { } };
+        const fakeUser = { id: 9999, roles: [{ name: 'user' }] };
+        await server.register(Auth);
+        server.route(fakeRoute);
+        Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: {
+                authorization: await Auth.getToken(fakeUser.id)
+            }
+        });
+
+        // validate
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode, 'Status code').to.equal(403);
+        expect(response.result.error).to.equals('Forbidden');
+        expect(response.result.message).to.equals('Insufficient scope');
+    });
+
+    it('authenticates on valid credentials', async (flags) => {
+
+        // setup
+        const payload = 'payload';
+        const server = Hapi.server();
+        const fakeUser = { id: 9999, username: 'test', email: 'test@test', roles: [{ name: 'admin' }] };
+        const fakeRoute = { path: '/', method: 'GET', config: { auth: { scope: 'admin' } }, handler: () => payload };
+        await server.register(Auth);
+        server.route(fakeRoute);
+        Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: {
+                authorization: await Auth.getToken(fakeUser.id)
+            }
+        });
+
+        // validate
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode, 'Status code').to.equal(200);
+        expect(response.request.auth.isAuthenticated).to.be.true();
+        expect(response.request.auth.credentials.id).to.equal(fakeUser.id);
+        expect(response.request.auth.credentials.username).to.equal(fakeUser.username);
+        expect(response.request.auth.credentials.email).to.equal(fakeUser.email);
+        expect(response.request.auth.credentials.scope[0]).to.equal(fakeUser.roles[0].name);
+        expect(response.result).to.equals(payload);
     });
 });
