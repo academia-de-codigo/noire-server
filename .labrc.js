@@ -18,6 +18,7 @@ module.exports = {
         'test/plugins/repository.js',
         'test/plugins/redirect.js',
         'test/plugins/auth.js',
+        'test/plugins/csrf.js',
         'test/modules/home/controllers',
         'test/modules/authorization/controllers/web/profile.js',
         'test/modules/authorization/services/user.js',

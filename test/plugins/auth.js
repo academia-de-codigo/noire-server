@@ -29,11 +29,11 @@ describe('Plugin: auth', () => {
         };
 
         // setup
+        const server = Hapi.server();
         const PLUGIN_ERROR = 'plugin error';
         HapiAuthJWT.plugin.register = async function() {
             throw new Error(PLUGIN_ERROR);
         };
-        const server = Hapi.server();
 
         // exercise and validate
         await expect(server.register(Auth)).to.reject(PLUGIN_ERROR);
@@ -41,13 +41,15 @@ describe('Plugin: auth', () => {
 
     it('handles registration without secret ', async (flags) => {
 
+        // cleanup
+        flags.onCleanup = function() {
+            process.env.JWT_SECRET = secret;
+        };
+
         // setup
         const PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
         const server = Hapi.server();
         process.env.JWT_SECRET = '';
-        flags.onCleanup = function() {
-            process.env.JWT_SECRET = secret;
-        };
 
         // exercise
         await expect(server.register(Auth)).to.reject(PLUGIN_ERROR);
@@ -68,11 +70,14 @@ describe('Plugin: auth', () => {
 
     it('handles password encryption errors', async (flags) => {
 
-        // setup
-        Sinon.stub(Bcrypt, 'hash').throws();
+        // cleanup
         flags.onCleanup = function() {
             Bcrypt.hash.restore();
         };
+
+        // setup
+        Sinon.stub(Bcrypt, 'hash').throws();
+
 
         // exercise and validate
         await expect(Auth.crypt('password')).to.reject(Error, NSError.AUTH_CRYPT_ERROR().message);
@@ -185,15 +190,17 @@ describe('Plugin: auth', () => {
 
     it('does not authenticate if invalid user id in token', async (flags) => {
 
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
         // setup
         const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
         await server.register(Auth);
         Sinon.stub(UserService, 'findById').rejects(NSError.RESOURCE_NOT_FOUND());
         server.route(fakeRoute);
-        flags.onCleanup = function() {
-            UserService.findById.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -213,6 +220,11 @@ describe('Plugin: auth', () => {
 
     it('does not authenticate if invalid scope', async (flags) => {
 
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
         // setup
         const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', config: { auth: { scope: 'admin' } }, handler: () => { } };
@@ -220,9 +232,6 @@ describe('Plugin: auth', () => {
         await server.register(Auth);
         server.route(fakeRoute);
         Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);
-        flags.onCleanup = function() {
-            UserService.findById.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -242,6 +251,11 @@ describe('Plugin: auth', () => {
 
     it('authenticates on valid credentials', async (flags) => {
 
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
         // setup
         const payload = 'payload';
         const server = Hapi.server();
@@ -250,9 +264,6 @@ describe('Plugin: auth', () => {
         await server.register(Auth);
         server.route(fakeRoute);
         Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);
-        flags.onCleanup = function() {
-            UserService.findById.restore();
-        };
 
         // exercise
         const response = await server.inject({
