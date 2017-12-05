@@ -211,7 +211,7 @@ describe('Service: user', () => {
         await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('populates role associations when fetching user by id', async () => {
+    it('populates role associations when getting user by id', async () => {
 
         // exercise
         const result = await UserService.findById(1);
@@ -237,11 +237,26 @@ describe('Service: user', () => {
 
         // validate
         expect(result).to.be.instanceof(UserModel);
-        expect(result.roles).to.not.exists();
         expect(result.id).to.equals(user.id);
         expect(result.username).to.equals(user.username);
         expect(result.email).to.be.equals(user.email);
         expect(result.password).to.not.exists();
+    });
+
+    it('populates role associations when getting user by username', async () => {
+
+        // exercise
+        const result = await UserService.findByUserName('admin');
+
+        // validate
+        expect(result).to.be.instanceof(UserModel);
+        expect(result.roles).to.be.an.array();
+        expect(result.roles.length).to.equals(3);
+        result.roles.forEach(role => {
+            expect(role).to.be.instanceof(RoleModel);
+            expect(role.id).to.exists();
+            expect(role.name).to.be.a.string();
+        });
     });
 
     it('handles getting invalid user by username', async () => {
