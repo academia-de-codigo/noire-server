@@ -59,6 +59,13 @@ module.exports = {
             directory: './db/seeds/staging'
         },
         acquireConnectionTimeout: 1000,
+        debug: {
+            query: true,
+            tx: true,
+            pool: false,
+            client: false,
+            bindings: false
+        }
     },
 
     production: {
@@ -81,5 +88,4 @@ module.exports = {
         },
         acquireConnectionTimeout: 5000,
     }
-
 };
