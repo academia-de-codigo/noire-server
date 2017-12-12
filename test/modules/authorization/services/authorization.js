@@ -1,158 +1,120 @@
-var Code = require('code');
-var Lab = require('lab');
-var Knex = require('knex');
-var Objection = require('objection');
-var KnexConfig = require('../../../../knexfile');
-var Repository = require('../../../../lib/plugins/repository');
-var AuthorizationService = require('../../../../lib/modules/authorization/services/auth');
-var HSError = require('../../../../lib/error');
+const Lab = require('lab');
+const Hapi = require('hapi');
+const Knex = require('knex');
+const Objection = require('objection');
+const Path = require('path');
+const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var beforeEach = lab.beforeEach;
-var expect = Code.expect;
+describe('Service: authorization', () => {
 
-describe('Service: authorization', function() {
-
-    var knex;
-
-    beforeEach(function(done) {
-
-        var options = {
-            models: ['user', 'role', 'resource', 'permission']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
+    beforeEach(async () => {
 
         /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
+        const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
-        knex.migrate.latest().then(function() {
+        await knex.migrate.latest();
+        await knex.seed.run();
 
-            return knex.seed.run();
+        Objection.Model.knex(knex);
 
-        }).then(function() {
+        const server = Hapi.server();
+        server.register({ plugin: Repository, options: { models: ['user', 'role', 'resource', 'permission'] } });
 
-            Objection.Model.knex(knex);
-            Repository.register(fakeServer, options, function() {
-
-                done();
-            });
-        });
     });
 
-    it('can authorize a role with the right permissions', function(done) {
+    it('authorizes a role with the right permissions', async () => {
 
-        AuthorizationService.canRole('admin', 'read', 'user').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canRole('admin', 'read', 'user');
 
-            expect(result).to.be.true();
-            done();
-        });
+        // validate
+        expect(result).to.be.true();
     });
 
-    it('can not authorize a role with the wrong permissions', function(done) {
+    it('does not authorize a role with the wrong permissions', async () => {
 
-        AuthorizationService.canRole('user', 'create', 'user').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canRole('user', 'create', 'user');
 
-            expect(result).to.be.false();
-            done();
-        });
+        // validate
+        expect(result).to.be.false();
     });
 
-    it('can not authorize a role with no permissions', function(done) {
+    it('does not authorize a role with no permissions', async () => {
 
-        AuthorizationService.canRole('guest', 'read', 'role').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canRole('guest', 'read', 'role');
 
-            expect(result).to.be.false();
-            done();
-        });
+        // validate
+        expect(result).to.be.false();
     });
 
-    it('can not authorize a role for an invalid action', function(done) {
+    it('does not authorize a role for an invalid action', async () => {
 
-        AuthorizationService.canRole('guest', 'invalid action', 'role').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canRole('guest', 'invalid action', 'role');
 
-            expect(result).to.be.false();
-            done();
-        });
+        // validate
+        expect(result).to.be.false();
     });
 
-    it('handles authorization for a non existing role', function(done) {
+    it('handles authorization for a non existing role', async () => {
 
-        AuthorizationService.canRole('invalid role', 'read', 'role').then(function(result) {
-
-            expect(result).to.not.exist();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(AuthorizationService.canRole('invalid', 'read', 'role')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('handles authorization for a non existing resource', function(done) {
+    it('handles authorization for a non existing resource', async () => {
 
-        AuthorizationService.canRole('guest', 'read', 'invalid resource').then(function(result) {
-
-            expect(result).to.not.exist();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(AuthorizationService.canRole('guest', 'read', 'invalid resource')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('can authorize a user that has a role with the right permissions', function(done) {
+    it('authorizes a user that has a role with the right permissions', async () => {
 
-        AuthorizationService.canUser('admin', 'create', 'user').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canUser('admin', 'create', 'user');
 
-            expect(result).to.be.true();
-            done();
-        });
+        // validate
+        expect(result).to.be.true();
     });
 
-    it('can authorize a user that has multiple roles with the right permissions', function(done) {
+    it('authorizes a user that has multiple roles with the right permissions', async () => {
 
-        AuthorizationService.canUser('admin', 'read', 'role').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canUser('admin', 'read', 'role');
 
-            expect(result).to.be.true();
-            done();
-        });
+        // validate
+        expect(result).to.be.true();
     });
 
-    it('can not authorize a user that has no roles with the right permissions', function(done) {
+    it('does not authorize a user that has no roles with the right permissions', async () => {
 
-        AuthorizationService.canUser('test', 'create', 'user').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canUser('test', 'create', 'user');
 
-            expect(result).to.be.false();
-            done();
-        });
+        // validate
+        expect(result).to.be.false();
     });
 
-    it('can not authorize a user that has no roles', function(done) {
+    it('does not authorize a user that has no roles', async () => {
 
-        AuthorizationService.canUser('noroles', 'read', 'role').then(function(result) {
+        // exercise
+        const result = await AuthorizationService.canUser('noroles', 'read', 'role');
 
-            expect(result).to.be.false();
-            done();
-        });
+        // validate
+        expect(result).to.be.false();
     });
 
-    it('handles authorization for a non existing user', function(done) {
+    it('handles authorization for a non existing user', async () => {
 
-        AuthorizationService.canUser('invalid user', 'read', 'role').then(function(result) {
-
-            expect(result).to.not.exists();
-        }).catch(function(error) {
-
-            expect(error).to.equals(HSError.RESOURCE_NOT_FOUND);
-            done();
-        });
+        // exercise and validate
+        await expect(AuthorizationService.canUser('invalid user', 'read', 'role')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 });

@@ -21,9 +21,7 @@ module.exports = {
         'test/plugins/csrf.js',
         'test/modules/home/controllers',
         'test/modules/authorization/controllers/web/profile.js',
-        'test/modules/authorization/services/user.js',
-        'test/modules/authorization/services/resource.js',
-        'test/modules/authorization/services/role.js',
+        'test/modules/authorization/services'
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };
