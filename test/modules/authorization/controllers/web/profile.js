@@ -3,9 +3,17 @@ const Lab = require('lab');
 const Sinon = require('sinon');
 const ProfileCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/web/profile'));
 
-const { describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 describe('Web Controller: profile', () => {
+
+    let requestStub;
+
+    beforeEach(() => {
+
+        requestStub = { log: Sinon.stub() };
+
+    });
 
     it('gets the profile page', () => {
 
@@ -14,9 +22,10 @@ describe('Web Controller: profile', () => {
         const h = { view: fakeView };
 
         // exercise
-        ProfileCtrl.get(null, h);
+        ProfileCtrl.get(requestStub, h);
 
         // validate
+        expect(requestStub.log.calledOnce).to.be.true();
         expect(fakeView.calledOnce).to.be.true();
     });
 });
