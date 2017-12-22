@@ -1,6 +1,6 @@
 const Path = require('path');
 const Lab = require('lab');
-var Sinon = require('sinon');
+const Sinon = require('sinon');
 const Hapi = require('hapi');
 const AuthorizationController = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/authorization'));
 const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));

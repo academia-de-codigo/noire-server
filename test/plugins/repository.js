@@ -79,10 +79,7 @@ describe('Plugin: repository', () => {
         // setup
         const options = { models: ['user', 'role'] };
         const logSpy = Sinon.spy();
-        const fakeServer = {
-            log: logSpy,
-            decorate: function() { }
-        };
+        const fakeServer = { log: logSpy, decorate: function() { } };
 
         // exercise
         await Repository.plugin.register(fakeServer, options);
@@ -108,10 +105,7 @@ describe('Plugin: repository', () => {
         // setup
         const options = { models: ['user', 'role'] };
         const decorateSpy = Sinon.spy();
-        const fakeServer = {
-            log: function() { },
-            decorate: decorateSpy
-        };
+        const fakeServer = { log: function() { }, decorate: decorateSpy };
 
         // exercise
         await Repository.plugin.register(fakeServer, options);
@@ -130,9 +124,7 @@ describe('Plugin: repository', () => {
     it('returns a specific record', async () => {
 
         // setup
-        const fakeUser = {
-            id: 1
-        };
+        const fakeUser = { id: 1 };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
@@ -244,7 +236,7 @@ describe('Plugin: repository', () => {
         const modifyStub = Sinon.stub();
         limitStub.withArgs(fakeCriteria).returns({ offset: offsetStub });
         offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
-        searchStub.withArgs().returns({modify: modifyStub});
+        searchStub.withArgs().returns({ modify: modifyStub });
         modifyStub.returns(fakeUsers);
         queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
         limitStub.throws(new Error('wrong limit criteria'));
@@ -278,7 +270,7 @@ describe('Plugin: repository', () => {
         const modifyStub = Sinon.stub();
         limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
         offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
-        searchStub.withArgs().returns({ modify: modifyStub});
+        searchStub.withArgs().returns({ modify: modifyStub });
         orderByStub.withArgs(fakeCriteria, Sinon.match.string).returns();
         modifyStub.callsFake((cb) => {
             cb({ orderBy: orderByStub });

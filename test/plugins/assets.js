@@ -76,7 +76,7 @@ describe('Plugin: assets', () => {
         // setup
         const PLUGIN_ERROR = 'plugin error';
         const inertRegister = Inert.plugin.register;
-        flags.onCleaup = function() {
+        flags.onCleanup = function() {
             Inert.plugin.register = inertRegister;
         };
         Inert.plugin.register = async function() {
