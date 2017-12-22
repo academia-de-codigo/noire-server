@@ -5,6 +5,7 @@ const MainCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/con
 const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
 const RoleService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/role'));
 const ResourceService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/resource'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -43,6 +44,23 @@ describe('Web Controller: main', () => {
         expect(fakeToolkit.view.calledOnce).to.be.true();
         expect(stubView.getCall(0).args[1].getAdminPartial).to.be.a.function();
         expect(stubView.getCall(0).args[1].count).to.equals(count);
+    });
+
+    it('handles errors getting the main admin page', async (flags) => {
+
+        // setup
+        const count = { users: 2, resources: 4 };
+        const countUsersStub = Sinon.stub(UserService, 'count').resolves(count.users);
+        const countRolesStub = Sinon.stub(RoleService, 'count').rejects(NSError.RESOURCE_NOT_FOUND());
+        const countResourcesStub = Sinon.stub(ResourceService, 'count').resolves(count.resources);
+        flags.onCleanup = function() {
+            countUsersStub.restore();
+            countRolesStub.restore();
+            countResourcesStub.restore();
+        };
+
+        // exercise and validate
+        await expect(MainCtrl.getMain(requestStub, { view: () => { } })).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 });
 
