@@ -87,6 +87,24 @@ describe('Plugin: db', () => {
         await expect(server.register(Database)).to.reject(Error, 'no database configured');
     });
 
+    it('does not require database name for sqlite', async () => {
+
+        // setup
+
+        knexConfigStub.restore(); // stubbing twice breaks restore
+        knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfigSqlite);
+        mock('knex', knexStub);
+        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const server = Hapi.server();
+
+        // exercise
+        await server.register(Database);
+
+        // verify
+        expect(knexStub.called).to.be.true();
+        expect(knexStub.getCall(0).args[0]).to.equals(internals.knexConfigSqlite);
+    });
+
     it('handles db connection test unexpected result', async () => {
 
         // setup
@@ -232,5 +250,10 @@ internals.knexConfig = {
 
 internals.knexConfigMissingDb = {
     client: 'mock',
+    connection: {}
+};
+
+internals.knexConfigSqlite = {
+    client: 'sqlite',
     connection: {}
 };
