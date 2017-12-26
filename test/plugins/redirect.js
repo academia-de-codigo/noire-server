@@ -5,29 +5,32 @@ const Url = require('url');
 const Config = require(Path.join(process.cwd(), 'lib/config'));
 const Redirect = require(Path.join(process.cwd(), 'lib/plugins/redirect'));
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { after, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 const internals = {};
 
 internals.webUrl = {
     protocol: 'http',
     slashes: true,
-    hostname: Config.connections.web.host,
-    port: Config.connections.web.port,
+    hostname: 'localhost',
+    port: 8080,
+    enabled: true
 };
 
 internals.webTlsUrl = {
     protocol: 'https',
     slashes: true,
-    hostname: Config.connections.webTls.host,
-    port: Config.connections.webTls.port,
+    hostname: 'localhost',
+    port: 8443,
+    enabled: true
 };
 
 internals.apiUrl = {
     protocol: 'https',
     slashes: true,
-    hostname: Config.connections.api.host,
-    port: Config.connections.api.port,
+    hostname: 'localhost',
+    port: 8081,
+    enabled: true
 };
 
 describe('Plugin: redirect', () => {
@@ -35,13 +38,33 @@ describe('Plugin: redirect', () => {
     let web;
     let webTls;
 
+    const connections = {};
+
+    before(() => {
+
+        connections.web = Config.connections.web.enabled;
+        connections.webTls = Config.connections.web.enabled;
+        connections.api = Config.connections.web.enabled;
+
+        Config.connections.web.enabled = true;
+        Config.connections.webTls.enabled = true;
+        Config.connections.api.enabled = true;
+    });
+
     beforeEach(async () => {
 
         web = Hapi.server({ app: { name: 'web' } });
         webTls = Hapi.server({ app: { name: 'webTls' } });
 
-        await web.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
-        await webTls.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
+        await web.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin, Config.prefixes.profile] } });
+        await webTls.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin, Config.prefixes.profile] } });
+    });
+
+    after(() => {
+
+        Config.connections.web.enabled = connections.web;
+        Config.connections.webTls.enabled = connections.web;
+        Config.connections.api.enabled = connections.web;
     });
 
     it('redirects web api requests to api server', async () => {
@@ -147,7 +170,7 @@ describe('Plugin: redirect', () => {
 
         // setup
         const server = Hapi.server({ app: {} });
-        await server.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
+        await server.register({ plugin: Redirect, options: { tlsRoutes: [] } });
 
         // exercise
         const response = await server.inject(Config.prefixes.admin);
@@ -160,7 +183,7 @@ describe('Plugin: redirect', () => {
 
         // setup
         const server = Hapi.server({ app: { name: 'api' } });
-        await server.register({ plugin: Redirect, options: { tlsRoutes: Config.redirect.tlsOnly } });
+        await server.register({ plugin: Redirect, options: { tlsRoutes: [] } });
 
         // exercise
         const response = await server.inject(Config.prefixes.admin);
