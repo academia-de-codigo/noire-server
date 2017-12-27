@@ -140,4 +140,30 @@ describe('Errors', () => {
         // verify
         expect(boomError.data.timestamp).to.equals(-1);
     });
+
+    it('matches error type to string generated boom errors', () => {
+
+        // setup
+        let error1 = NSError.AUTH_ERROR();
+        let error2 = NSError.AUTH_CRYPT_ERROR();
+
+        // verify
+        expect(NSError.AUTH_ERROR.match(error1)).to.be.true();
+        expect(NSError.AUTH_CRYPT_ERROR.match(error2)).to.be.true();
+        expect(NSError.AUTH_ERROR.match(error2)).to.be.false();
+        expect(NSError.AUTH_CRYPT_ERROR.match(error1)).to.be.false();
+    });
+
+    it('matched error type of object generated boom errors', () => {
+
+        // setup
+        let error1 = NSError.AUTH_INVALID_PASSWORD();
+        let error2 = NSError.RESOURCE_NOT_FOUND();
+
+        // verify
+        expect(NSError.AUTH_INVALID_PASSWORD.match(error1)).to.be.true();
+        expect(NSError.RESOURCE_NOT_FOUND.match(error2)).to.be.true();
+        expect(NSError.AUTH_INVALID_PASSWORD.match(error2)).to.be.false();
+        expect(NSError.RESOURCE_NOT_FOUND.match(error1)).to.be.false();
+    });
 });
