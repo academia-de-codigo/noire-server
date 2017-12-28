@@ -1,390 +1,411 @@
-var Promise = require('bluebird');
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var UserService = require('../../../../../lib/modules/authorization/services/user');
-var UserCtrl = require('../../../../../lib/modules/authorization/controllers/api/user');
-var HSError = require('../../../../../lib/error');
+const Path = require('path');
+const Hoek = require('hoek');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const Hapi = require('hapi');
+const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
+const UserCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/api/user'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('API Controller: user', () => {
 
-var internals = {};
-internals.users = [{
-    'id': 0,
-    'username': 'test',
-    'email': 'test@gmail.com'
-}, {
-    'id': 1,
-    'username': 'admin',
-    'email': 'admin@gmail.com'
-}];
+    const users = [{
+        'id': 0,
+        'username': 'test',
+        'email': 'test@gmail.com'
+    }, {
+        'id': 1,
+        'username': 'admin',
+        'email': 'admin@gmail.com'
+    }];
 
-describe('API Controller: user', function() {
+    let server;
 
-    it('lists available users', function(done) {
+    beforeEach(() => {
+        server = Hapi.server();
+    });
 
-        var request = {
-            log: function() {}
-        };
+    it('lists available users', async (flags) => {
 
-        var listStub = Sinon.stub(UserService, 'list');
-        listStub.returns(Promise.resolve(internals.users));
-
-        UserCtrl.list(request, function(response) {
-
-            expect(UserService.list.calledOnce).to.be.true();
-            expect(response).to.equals(internals.users);
-
+        // setup
+        const listStub = Sinon.stub(UserService, 'list');
+        listStub.resolves(users);
+        server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        flags.onCleanup = function() {
             listStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while listing users', function(done) {
-
-        var request = {
-            log: function() {}
         };
 
-        var listStub = Sinon.stub(UserService, 'list');
-        listStub.returns(Promise.reject(HSError.RESOURCE_FETCH));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user'
+        });
 
-        UserCtrl.list(request, function(response) {
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(users);
+    });
 
-            expect(UserService.list.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server errors while listing users', async (flags) => {
 
+        // setup
+        const listStub = Sinon.stub(UserService, 'list');
+        listStub.rejects(NSError.RESOURCE_FETCH());
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        flags.onCleanup = function() {
             listStub.restore();
-            done();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user'
         });
+
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
 
-    it('gets a specific user', function(done) {
+    it('gets a user', async (flags) => {
 
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
-        };
-
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.resolve(internals.users[request.params.id]));
-
-        UserCtrl.get(request, function(response) {
-
-            expect(UserService.findById.calledOnce).to.be.true();
-            expect(response).to.equals(internals.users[request.params.id]);
-
+        // setup
+        const findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.withArgs(1).resolves(users[1]);
+        server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
-        });
-    });
-
-    it('handles get of a non existing user', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            log: function() {}
         };
 
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user/1'
+        });
 
-        UserCtrl.get(request, function(response) {
+        // validate
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(users[1]);
+    });
 
-            expect(UserService.findById.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('handles get of a non existing user', async (flags) => {
 
+        // setup
+        const findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while getting a user', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var findByIdStub = Sinon.stub(UserService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_FETCH));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user/1'
+        });
 
-        UserCtrl.get(request, function(response) {
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(404);
+        expect(response.statusMessage).to.equals('Not Found');
+        expect(JSON.parse(response.payload).message).to.equals(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(UserService.findById.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server errors when getting a user', async (flags) => {
 
+        // setup
+        const findByIdStub = Sinon.stub(UserService, 'findById');
+        findByIdStub.rejects(NSError.RESOURCE_FETCH());
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user/1'
         });
+
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
-    it('adds a new user', function(done) {
+    it('creates a new user', async (flags) => {
 
-        var request = {
-            payload: {
-                username: 'test2',
-                email: 'test2@gmail.com',
-                name: 'test2',
-                password: 'test2'
-            },
-            log: function() {}
-        };
-
-        var fakeResponseData = {
-            id: 1,
-            username: request.payload.username,
-            email: request.payload.email,
-            password: request.payload.email
-        };
-
-        var addStub = Sinon.stub(UserService, 'add');
-        addStub.withArgs(request.payload).returns(Promise.resolve(fakeResponseData));
-
-        UserCtrl.create(request, function(response) {
-
-            expect(addStub.calledOnce).to.be.true();
-            expect(response).to.exists();
-            expect(response.id).to.exists();
-            expect(response.username).to.equals(fakeResponseData.username);
-            expect(response.email).to.equals(fakeResponseData.email);
-            expect(response.password).to.not.exists();
-
-            return {
-                created: function(location) {
-
-                    expect(location).to.equals('/user/' + response.id);
-                    addStub.restore();
-                    done();
-                }
-            };
-        });
-    });
-
-    it('handles server errors while adding a new user', function(done) {
-
-        var request = {
-            payload: {},
-            log: function() {}
-        };
-
-        var addStub = Sinon.stub(UserService, 'add').returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
-        UserCtrl.create(request, function(response) {
-
-            expect(UserService.add.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals('resource already exists');
-
+        // setup
+        const fakeId = 1;
+        const entity = { username: 'test2', email: 'test2@gmail.com', name: 'test2', password: 'test2' };
+        const addStub = Sinon.stub(UserService, 'add');
+        addStub.withArgs(entity).resolves(Hoek.merge({ id: fakeId }, entity));
+        server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
+        flags.onCleanup = function() {
             addStub.restore();
-            done();
-        });
-    });
-
-    it('deletes an existing user', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(UserService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.resolve());
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/user',
+            payload: entity
+        });
 
-        UserCtrl.delete(request, function(response) {
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(201);
+        expect(response.statusMessage).to.equal('Created');
+        expect(JSON.parse(response.payload).password).to.not.exists();
+        expect(JSON.parse(response.payload).id).to.equals(fakeId);
+        expect(JSON.parse(response.payload).username).to.equals(entity.username);
+        expect(JSON.parse(response.payload).email).to.equals(entity.email);
+        expect(JSON.parse(response.payload).name).to.equals(entity.name);
+        expect(response.headers.location).to.equals('/user/' + fakeId);
+    });
 
-            expect(UserService.delete.calledOnce).to.be.true();
-            expect(response).to.not.exist();
+    it('does not create a user that already exists', async (flags) => {
 
+        // setup
+        const addStub = Sinon.stub(UserService, 'add');
+        addStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/user'
+        });
+
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
+
+    it('handles server errors while creating a user', async (flags) => {
+
+        // setup
+        const addStub = Sinon.stub(UserService, 'add');
+        addStub.rejects(NSError.RESOURCE_INSERT());
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/user'
+        });
+
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
+
+    it('deletes an existing user', async (flags) => {
+
+        // setup
+        const deleteStub = Sinon.stub(UserService, 'delete');
+        deleteStub.withArgs(1).resolves();
+        server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('handles deleting a user that does not exist', function(done) {
-
-        var request = {
-            params: {
-                id: 9999
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(UserService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/user/1'
+        });
 
-        UserCtrl.delete(request, function(response) {
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+    });
 
-            expect(UserService.delete.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('handles deleting a user that does not exist', async (flags) => {
 
+        // setup
+        const deleteStub = Sinon.stub(UserService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while deleting a user', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(UserService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_DELETE));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/user/1'
+        });
 
-        UserCtrl.delete(request, function(response) {
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(UserService.delete.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('does not delete a user that is active', async (flags) => {
 
+        // setup
+        const deleteStub = Sinon.stub(UserService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_STATE());
+        server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('updates a user', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                username: 'updatedUser'
-            },
-            log: function() {}
         };
 
-        var updateStub = Sinon.stub(UserService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.resolve({
-            id: request.params.id,
-            name: request.payload.name
-        }));
-
-        UserCtrl.update(request, function(response) {
-
-            expect(UserService.update.calledOnce).to.be.true();
-            expect(response.id).to.equals(request.params.id);
-            expect(response.name).to.equals(request.payload.name);
-
-            updateStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/user/1'
         });
+
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_STATE().message);
     });
 
-    it('updates a user that does not exit', function(done) {
+    it('handles server errors while deleting a user', async (flags) => {
 
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                username: 'updatedUser'
-            },
-            log: function() {}
+        // setup
+        const deleteStub = Sinon.stub(UserService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_DELETE());
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
+        flags.onCleanup = function() {
+            deleteStub.restore();
         };
 
-        var updateStub = Sinon.stub(UserService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
-
-        UserCtrl.update(request, function(response) {
-
-            expect(UserService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
-
-            updateStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/user/1'
         });
+
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
-    it('updates a user when a duplicate exists', function(done) {
+    it('updates a user', async (flags) => {
 
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                username: 'updatedUser'
-            },
-            log: function() {}
+        // setup
+        const fakeId = 1;
+        const entity = { username: 'test2', name: 'test2', password: 'test2' };
+        const updateStub = Sinon.stub(UserService, 'update');
+        updateStub.withArgs(fakeId, entity).resolves(Hoek.merge({ id: fakeId }, entity));
+        server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
+        flags.onCleanup = function() {
+            updateStub.restore();
         };
 
-        var updateStub = Sinon.stub(UserService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
-
-        UserCtrl.update(request, function(response) {
-
-            expect(UserService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_DUPLICATE);
-
-            updateStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/user/' + fakeId,
+            payload: entity
         });
+
+        // validate
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload).password).to.not.exists();
+        expect(JSON.parse(response.payload).id).to.equals(fakeId);
+        expect(JSON.parse(response.payload).username).to.equals(entity.username);
+        expect(JSON.parse(response.payload).email).to.equals(entity.email);
+        expect(JSON.parse(response.payload).name).to.equals(entity.name);
     });
 
-    it('handles server errors while updating user', function(done) {
+    it('handles updating a user that does not exit', async (flags) => {
 
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                username: 'updatedUser'
-            },
-            log: function() {}
+        // setup
+        const updateStub = Sinon.stub(UserService, 'update');
+        updateStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
+        flags.onCleanup = function() {
+            updateStub.restore();
         };
 
-        var updateStub = Sinon.stub(UserService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_UPDATE));
-
-        UserCtrl.update(request, function(response) {
-
-            expect(UserService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
-
-            updateStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/user/1'
         });
+
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
+
+    it('does not update a user if username or email is taken', async (flags) => {
+
+        // setup
+        const updateStub = Sinon.stub(UserService, 'update');
+        updateStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/user/1'
+        });
+
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
+
+    it('handles server errors while updating a user', async (flags) => {
+
+        // setup
+        const updateStub = Sinon.stub(UserService, 'update');
+        updateStub.rejects(NSError.RESOURCE_UPDATE());
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/user/1'
+        });
+
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 });
