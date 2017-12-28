@@ -1,264 +1,183 @@
-var Promise = require('bluebird');
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var JWT = require('jsonwebtoken');
-var UserService = require('../../../../../lib/modules/authorization/services/user');
-var LoginCtrl = require('../../../../../lib/modules/authorization/controllers/api/login');
-var HSError = require('../../../../../lib/error');
+const Path = require('path');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const Hapi = require('hapi');
+const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
+const LoginCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/api/login'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var it = lab.test;
-var expect = Code.expect;
+describe('API Controller: login', () => {
 
-var internals = {};
-internals.user = {
-    'id': 0,
-    'username': 'test',
-    'email': 'test@gmail.com',
-    'password': 'test'
-};
+    // created using npm run token
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
 
-describe('API Controller: login', function() {
+    let server;
 
-    before(function(done) {
-
-        // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
-        internals.secret = 'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
-        process.env.JWT_SECRET = internals.secret;
-
-        // created using npm run token
-        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
-
-        done();
-
+    beforeEach(() => {
+        server = Hapi.server();
+        server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: true } } });
+        server.route({ method: 'GET', path: '/logout', config: { handler: LoginCtrl.logout, plugins: { stateless: true } } });
     });
 
-    it('invalid username', function(done) {
+    it('rejects login with invalid username', async (flags) => {
 
-        var request = {
-            payload: {
-                username: 'invalid',
-                password: internals.user.password
-            },
-            log: function() {}
-        };
-
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_USERNAME));
-
-        LoginCtrl.login(request, function(response) {
-
-            expect(UserService.authenticate.calledOnce).to.be.true();
-            expect(response.isBoom).to.equal(true);
-            expect(response.output.statusCode).to.equal(401);
-            expect(response.output.payload.error).to.equal('Unauthorized');
-            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_USERNAME);
-
+        // setup
+        const credentials = { username: 'invalid', password: 'secret' };
+        const authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(credentials.username, credentials.password).rejects(NSError.AUTH_INVALID_USERNAME());
+        flags.onCleanup = function() {
             authenticateStub.restore();
-            done();
-        });
-    });
-
-    it('invalid password', function(done) {
-
-        var request = {
-            payload: {
-                email: internals.user.email,
-                password: 'invalid'
-            },
-            log: function() {}
         };
 
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_INVALID_PASSWORD));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/login',
+            payload: credentials
+        });
 
-        LoginCtrl.login(request, function(response) {
+        // validate
+        expect(authenticateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(401);
+        expect(response.statusMessage).to.equal('Unauthorized');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_INVALID_USERNAME().message);
+    });
 
-            expect(UserService.authenticate.calledOnce).to.be.true();
-            expect(response.isBoom).to.equal(true);
-            expect(response.output.statusCode).to.equal(401);
-            expect(response.output.payload.error).to.equal('Unauthorized');
-            expect(response.output.payload.message).to.equal(HSError.AUTH_INVALID_PASSWORD);
+    it('rejects login with invalid password', async (flags) => {
 
+        // setup
+        const credentials = { username: 'test', password: '' };
+        const authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(credentials.username, credentials.password).rejects(NSError.AUTH_INVALID_PASSWORD());
+        flags.onCleanup = function() {
             authenticateStub.restore();
-            done();
-        });
-    });
-
-    it('handles internal server errors', function(done) {
-
-        var request = {
-            payload: {
-                username: internals.user.username,
-                password: internals.user.password
-            },
-            log: function() {}
         };
 
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.reject(HSError.AUTH_ERROR));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/login',
+            payload: credentials
+        });
 
-        LoginCtrl.login(request, function(response) {
+        // validate
+        expect(authenticateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(401);
+        expect(response.statusMessage).to.equal('Unauthorized');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_INVALID_PASSWORD().message);
+    });
 
-            expect(UserService.authenticate.calledOnce).to.be.true();
-            expect(response.isBoom).to.equal(true);
-            expect(response.output.statusCode).to.equal(500);
-            expect(response.output.payload.error).to.equal('Internal Server Error');
-            expect(response.output.payload.message).to.equal('An internal server error occurred');
+    it('handles internal server errors', async (flags) => {
 
+        // setup
+        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
+        server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: true } } });
+        const credentials = { username: 'test', password: 'test' };
+        const authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(credentials.username, credentials.password).rejects(NSError.AUTH_ERROR());
+        flags.onCleanup = function() {
             authenticateStub.restore();
-            done();
-        });
-    });
-
-    it('web valid credentials', function(done) {
-
-        var request = {
-            payload: {
-                username: internals.user.username,
-                password: internals.user.password
-            },
-            route: {
-                settings: {
-                    plugins: {
-                        stateless: false
-                    }
-                }
-            },
-            log: function() {}
         };
 
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.resolve(internals.token));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/login',
+            payload: credentials
+        });
 
-        LoginCtrl.login(request, function(response) {
+        expect(authenticateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
 
-            expect(UserService.authenticate.calledOnce).to.be.true();
-            expect(response).to.exist();
-            expect(response.success).to.be.true();
-            expect(response.message).to.be.a.string();
+    it('login user with valid credentials', async (flags) => {
 
+        // setup
+        const credentials = { username: 'test', password: 'secret' };
+        const authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(credentials.username, credentials.password).resolves(token);
+        flags.onCleanup = function() {
             authenticateStub.restore();
-
-            return {
-                header: function(header, token) {
-                    expect(header).to.equal('Authorization');
-                    expect(token).to.be.a.string();
-
-                    JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
-
-                        expect(err).not.to.exist();
-                        expect(decoded.id).to.equals(internals.user.id);
-                    });
-
-                    return {
-                        state: function(name, value, options) {
-                            expect(name).to.equals('token');
-                            expect(value).to.equals(token);
-                            expect(options).to.exist();
-                            done();
-                        }
-                    };
-                }
-            };
-        });
-    });
-
-    it('api valid credentials', function(done) {
-
-        var request = {
-            payload: {
-                username: internals.user.username,
-                password: internals.user.password
-            },
-            route: {
-                settings: {
-                    plugins: {
-                        stateless: true
-                    }
-                }
-            },
-            log: function() {}
         };
 
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(request.payload.username, request.payload.password).returns(Promise.resolve(internals.token));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/login',
+            payload: credentials
+        });
 
-        LoginCtrl.login(request, function(response) {
+        expect(authenticateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.headers.authorization).to.exist();
+        expect(response.headers.authorization).to.equals(token);
+    });
 
-            expect(UserService.authenticate.calledOnce).to.be.true();
-            expect(response).to.exist();
-            expect(response.success).to.be.true();
-            expect(response.message).to.be.a.string();
+    it('stores token in cookie if statefull login', async (flags) => {
 
+        // setup
+        server = Hapi.server();
+        server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: false } } });
+        const credentials = { username: 'invalid', password: 'secret' };
+        const authenticateStub = Sinon.stub(UserService, 'authenticate');
+        authenticateStub.withArgs(credentials.username, credentials.password).resolves(token);
+        flags.onCleanup = function() {
             authenticateStub.restore();
-
-            return {
-                header: function(header, token) {
-                    expect(header).to.equal('Authorization');
-                    expect(token).to.be.a.string();
-
-                    JWT.verify(token, new Buffer(process.env.JWT_SECRET, 'base64'), function(err, decoded) {
-
-                        expect(err).not.to.exist();
-                        expect(decoded.id).to.equals(internals.user.id);
-                        done();
-                    });
-                }
-            };
-        });
-    });
-
-    it('web logout', function(done) {
-
-        var request = {
-            route: {
-                settings: {
-                    plugins: {
-                        stateless: false
-                    }
-                }
-            },
-            log: function() {}
         };
 
-        LoginCtrl.logout(request, function(result) {
-            expect(result).to.exist();
-            expect(result.message).to.be.a.string();
-
-            return {
-                unstate: function(name) {
-                    expect(name).to.equals('token');
-                    done();
-                }
-            };
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/login',
+            payload: credentials
         });
 
+        expect(authenticateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.headers['set-cookie']).to.be.an.array();
+        expect(response.headers['set-cookie'][0]).to.be.a.string();
+        expect(response.headers['set-cookie'][0].startsWith('token=')).to.be.true();
+        expect(response.headers['set-cookie'][0].indexOf(token)).to.equals('token='.length);
     });
 
-    it('api logout', function(done) {
+    it('logout user', async () => {
 
-        var request = {
-            route: {
-                settings: {
-                    plugins: {
-                        stateless: true
-                    }
-                }
-            },
-            log: function() {}
-        };
-
-        LoginCtrl.logout(request, function(result) {
-            expect(result).to.exist();
-            expect(result.message).to.be.a.string();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/logout'
         });
 
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload).success).to.be.true();
+        expect(JSON.parse(response.payload).message).to.equals('logged out');
+    });
+
+    it('removes token from cookie if statefull logout', async () => {
+
+        // setup
+        server = Hapi.server();
+        server.route({ method: 'GET', path: '/logout', config: { handler: LoginCtrl.logout, plugins: { stateless: false } } });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/logout'
+        });
+
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.headers['set-cookie']).to.be.an.array();
+        expect(response.headers['set-cookie'][0]).to.be.a.string();
+        expect(response.headers['set-cookie'][0].startsWith('token=;')).to.be.true();
     });
 });
