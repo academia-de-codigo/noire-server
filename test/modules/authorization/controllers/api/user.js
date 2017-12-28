@@ -12,13 +12,13 @@ const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 describe('API Controller: user', () => {
 
     const users = [{
-        'id': 0,
-        'username': 'test',
-        'email': 'test@gmail.com'
+        id: 0,
+        username: 'test',
+        email: 'test@gmail.com'
     }, {
-        'id': 1,
-        'username': 'admin',
-        'email': 'admin@gmail.com'
+        id: 1,
+        username: 'admin',
+        email: 'admin@gmail.com'
     }];
 
     let server;
@@ -41,6 +41,30 @@ describe('API Controller: user', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/user'
+        });
+
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(users);
+    });
+
+    it('lists available users with criteria', async (flags) => {
+
+        // setup
+        const fakeCriteria = { limit: '100' };
+        const listStub = Sinon.stub(UserService, 'list');
+        listStub.withArgs(fakeCriteria).resolves(users);
+        server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        flags.onCleanup = function() {
+            listStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/user?limit=100'
         });
 
         // validate
