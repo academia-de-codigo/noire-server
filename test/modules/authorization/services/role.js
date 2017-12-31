@@ -264,7 +264,7 @@ describe('Service: role', function() {
 
         // setup
         const id = 4;
-        const role = { name: 'newname' };
+        const role = { name: 'newname', description: 'newdescription' };
 
         // exercise
         const result = await RoleService.update(id, role);
@@ -275,6 +275,25 @@ describe('Service: role', function() {
         expect(result).to.be.an.instanceof(RoleModel);
         expect(result.id).to.equals(id);
         expect(result.name).to.equals(role.name);
+        expect(result.description).to.equals(role.description);
+    });
+
+    it('updates an existing role without updating the name', async () => {
+
+        // setup
+        const id = 4;
+        const role = { description: 'newdescription' };
+
+        // exercise
+        const result = await RoleService.update(id, role);
+
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(RoleModel);
+        expect(result).to.be.an.instanceof(RoleModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals('guest2');
+        expect(result.description).to.equals(role.description);
     });
 
     it('updates an existing role with same name', async () => {
@@ -368,6 +387,12 @@ describe('Service: role', function() {
         await expect(RoleService.addUsers(4, [1, 2, 3, 9999])).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
+    it('does not add any user to role if at least one of the users already contains the role', async () => {
+
+        // exercise and validate
+        await expect(RoleService.addUsers(1, [1,2])).reject(NSError.RESOURCE_DUPLICATE().message);
+    });
+
     it('removes one user from role', async () => {
 
         // exercise
@@ -445,25 +470,10 @@ describe('Service: role', function() {
         expect(result.permission_id).to.equals(permission.id);
     });
 
-    it('adds a permission that already belongs to a role', async () => {
+    it('does not add a permission that already belongs to a role', async () => {
 
-        // setup
-        const roleId = 1;
-        const resource = 'role';
-        const permission = { id: 5, action: 'create' };
-
-        // exercise
-        const result = await RoleService.addPermission(roleId, permission.action, resource);
-
-        // validate
-        expect(txSpy.calledOnce).to.be.true();
-        expect(txSpy.args[0].length).to.equals(4);
-        expect(txSpy.args[0][0]).to.equals(RoleModel);
-        expect(txSpy.args[0][1]).to.equals(PermissionModel);
-        expect(txSpy.args[0][2]).to.equals(ResourceModel);
-        expect(result).instanceof(Objection.Model);
-        expect(result.role_id).to.equals(roleId);
-        expect(result.permission_id).to.equals(permission.id);
+        // exercise and validate
+        await expect(RoleService.addPermission(1, 'create', 'role')).reject(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('adds a permission that already exists but is not used by the role', async () => {

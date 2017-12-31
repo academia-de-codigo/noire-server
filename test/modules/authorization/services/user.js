@@ -407,12 +407,12 @@ describe('Service: user', () => {
         await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
-    it('updates an existing user with new password', async () => {
+    it('updates an existing user', async () => {
 
         // setup
         const id = 2;
         const fakeHash = 'hash';
-        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2', active: true };
+        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2', avatar: 'newavatar', active: true };
         cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
 
         // exercise
@@ -427,6 +427,7 @@ describe('Service: user', () => {
         expect(result.username).to.equals(user.username);
         expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
+        expect(result.avatar).to.equals(user.avatar);
         expect(result.password).to.equals(fakeHash);
         expect(result.active).to.satisfy(value =>
             // accommodate boolean in both sqlite and postgres
@@ -434,11 +435,11 @@ describe('Service: user', () => {
         );
     });
 
-    it('updates an existing user without changing password', async () => {
+    it('updates an existing user without updating the username', async () => {
 
         // setup
         const id = 2;
-        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', active: true };
+        const user = { name: 'test2', email: 'test2@gmail.com', active: true };
 
         // exercise
         const result = await UserService.update(id, user);
@@ -449,7 +450,7 @@ describe('Service: user', () => {
         expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
-        expect(result.username).to.equals(user.username);
+        expect(result.username).to.equals('test');
         expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.exists();
@@ -459,7 +460,7 @@ describe('Service: user', () => {
         );
     });
 
-    it('updates an existing user same username and id as request parameters string', async () => {
+    it('updates an existing user with same username and id as request parameters string', async () => {
 
         // setup
         const id = 2;
