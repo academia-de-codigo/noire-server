@@ -36,7 +36,7 @@ module.exports = {
             tx: true,
             pool: false,
             client: false,
-            bindings: false
+            bindings: true
         }
     },
 
@@ -64,7 +64,7 @@ module.exports = {
             tx: true,
             pool: false,
             client: false,
-            bindings: false
+            bindings: true
         }
     },
 
