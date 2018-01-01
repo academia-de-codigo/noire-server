@@ -16,7 +16,8 @@ describe('API Controller: login', () => {
     let server;
 
     beforeEach(() => {
-        server = Hapi.server();
+        // make server quiet, 500s are rethrown and logged by default..
+        server = Hapi.server({ debug: { log: false, request: false } });
         server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: true } } });
         server.route({ method: 'GET', path: '/logout', config: { handler: LoginCtrl.logout, plugins: { stateless: true } } });
     });
@@ -72,8 +73,6 @@ describe('API Controller: login', () => {
     it('handles internal server errors', async (flags) => {
 
         // setup
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
-        server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: true } } });
         const credentials = { username: 'test', password: 'test' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub.withArgs(credentials.username, credentials.password).rejects(NSError.AUTH_ERROR());

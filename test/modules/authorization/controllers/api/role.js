@@ -1,714 +1,753 @@
-var Promise = require('bluebird');
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var RoleCtrl = require('../../../../../lib/modules/authorization/controllers/api/role');
-var RoleService = require('../../../../../lib/modules/authorization/services/role');
-var HSError = require('../../../../../lib/error');
+const Path = require('path');
+const Hoek = require('hoek');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const Hapi = require('hapi');
+const RoleService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/role'));
+const RoleCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/api/role'));
+const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var it = lab.test;
-var expect = Code.expect;
+describe('API Controller: role', () => {
 
-var internals = {};
-internals.roles = [{
-    id: 0,
-    name: 'admin'
-}, {
-    id: 1,
-    name: 'user',
-    users: [{
-        id: 1
-    }]
-}];
+    const roles = [{
+        id: 0,
+        name: 'admin',
+        description: 'admin'
+    }, {
+        id: 1,
+        name: 'user',
+        description: 'user',
+        users: [{
+            id: 1
+        }]
+    }];
 
-describe('API Controller: role', function() {
+    let server;
 
-    it('lists available roles', function(done) {
+    beforeEach(() => {
+        // make server quiet, 500s are rethrown and logged by default..
+        server = Hapi.server({ debug: { log: false, request: false } });
+    });
 
-        var request = {
-            log: function() {}
-        };
+    it('lists available roles', async (flags) => {
 
-        var listStub = Sinon.stub(RoleService, 'list');
-        listStub.returns(Promise.resolve(internals.roles));
-        RoleCtrl.list(request, function(response) {
-
-            expect(RoleService.list.calledOnce).to.be.true();
-            expect(response).to.equals(internals.roles);
-
+        // setup
+        const listStub = Sinon.stub(RoleService, 'list');
+        listStub.resolves(roles);
+        server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
+        flags.onCleanup = function() {
             listStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while listing roles', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var listStub = Sinon.stub(RoleService, 'list');
-        listStub.returns(Promise.reject(HSError.RESOURCE_FETCH));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role'
+        });
 
-        RoleCtrl.list(request, function(response) {
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(roles);
 
-            expect(RoleService.list.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    });
 
+    it('lists available roles with criteria', async (flags) => {
+
+        // setup
+        const fakeCriteria = { limit: '100' };
+        const listStub = Sinon.stub(RoleService, 'list');
+        listStub.withArgs(fakeCriteria).resolves(roles);
+        server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
+        flags.onCleanup = function() {
             listStub.restore();
-            done();
-        });
-    });
-
-    it('gets a specific role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var findByIdStub = Sinon.stub(RoleService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.resolve(internals.roles[request.params.id]));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role?limit=100'
+        });
 
-        RoleCtrl.get(request, function(response) {
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(roles);
+    });
 
-            expect(RoleService.findById.calledOnce).to.be.true();
-            expect(response).to.equals(internals.roles[request.params.id]);
+    it('handles server errors while listing roles', async (flags) => {
 
+        // setup
+        const listStub = Sinon.stub(RoleService, 'list');
+        listStub.rejects(NSError.RESOURCE_FETCH());
+        server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
+        flags.onCleanup = function() {
+            listStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role'
+        });
+
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(500);
+        expect(response.statusMessage).to.equals('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
+
+    it('gets a role', async (flags) => {
+
+        // setup
+        const findByIdStub = Sinon.stub(RoleService, 'findById');
+        findByIdStub.withArgs(1).resolves(roles[1]);
+        server.route({ method: 'GET', path: '/role/{id}', handler: RoleCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
-        });
-    });
-
-    it('get of a non existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            log: function() {}
         };
 
-        var findByIdStub = Sinon.stub(RoleService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role/1'
+        });
 
-        RoleCtrl.get(request, function(response) {
+        // validate
 
-            expect(RoleService.findById.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equal(roles[1]);
+    });
 
+    it('handles get of a non existing role', async (flags) => {
+
+        // setup
+        const findByIdStub = Sinon.stub(RoleService, 'findById');
+        findByIdStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'GET', path: '/role/{id}', handler: RoleCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while getting a role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var findByIdStub = Sinon.stub(RoleService, 'findById');
-        findByIdStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_FETCH));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role/2'
+        });
 
-        RoleCtrl.get(request, function(response) {
+        // validate
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(404);
+        expect(response.statusMessage).to.equals('Not Found');
+        expect(JSON.parse(response.payload).message).to.equals(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(RoleService.findById.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server errors while getting a role', async (flags) => {
 
+        // setup
+        const findByIdStub = Sinon.stub(RoleService, 'findById');
+        findByIdStub.rejects(NSError.RESOURCE_FETCH());
+        server.route({ method: 'GET', path: '/role/{id}', handler: RoleCtrl.get });
+        flags.onCleanup = function() {
             findByIdStub.restore();
-            done();
-        });
-    });
-
-    it('creates a new role', function(done) {
-
-        var request = {
-            payload: {
-                name: 'newrole'
-            },
-            log: function() {},
         };
 
-        var addStub = Sinon.stub(RoleService, 'add');
-        addStub.withArgs(request.payload).returns(Promise.resolve({
-            id: '2',
-            name: request.payload.name
-        }));
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/role/1'
+        });
 
-        RoleCtrl.create(request, function(response) {
+        // validate
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
 
-            expect(RoleService.add.calledOnce).to.be.true();
-            expect(response.name).to.equals(request.payload.name);
+    it('creates a new role', async (flags) => {
 
+        // setup
+        const fakeId = 1;
+        const entity = { name: 'newrole', description: 'newrole' };
+        const addStub = Sinon.stub(RoleService, 'add');
+        addStub.withArgs(entity).resolves(Hoek.merge({ id: fakeId }, entity));
+        server.route({ method: 'POST', path: '/role', handler: RoleCtrl.create });
+        flags.onCleanup = function() {
             addStub.restore();
-
-            return {
-                created: function(path) {
-
-                    expect(path).to.equals('/role/' + response.id);
-                    done();
-                }
-            };
-        });
-    });
-
-    it('handles creating a role that already exists', function(done) {
-
-        var request = {
-            payload: {
-                name: 'admin'
-            },
-            log: function() {},
         };
 
-        var addStub = Sinon.stub(RoleService, 'add');
-        addStub.withArgs(request.payload).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/role',
+            payload: entity
+        });
 
-        RoleCtrl.create(request, function(response) {
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(201);
+        expect(response.statusMessage).to.equal('Created');
+        expect(JSON.parse(response.payload).id).to.equals(fakeId);
+        expect(JSON.parse(response.payload).name).to.equals(entity.name);
+        expect(JSON.parse(response.payload).description).to.equals(entity.description);
+        expect(response.headers.location).to.equals('/role/' + fakeId);
+    });
 
-            expect(RoleService.add.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_DUPLICATE);
+    it('does not create a role that already exists', async (flags) => {
 
+        // setup
+        const addStub = Sinon.stub(RoleService, 'add');
+        addStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'POST', path: '/role', handler: RoleCtrl.create });
+        flags.onCleanup = function() {
             addStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while creating a role', function(done) {
-
-        var request = {
-            payload: {
-                name: 'newrole'
-            },
-            log: function() {},
         };
 
-        var addStub = Sinon.stub(RoleService, 'add');
-        addStub.withArgs(request.payload).returns(Promise.reject(HSError.RESOURCE_INSERT));
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/role'
+        });
 
-        RoleCtrl.create(request, function(response) {
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
 
-            expect(RoleService.add.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server errors while creating a role', async (flags) => {
 
+        // setup
+        const addStub = Sinon.stub(RoleService, 'add');
+        addStub.rejects(NSError.RESOURCE_INSERT());
+        server.route({ method: 'POST', path: '/role', handler: RoleCtrl.create });
+        flags.onCleanup = function() {
             addStub.restore();
-            done();
-        });
-    });
-
-    it('deletes an existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(RoleService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.resolve());
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/role'
+        });
 
-        RoleCtrl.delete(request, function(response) {
+        // validate
+        expect(addStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
 
-            expect(RoleService.delete.calledOnce).to.be.true();
-            expect(response).to.not.exist();
+    it('deletes an existing role', async (flags) => {
 
+        // setup
+        const deleteStub = Sinon.stub(RoleService, 'delete');
+        deleteStub.withArgs(1).resolves();
+        server.route({ method: 'DELETE', path: '/role/{id}', handler: RoleCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('handles deleting a role that does not exist', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(RoleService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1'
+        });
 
-        RoleCtrl.delete(request, function(response) {
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+    });
 
-            expect(RoleService.delete.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('handles deleting a role that does not exist', async (flags) => {
 
+        // setup
+        const deleteStub = Sinon.stub(RoleService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'DELETE', path: '/role/{id}', handler: RoleCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('handles deleting a role that is assigned to a user', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(RoleService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_RELATION));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1'
+        });
 
-        RoleCtrl.delete(request, function(response) {
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(RoleService.delete.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_RELATION);
+    it('handles server errors while deleting a role', async (flags) => {
 
+        // setup
+        const deleteStub = Sinon.stub(RoleService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_DELETE());
+        server.route({ method: 'DELETE', path: '/role/{id}', handler: RoleCtrl.delete });
+        flags.onCleanup = function() {
             deleteStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while deleting a role', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var deleteStub = Sinon.stub(RoleService, 'delete');
-        deleteStub.withArgs(request.params.id).returns(Promise.reject(HSError.RESOURCE_DELETE));
-
-        RoleCtrl.delete(request, function(response) {
-
-            expect(RoleService.delete.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
-
-            deleteStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1'
         });
+
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
-    it('updates a role', function(done) {
+    it('updates a role', async (flags) => {
 
-        var request = {
-            params: {
-                id: 0
-            },
-            payload: {
-                name: 'updatedRole'
-            },
-            log: function() {}
-        };
-
-        var updateStub = Sinon.stub(RoleService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.resolve({
-            id: request.params.id,
-            name: request.payload.name
-        }));
-
-        RoleCtrl.update(request, function(response) {
-
-            expect(RoleService.update.calledOnce).to.be.true();
-            expect(response.id).to.equals(request.params.id);
-            expect(response.name).to.equals(request.payload.name);
-
+        // setup
+        const fakeId = 1;
+        const entity = { name: 'user2', description: 'user2' };
+        const updateStub = Sinon.stub(RoleService, 'update');
+        updateStub.withArgs(fakeId, entity).resolves(Hoek.merge({ id: fakeId }, entity));
+        server.route({ method: 'PUT', path: '/role/{id}', handler: RoleCtrl.update });
+        flags.onCleanup = function() {
             updateStub.restore();
-            done();
-        });
-    });
-
-    it('updates a role that does not exit', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                name: 'updatedRole'
-            },
-            log: function() {}
         };
 
-        var updateStub = Sinon.stub(RoleService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/' + fakeId,
+            payload: entity
+        });
 
-        RoleCtrl.update(request, function(response) {
+        // validate
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload).password).to.not.exists();
+        expect(JSON.parse(response.payload).id).to.equals(fakeId);
+        expect(JSON.parse(response.payload).name).to.equals(entity.name);
+        expect(JSON.parse(response.payload).description).to.equals(entity.description);
+    });
 
-            expect(RoleService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('handles updating a role that does not exit', async (flags) => {
 
+        // setup
+        const updateStub = Sinon.stub(RoleService, 'update');
+        updateStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'PUT', path: '/role/{id}', handler: RoleCtrl.update });
+        flags.onCleanup = function() {
             updateStub.restore();
-            done();
-        });
-    });
-
-    it('updates a role when a duplicate exists', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            payload: {
-                name: 'updatedRole'
-            },
-            log: function() {}
         };
 
-        var updateStub = Sinon.stub(RoleService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/2'
+        });
 
-        RoleCtrl.update(request, function(response) {
+        // validate
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(RoleService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_DUPLICATE);
+    it('does not update a role if name is taken', async (flags) => {
 
+        // setup
+        const updateStub = Sinon.stub(RoleService, 'update');
+        updateStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'PUT', path: '/role/{id}', handler: RoleCtrl.update });
+        flags.onCleanup = function() {
             updateStub.restore();
-            done();
-        });
-    });
-
-    it('handles server errors while updating a role', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            payload: {
-                name: 'updatedRole'
-            },
-            log: function() {}
         };
 
-        var updateStub = Sinon.stub(RoleService, 'update');
-        updateStub.withArgs(request.params.id, request.payload).returns(Promise.reject(HSError.RESOURCE_UPDATE));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/1'
+        });
 
-        RoleCtrl.update(request, function(response) {
+        // validate
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
 
-            expect(RoleService.update.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server errors while updating a role', async (flags) => {
 
+        // setup
+        const updateStub = Sinon.stub(RoleService, 'update');
+        updateStub.rejects(NSError.RESOURCE_UPDATE());
+        server.route({ method: 'PUT', path: '/role/{id}', handler: RoleCtrl.update });
+        flags.onCleanup = function() {
             updateStub.restore();
-            done();
-        });
-    });
-
-    it('adds a user to an existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
-        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve(request.payload.id));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/1'
+        });
 
-        RoleCtrl.addUsers(request, function(response) {
+        // validate
+        expect(updateStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
 
-            expect(RoleService.addUsers.calledOnce).to.be.true();
-            expect(response).to.equals(request.payload.id);
+    it('adds user to an existing role', async (flags) => {
 
+        // setup
+        const fakeMappings = { role_id: 0, user_id: 1 };
+        const addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.withArgs(0, 1).resolves(fakeMappings);
+        server.route({ method: 'PUT', path: '/role/{id}/users', handler: RoleCtrl.addUsers });
+        flags.onCleanup = function() {
             addUsersStub.restore();
-            done();
-        });
-    });
-
-    it('handles adding a user that does not exists or to a non existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 2
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
-        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/0/users',
+            payload: { id: 1 }
+        });
 
-        RoleCtrl.addUsers(request, function(response) {
+        // validate
+        expect(addUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equals(fakeMappings);
+    });
 
-            expect(RoleService.addUsers.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('handles adding a user that does not exists or to a non existing role', async (flags) => {
 
+        // setup
+        const addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'PUT', path: '/role/{id}/users', handler: RoleCtrl.addUsers });
+        flags.onCleanup = function() {
             addUsersStub.restore();
-            done();
-        });
-    });
-
-    it('handles adding a user to a role that already contains it', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
-        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_DUPLICATE));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/0/users',
+            payload: { id: 1 }
+        });
 
-        RoleCtrl.addUsers(request, function(response) {
+        // validate
+        expect(addUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
 
-            expect(RoleService.addUsers.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(409);
-            expect(response.output.payload.error).to.equals('Conflict');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_DUPLICATE);
+    it('handles adding a user to a role that already contains it', async (flags) => {
 
+        // setup
+        const addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'PUT', path: '/role/{id}/users', handler: RoleCtrl.addUsers });
+        flags.onCleanup = function() {
             addUsersStub.restore();
-            done();
-        });
-    });
-
-    it('handles server error while adding a user to a role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var addUsersStub = Sinon.stub(RoleService, 'addUsers');
-        addUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/0/users',
+            payload: { id: 1 }
+        });
 
-        RoleCtrl.addUsers(request, function(response) {
+        // validate
+        expect(addUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
 
-            expect(RoleService.addUsers.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles server error while adding a user to a role', async (flags) => {
 
+        // setup
+        const addUsersStub = Sinon.stub(RoleService, 'addUsers');
+        addUsersStub.rejects(NSError.RESOURCE_UPDATE());
+        server.route({ method: 'PUT', path: '/role/{id}/users', handler: RoleCtrl.addUsers });
+        flags.onCleanup = function() {
             addUsersStub.restore();
-            done();
-        });
-    });
-
-    it('removes a user from an existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 3
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
-        removeUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve());
-
-        RoleCtrl.removeUsers(request, function(response) {
-
-            expect(RoleService.removeUsers.calledOnce).to.be.true();
-            expect(response).to.not.exist();
-
-            return {
-                code: function() {
-                    removeUsersStub.restore();
-                    done();
-                }
-            };
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/0/users',
+            payload: { id: 1 }
         });
+
+        // validate
+        expect(addUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
-    it('handles removing a non existing user or from non existing role', function(done) {
+    it('removes a user from an existing role', async (flags) => {
 
-        var request = {
-            params: {
-                id: 8
-            },
-            payload: {
-                id: 8
-            },
-            log: function() {}
-        };
-
-        var removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
-        removeUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
-
-        RoleCtrl.removeUsers(request, function(response) {
-
-            expect(RoleService.removeUsers.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
-
+        // setup
+        const removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
+        removeUsersStub.withArgs(0, 1).resolves([1]);
+        server.route({ method: 'DELETE', path: '/role/{id}/users', handler: RoleCtrl.removeUsers });
+        flags.onCleanup = function() {
             removeUsersStub.restore();
-            done();
-        });
-    });
-
-    it('handles server error while removing user from role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
-        removeUsersStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/0/users',
+            payload: { id: 1 }
+        });
 
-        RoleCtrl.removeUsers(request, function(response) {
+        // validate
+        expect(removeUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equals([1]);
+    });
 
-            expect(RoleService.removeUsers.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
+    it('handles removing a non existing user or from non existing role', async (flags) => {
 
+        // setup
+        const removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
+        removeUsersStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'DELETE', path: '/role/{id}/users', handler: RoleCtrl.removeUsers });
+        flags.onCleanup = function() {
             removeUsersStub.restore();
-            done();
-        });
-    });
-
-    it('removes a permission from an existing role', function(done) {
-
-        var request = {
-            params: {
-                id: 1
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.withArgs(request.params.id, request.payload.id).returns(Promise.resolve());
-
-        RoleCtrl.removePermissions(request, function(response) {
-
-            expect(RoleService.removePermissions.calledOnce).to.be.true();
-            expect(response).to.not.exist();
-            return {
-                code: function() {
-                    removePermissionsStub.restore();
-                    done();
-                }
-            };
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/0/users',
+            payload: { id: 1 }
         });
+
+        // validate
+        expect(removeUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('handles removing a non existing permission or from a non existing role', function(done) {
+    it('handles server error while removing user from role', async (flags) => {
 
-        var request= {
-            params: {
-                id: 99
-            },
-            payload: {
-                id: 99
-            },
-            log: function() {}
+        // setup
+        const removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
+        removeUsersStub.rejects(NSError.RESOURCE_DELETE());
+        server.route({ method: 'DELETE', path: '/role/{id}/users', handler: RoleCtrl.removeUsers });
+        flags.onCleanup = function() {
+            removeUsersStub.restore();
         };
 
-        var removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.withArgs(request.params.id, request.payload.id). returns(Promise.reject(HSError.RESOURCE_NOT_FOUND));
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/0/users',
+            payload: { id: 1 }
+        });
 
-        RoleCtrl.removePermissions(request, function(response) {
+        // validate
+        expect(removeUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
 
-            expect(RoleService.removePermissions.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(404);
-            expect(response.output.payload.error).to.equals('Not Found');
-            expect(response.output.payload.message).to.equals(HSError.RESOURCE_NOT_FOUND);
+    it('adds permission to an existing role', async (flags) => {
 
+        // setup
+        const fakeMappings = { role_id: 1, permission_id: 1 };
+        const addPermissionStub = Sinon.stub(RoleService, 'addPermissions');
+        addPermissionStub.withArgs(1, 'read', 'user').resolves(fakeMappings);
+        server.route({ method: 'PUT', path: '/role/{id}/permissions', handler: RoleCtrl.addPermissions });
+        flags.onCleanup = function() {
+            addPermissionStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/1/permissions',
+            payload: { action: 'read', resource: 'user' }
+        });
+
+        // validate
+        expect(addPermissionStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equals(fakeMappings);
+    });
+
+    it('handles adding a permission to a non existing role', async (flags) => {
+
+        // setup
+        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
+        addPermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'PUT', path: '/role/{id}/permissions', handler: RoleCtrl.addPermissions });
+        flags.onCleanup = function() {
+            addPermissionsStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/2/permissions',
+            payload: { action: 'read', resource: 'user' }
+        });
+
+        // validate
+        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
+
+    it('handles adding a permission to a role that already contains it', async (flags) => {
+
+        // setup
+        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
+        addPermissionsStub.rejects(NSError.RESOURCE_DUPLICATE());
+        server.route({ method: 'PUT', path: '/role/{id}/permissions', handler: RoleCtrl.addPermissions });
+        flags.onCleanup = function() {
+            addPermissionsStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/2/permissions',
+            payload: { action: 'read', resource: 'user' }
+        });
+
+        // validate
+        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+    });
+
+    it('handles server error while adding a permission to a role', async (flags) => {
+
+        // setup
+        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
+        addPermissionsStub.rejects(NSError.RESOURCE_UPDATE());
+        server.route({ method: 'PUT', path: '/role/{id}/permissions', handler: RoleCtrl.addPermissions });
+        flags.onCleanup = function() {
+            addPermissionsStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'PUT',
+            url: '/role/1/permissions',
+            payload: { action: 'read', resource: 'user' }
+        });
+
+        // validate
+        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
+
+    it('removes a permission from an existing role', async (flags) => {
+
+        // setup
+        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
+        removePermissionsStub.withArgs(1, 1).resolves([1]);
+        server.route({ method: 'DELETE', path: '/role/{id}/permissions', handler: RoleCtrl.removePermissions });
+        flags.onCleanup = function() {
             removePermissionsStub.restore();
-            done();
-        });
-    });
-
-    it('handles a server error while removing permission from role', function(done) {
-
-        var request = {
-            params: {
-                id: 0
-            },
-            payload: {
-                id: 1
-            },
-            log: function() {}
         };
 
-        var removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.withArgs(request.params.id, request.payload.id).returns(Promise.reject(HSError.RESOURCE_UPDATE));
-
-        RoleCtrl.removePermissions(request, function(response) {
-
-            expect(RoleService.removePermissions.calledOnce).to.be.true();
-            expect(response.isBoom).to.be.true();
-            expect(response.output.statusCode).to.equals(500);
-            expect(response.output.payload.error).to.equals('Internal Server Error');
-            expect(response.output.payload.message).to.equals('An internal server error occurred');
-
-            removePermissionsStub.restore();
-            done();
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1/permissions',
+            payload: { id: 1 }
         });
+
+        // validate
+        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload)).to.equals([1]);
+    });
+
+    it('handles removing a non existing permission or from non existing role', async (flags) => {
+
+        // setup
+        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
+        removePermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'DELETE', path: '/role/{id}/permissions', handler: RoleCtrl.removePermissions });
+        flags.onCleanup = function() {
+            removePermissionsStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1/permissions',
+            payload: { id: 1 }
+        });
+
+        // validate
+        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+    });
+
+    it('handles server error while removing permission from role', async (flags) => {
+
+        // setup
+        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
+        removePermissionsStub.rejects(NSError.RESOURCE_DELETE());
+        server.route({ method: 'DELETE', path: '/role/{id}/permissions', handler: RoleCtrl.removePermissions });
+        flags.onCleanup = function() {
+            removePermissionsStub.restore();
+        };
+
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1/permissions',
+            payload: { id: 1 }
+        });
+
+        // validate
+        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 });

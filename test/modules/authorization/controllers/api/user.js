@@ -24,7 +24,8 @@ describe('API Controller: user', () => {
     let server;
 
     beforeEach(() => {
-        server = Hapi.server();
+        // make server quiet, 500s are rethrown and logged by default..
+        server = Hapi.server({ debug: { log: false, request: false } });
     });
 
     it('lists available users', async (flags) => {
@@ -79,7 +80,6 @@ describe('API Controller: user', () => {
         // setup
         const listStub = Sinon.stub(UserService, 'list');
         listStub.rejects(NSError.RESOURCE_FETCH());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
         flags.onCleanup = function() {
             listStub.restore();
@@ -134,9 +134,10 @@ describe('API Controller: user', () => {
         // exercise
         const response = await server.inject({
             method: 'GET',
-            url: '/user/1'
+            url: '/user/2'
         });
 
+        // validate
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(404);
         expect(response.statusMessage).to.equals('Not Found');
@@ -148,7 +149,6 @@ describe('API Controller: user', () => {
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_FETCH());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
         flags.onCleanup = function() {
             findByIdStub.restore();
@@ -225,7 +225,6 @@ describe('API Controller: user', () => {
         // setup
         const addStub = Sinon.stub(UserService, 'add');
         addStub.rejects(NSError.RESOURCE_INSERT());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
         flags.onCleanup = function() {
             addStub.restore();
@@ -317,7 +316,6 @@ describe('API Controller: user', () => {
         // setup
         const deleteStub = Sinon.stub(UserService, 'delete');
         deleteStub.rejects(NSError.RESOURCE_DELETE());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
         flags.onCleanup = function() {
             deleteStub.restore();
@@ -379,7 +377,7 @@ describe('API Controller: user', () => {
         // exercise
         const response = await server.inject({
             method: 'PUT',
-            url: '/user/1'
+            url: '/user/2'
         });
 
         expect(updateStub.calledOnce).to.be.true();
@@ -404,6 +402,7 @@ describe('API Controller: user', () => {
             url: '/user/1'
         });
 
+        // validate
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
@@ -415,7 +414,6 @@ describe('API Controller: user', () => {
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_UPDATE());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
         flags.onCleanup = function() {
             updateStub.restore();

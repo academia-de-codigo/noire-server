@@ -20,7 +20,8 @@ describe('API Controller: Profile', () => {
     let server;
 
     beforeEach(() => {
-        server = Hapi.server();
+        // make server quiet, 500s are rethrown and logged by default..
+        server = Hapi.server({ debug: { log: false, request: false } });
     });
 
     it('gets the user profile', async (flags) => {
@@ -77,7 +78,6 @@ describe('API Controller: Profile', () => {
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_FETCH());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'GET', path: '/profile', handler: ProfileCtrl.get });
         flags.onCleanup = function() {
             findByIdStub.restore();
@@ -179,7 +179,6 @@ describe('API Controller: Profile', () => {
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_UPDATE());
-        server = Hapi.server({ debug: { log: false, request: false } }); // make server quiet, 500s are rethrown and logged by default..
         server.route({ method: 'PUT', path: '/profile', handler: ProfileCtrl.update });
         flags.onCleanup = function() {
             updateStub.restore();

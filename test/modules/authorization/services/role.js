@@ -457,7 +457,7 @@ describe('Service: role', function() {
         const permission = { id: 10, action: 'create' };
 
         // exercise
-        const result = await RoleService.addPermission(roleId, permission.action, resource);
+        const result = await RoleService.addPermissions(roleId, permission.action, resource);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
@@ -473,7 +473,7 @@ describe('Service: role', function() {
     it('does not add a permission that already belongs to a role', async () => {
 
         // exercise and validate
-        await expect(RoleService.addPermission(1, 'create', 'role')).reject(NSError.RESOURCE_DUPLICATE().message);
+        await expect(RoleService.addPermissions(1, 'create', 'role')).reject(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('adds a permission that already exists but is not used by the role', async () => {
@@ -484,7 +484,7 @@ describe('Service: role', function() {
         const permisison = { action: 'read' };
 
         // exercise
-        const result = await RoleService.addPermission(roleId, permisison.action, resource);
+        const result = await RoleService.addPermissions(roleId, permisison.action, resource);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
@@ -500,19 +500,19 @@ describe('Service: role', function() {
     it('does not add a permission to a non existing role', async () => {
 
         // exercise and validate
-        await expect(RoleService.addPermission(999, 'create', 'role')).reject(NSError.RESOURCE_NOT_FOUND().message);
+        await expect(RoleService.addPermissions(999, 'create', 'role')).reject(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not add a permission with invalid action', async () => {
 
         // exercise and validate
-        await expect(() => RoleService.addPermission(1, 'invalid', 'role')).throws(NSError.RESOURCE_NOT_FOUND().message);
+        await expect(() => RoleService.addPermissions(1, 'invalid', 'role')).throws(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not add a permission with invalid resource', async () => {
 
         // exercise and validate
-        await expect(RoleService.addPermission(1, 'create', 'invalid')).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(RoleService.addPermissions(1, 'create', 'invalid')).reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('removes a permission from role', async () => {
