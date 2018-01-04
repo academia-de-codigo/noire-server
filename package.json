@@ -49,7 +49,7 @@
     "joi": "^13.0.2",
     "jsonwebtoken": "^8.1.0",
     "knex": "^0.14.2",
-    "lout": "^10.0.3",
+    "lout": "github:henrikdahl/lout#hapi-v17",
     "mock-require": "^2.0.2",
     "objection": "^0.9.4",
     "pg": "^7.4.0",
