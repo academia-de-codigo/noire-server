@@ -12,6 +12,8 @@ Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
 
+**WARNING: Noire is currently under active development and not ready for production use**
+
 ### View Layer
 * Accept data
 * Apply style and formatting
@@ -43,16 +45,15 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 * RBAC authorization
 * AJAX login form
 * Client side caching of assets
-* Logging to console and file - ops, error, auth and access logs
+* Logging to console and file - ops, error, auth and access logs [currently BROKEN]
 * Testing, code coverage and Travis CI integration
 * Graceful server shutdown
 * Database ORM (Objection) with migrations (Knex) support
-* Usage of Promises with Bluebird
+* Usage of native Promises and async/await
 
 ### Desired Features
 
-* Jobs with Agenda
-* User management
+* Admin interface
 
 ## Get it Running
 
