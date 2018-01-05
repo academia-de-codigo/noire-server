@@ -23,10 +23,6 @@ module.exports = {
         'test/modules/authorization/services',
         'test/modules/authorization/controllers/api',
         'test/modules/home/controllers',
-
-        // 'test/modules/authorization/controllers/web/profile.js',
-        // 'test/modules/authorization/controllers/web/admin/user.js',
-        // 'test/modules/authorization/controllers/web/admin/main.js',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };

@@ -41,7 +41,7 @@ describe('Plugin: route-errors', () => {
         // validate
         expect(response.statusCode).to.equal(301);
         expect(response.statusMessage).to.equal('Moved Permanently');
-        expect(response.headers.location).to.equal(response.request.url);
+        expect(response.headers.location).to.equal('/');
     });
 
     it('should not redirect assets', async () => {
@@ -105,7 +105,7 @@ describe('Plugin: route-errors', () => {
         // validate
         expect(response.statusCode).to.equal(302);
         expect(response.statusMessage).to.equal('Found');
-        expect(response.headers.location).to.equal(response.request.url);
+        expect(response.headers.location).to.equal('/');
     });
 
     it('should not redirect on insufficient scope when redirect set to false', async () => {

@@ -56,8 +56,8 @@ describe('Plugin: redirect', () => {
         web = Hapi.server({ app: { name: 'web' } });
         webTls = Hapi.server({ app: { name: 'webTls' } });
 
-        await web.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin, Config.prefixes.profile] } });
-        await webTls.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin, Config.prefixes.profile] } });
+        await web.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin] } });
+        await webTls.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin] } });
     });
 
     after(() => {
@@ -88,20 +88,6 @@ describe('Plugin: redirect', () => {
 
         // exercise
         const response = await web.inject(Config.prefixes.admin);
-
-        // validate
-        expect(response.statusCode).to.equal(301);
-        expect(response.statusMessage).to.equal('Moved Permanently');
-        expect(response.headers.location).to.equal(redirectUrl);
-    });
-
-    it('redirects http profile requests to https', async () => {
-
-        // setup
-        const redirectUrl = Url.format(internals.webTlsUrl) + Config.prefixes.profile;
-
-        // exercise
-        const response = await web.inject(Config.prefixes.profile);
 
         // validate
         expect(response.statusCode).to.equal(301);
