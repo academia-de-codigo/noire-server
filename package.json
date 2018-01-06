@@ -43,6 +43,7 @@
     "handlebars": "^4.0.11",
     "hapi": "^17.2.0",
     "hapi-auth-jwt2": "github:salzhrani/hapi-auth-jwt2#v-17",
+    "hapi-pagination": "^2.0.0",
     "hapijs-status-monitor": "github:ziyasal/hapijs-status-monitor#multiple-connections",
     "hoek": "^5.0.2",
     "inert": "^5.0.1",

@@ -1,3 +1,4 @@
+[![last commit](https://img.shields.io/github/last-commit/academia-de-codigo/noire-server.svg)]()
 [![Build Status](https://api.travis-ci.org/academia-de-codigo/noire-server.svg?branch=master)](https://travis-ci.org/academia-de-codigo/noire-server)
 [![Coverage](https://codecov.io/gh/academia-de-codigo/noire-server/branch/master/graph/badge.svg)](https://codecov.io/gh/academia-de-codigo/noire-server)
 
