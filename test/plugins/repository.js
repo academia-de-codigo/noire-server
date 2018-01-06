@@ -187,7 +187,7 @@ describe('Plugin: repository', () => {
 
         // setup
         const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const fakeCriteria = { limit: 2, page: 2, sort: 'field', descending: 'desc', search: 'fakesearch' };
+        const fakeCriteria = { limit: 2, page: 2, sort: 'field1,-field2,+field3', search: 'fakesearch' };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
@@ -199,7 +199,9 @@ describe('Plugin: repository', () => {
         limitStub.withArgs(fakeCriteria.limit).returns({ offset: offsetStub });
         offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
         searchStub.withArgs(fakeCriteria.search).returns({ modify: modifyStub });
-        orderByStub.withArgs(fakeCriteria.sort, fakeCriteria.descending).returns();
+        orderByStub.withArgs('field1', 'asc').returns();
+        orderByStub.withArgs('field2', 'desc').returns();
+        orderByStub.withArgs('field3', 'asc').returns();
         modifyStub.callsFake((cb) => {
             cb({ orderBy: orderByStub });
             return fakeUsers;
@@ -218,80 +220,7 @@ describe('Plugin: repository', () => {
         expect(limitStub.calledOnce).to.be.true();
         expect(offsetStub.calledOnce).to.be.true();
         expect(searchStub.calledOnce).to.be.true();
-        expect(orderByStub.calledOnce).to.be.true();
-        expect(user).to.equals(fakeUsers);
-    });
-
-    it('returns records within limit with a number as criteria', async () => {
-
-        // setup
-        const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const fakeCriteria = 2;
-        const options = { models: ['user'] };
-        await server.register({ plugin: Repository, options });
-        const userRepository = Repository['user'];
-        const limitStub = Sinon.stub();
-        const offsetStub = Sinon.stub();
-        const searchStub = Sinon.stub();
-        const modifyStub = Sinon.stub();
-        limitStub.withArgs(fakeCriteria).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
-        searchStub.withArgs().returns({ modify: modifyStub });
-        modifyStub.returns(fakeUsers);
-        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
-        limitStub.throws(new Error('wrong limit criteria'));
-        offsetStub.throws(new Error('wrong offset criteria'));
-        searchStub.throws(new Error('wrong search criteria'));
-
-        // exercise
-        const user = await userRepository.findAll(fakeCriteria);
-
-        // validate
-        expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.calledOnce).to.be.true();
-        expect(offsetStub.calledOnce).to.be.true();
-        expect(modifyStub.calledOnce).to.be.true();
-        expect(searchStub.calledOnce).to.be.true();
-        expect(user).to.equals(fakeUsers);
-    });
-
-    it('returns records ordered by a column with a string as criteria', async () => {
-
-        // setup
-        const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const fakeCriteria = 'column';
-        const options = { models: ['user'] };
-        await server.register({ plugin: Repository, options });
-        const userRepository = Repository['user'];
-        const limitStub = Sinon.stub();
-        const offsetStub = Sinon.stub();
-        const orderByStub = Sinon.stub();
-        const searchStub = Sinon.stub();
-        const modifyStub = Sinon.stub();
-        limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
-        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
-        searchStub.withArgs().returns({ modify: modifyStub });
-        orderByStub.withArgs(fakeCriteria, Sinon.match.string).returns();
-        modifyStub.callsFake((cb) => {
-            cb({ orderBy: orderByStub });
-            return fakeUsers;
-        });
-        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
-        limitStub.throws(new Error('wrong limit criteria'));
-        offsetStub.throws(new Error('wrong offset criteria'));
-        orderByStub.throws(new Error('wrong orderby criteria'));
-        searchStub.throws(new Error('wrong search criteria'));
-
-        // exercise
-        const user = await userRepository.findAll(fakeCriteria);
-
-        // validate
-        expect(queryStub.calledOnce).to.be.true();
-        expect(limitStub.calledOnce).to.be.true();
-        expect(offsetStub.calledOnce).to.be.true();
-        expect(orderByStub.calledOnce).to.be.true();
-        expect(searchStub.calledOnce).to.be.true();
-        expect(modifyStub.calledOnce).to.be.true();
+        expect(orderByStub.calledThrice).to.be.true();
         expect(user).to.equals(fakeUsers);
     });
 

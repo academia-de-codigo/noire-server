@@ -148,7 +148,7 @@ describe('Service: resource', () => {
     it('lists resources ordered by id, descending', async () => {
 
         // setup
-        const criteria = { sort: 'id', descending: true };
+        const criteria = { sort: '-id' };
 
         // exercise
         const results = await ResourceService.list(criteria);

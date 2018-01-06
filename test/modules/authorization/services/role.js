@@ -158,7 +158,7 @@ describe('Service: role', function() {
     it('lists roles ordered by column descending', async () => {
 
         // setup
-        const criteria = { sort: 'id', descending: true };
+        const criteria = { sort: '-id' };
 
         // exercise
         const results = await RoleService.list(criteria);

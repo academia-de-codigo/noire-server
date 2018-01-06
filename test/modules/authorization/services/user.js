@@ -168,7 +168,7 @@ describe('Service: user', () => {
     it('lists users order by id descending', async () => {
 
         // setup
-        const criteria = { sort: 'id', descending: true };
+        const criteria = { sort: '-id', };
 
         // exercise
         const results = await UserService.list(criteria);
