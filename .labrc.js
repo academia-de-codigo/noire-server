@@ -20,6 +20,7 @@ module.exports = {
         'test/plugins/auth.js',
         'test/plugins/csrf.js',
         'test/plugins/docs.js',
+        'test/plugins/pagination.js',
         'test/modules/authorization/services',
         'test/modules/authorization/controllers/api',
         'test/modules/home/controllers',

@@ -35,10 +35,15 @@ describe('API Controller: role', () => {
 
         // setup
         const listStub = Sinon.stub(RoleService, 'list');
+        const countStub = Sinon.stub(RoleService, 'count');
+        const toolkitStub = Sinon.stub().withArgs(roles, roles.length).returns(roles);
         listStub.resolves(roles);
+        countStub.resolves(roles.length);
         server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
+        server.decorate('toolkit', 'paginate', toolkitStub);
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // exercise
@@ -49,6 +54,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
         expect(JSON.parse(response.payload)).to.equal(roles);
@@ -60,10 +67,15 @@ describe('API Controller: role', () => {
         // setup
         const fakeCriteria = { limit: '100' };
         const listStub = Sinon.stub(RoleService, 'list');
+        const countStub = Sinon.stub(RoleService, 'count');
+        const toolkitStub = Sinon.stub().withArgs(roles, roles.length).returns(roles);
         listStub.withArgs(fakeCriteria).resolves(roles);
+        countStub.withArgs(fakeCriteria).resolves(roles.length);
         server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
+        server.decorate('toolkit', 'paginate', toolkitStub);
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // exercise
@@ -74,6 +86,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
         expect(JSON.parse(response.payload)).to.equal(roles);

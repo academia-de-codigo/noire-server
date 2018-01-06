@@ -32,10 +32,15 @@ describe('API Controller: user', () => {
 
         // setup
         const listStub = Sinon.stub(UserService, 'list');
+        const countStub = Sinon.stub(UserService, 'count');
+        const toolkitStub = Sinon.stub().withArgs(users, users.length).returns(users);
         listStub.resolves(users);
+        countStub.resolves(users.length);
         server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        server.decorate('toolkit', 'paginate', toolkitStub);
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // exercise
@@ -46,6 +51,8 @@ describe('API Controller: user', () => {
 
         // validate
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
         expect(JSON.parse(response.payload)).to.equal(users);
@@ -56,10 +63,15 @@ describe('API Controller: user', () => {
         // setup
         const fakeCriteria = { limit: '100' };
         const listStub = Sinon.stub(UserService, 'list');
+        const countStub = Sinon.stub(UserService, 'count');
+        const toolkitStub = Sinon.stub().withArgs(users, users.length).returns(users);
         listStub.withArgs(fakeCriteria).resolves(users);
+        countStub.withArgs(fakeCriteria).resolves(users.length);
         server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        server.decorate('toolkit', 'paginate', toolkitStub);
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // exercise
@@ -70,6 +82,8 @@ describe('API Controller: user', () => {
 
         // validate
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
         expect(JSON.parse(response.payload)).to.equal(users);
