@@ -21,8 +21,11 @@ module.exports = {
         'test/plugins/csrf.js',
         'test/plugins/docs.js',
         'test/plugins/pagination.js',
+        'test/plugins/api.js',
+        'test/plugins/web.js',
+        'test/plugins/web-tls.js',
         'test/modules/authorization/services',
-        'test/modules/authorization/controllers/api',
+        'test/modules/authorization/controllers',
         'test/modules/home/controllers',
     ],
 	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720

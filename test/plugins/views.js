@@ -34,6 +34,17 @@ describe('Plugin: views', () => {
         await server.register(Views);
     });
 
+    it('registers the vision plugin', async () => {
+
+        // exercise
+        server = Hapi.server();
+        await server.register(Views);
+
+        // validate
+        expect(server.decorations.toolkit).to.contains('view');
+    });
+
+
     it('handles vision plugin registration failures', async (flags) => {
 
         // cleanup
