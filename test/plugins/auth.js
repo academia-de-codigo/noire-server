@@ -8,6 +8,7 @@ const Path = require('path');
 const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
 const Auth = require(Path.join(process.cwd(), 'lib/plugins/auth'));
 const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { before, describe, expect, it } = exports.lab = Lab.script();
 
@@ -30,6 +31,7 @@ describe('Plugin: auth', () => {
 
         // setup
         const server = Hapi.server();
+        server.register(Logger);
         const PLUGIN_ERROR = 'plugin error';
         HapiAuthJWT.plugin.register = async function() {
             throw new Error(PLUGIN_ERROR);
@@ -49,6 +51,7 @@ describe('Plugin: auth', () => {
         // setup
         const PLUGIN_ERROR = 'JWT_SECRET environment variable is empty';
         const server = Hapi.server();
+        server.register(Logger);
         process.env.JWT_SECRET = '';
 
         // exercise
@@ -157,6 +160,7 @@ describe('Plugin: auth', () => {
         // setup
         const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        server.register(Logger);
         await server.register(Auth);
         server.route(fakeRoute);
 
@@ -171,8 +175,9 @@ describe('Plugin: auth', () => {
 
         // setup
         const invalidJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTkxMjM0MTIzNCwiaWF0IjoxNDczNzA2NzYzLCJleHAiOjE0NzM3MzU1NjN9.xjivOc1Smbf9M8uQHNTBTbcDBavXMjL-0oNxV-yxog0';
-        const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        const server = Hapi.server();
+        server.register(Logger);
         await server.register(Auth);
         server.route(fakeRoute);
 
@@ -196,8 +201,9 @@ describe('Plugin: auth', () => {
         };
 
         // setup
-        const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', handler: () => { } };
+        const server = Hapi.server();
+        server.register(Logger);
         await server.register(Auth);
         Sinon.stub(UserService, 'findById').rejects(NSError.RESOURCE_NOT_FOUND());
         server.route(fakeRoute);
@@ -226,9 +232,10 @@ describe('Plugin: auth', () => {
         };
 
         // setup
-        const server = Hapi.server();
         const fakeRoute = { path: '/', method: 'GET', config: { auth: { scope: 'admin' } }, handler: () => { } };
         const fakeUser = { id: 9999, roles: [{ name: 'user' }] };
+        const server = Hapi.server();
+        server.register(Logger);
         await server.register(Auth);
         server.route(fakeRoute);
         Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);
@@ -258,9 +265,10 @@ describe('Plugin: auth', () => {
 
         // setup
         const payload = 'payload';
-        const server = Hapi.server();
         const fakeUser = { id: 9999, username: 'test', email: 'test@test', roles: [{ name: 'admin' }] };
         const fakeRoute = { path: '/', method: 'GET', config: { auth: { scope: 'admin' } }, handler: () => payload };
+        const server = Hapi.server();
+        server.register(Logger);
         await server.register(Auth);
         server.route(fakeRoute);
         Sinon.stub(UserService, 'findById').withArgs(fakeUser.id).resolves(fakeUser);

@@ -5,6 +5,7 @@ const Hapi = require('hapi');
 const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
 const LoginCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/api/login'));
 const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -18,6 +19,7 @@ describe('API Controller: login', () => {
     beforeEach(() => {
         // make server quiet, 500s are rethrown and logged by default..
         server = Hapi.server({ debug: { log: false, request: false } });
+        server.register(Logger);
         server.route({ method: 'POST', path: '/login', config: { handler: LoginCtrl.login, plugins: { stateless: true } } });
         server.route({ method: 'GET', path: '/logout', config: { handler: LoginCtrl.logout, plugins: { stateless: true } } });
     });

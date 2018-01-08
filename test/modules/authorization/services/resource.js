@@ -9,6 +9,7 @@ const ResourceService = require(Path.join(process.cwd(), 'lib/modules/authorizat
 const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
 const ResourceModel = require(Path.join(process.cwd(), 'lib/models/resource'));
 const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -28,6 +29,7 @@ describe('Service: resource', () => {
         Objection.Model.knex(knex);
 
         const server = Hapi.server();
+        server.register(Logger);
         server.register({ plugin: Repository, options: { models: ['resource', 'permission'] } });
 
         txSpy = Sinon.spy(Repository, 'tx');

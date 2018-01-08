@@ -7,6 +7,7 @@ const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
 const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
 const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));
 const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -24,6 +25,7 @@ describe('Service: authorization', () => {
         Objection.Model.knex(knex);
 
         const server = Hapi.server();
+        server.register(Logger);
         server.register({ plugin: Repository, options: { models: ['user', 'role', 'resource', 'permission'] } });
 
     });

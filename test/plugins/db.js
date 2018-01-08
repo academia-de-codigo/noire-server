@@ -2,9 +2,11 @@ const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Sinon = require('sinon');
+const mock = require('mock-require');
 const Config = require(Path.join(process.cwd(), 'lib/config'));
 const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
-const mock = require('mock-require');
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+
 
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -37,6 +39,7 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await server.register(Database);
@@ -56,6 +59,7 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise and verify
         await expect(server.register(Database)).to.reject(Error, error);
@@ -69,6 +73,7 @@ describe('Plugin: db', () => {
         mock('knex', Sinon.stub());
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise and verify
         await expect(server.register(Database)).to.reject(Error, 'no connection configured');
@@ -82,6 +87,7 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise and verify
         await expect(server.register(Database)).to.reject(Error, 'no database configured');
@@ -96,6 +102,7 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await server.register(Database);
@@ -113,81 +120,10 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await expect(server.register(Database)).to.reject(Error, 'database connection test returned wrong result');
-    });
-
-    it('logs initialization errors', async () => {
-
-        // setup
-        const error = 'fakeError';
-        const knexStub = Sinon.stub().throws(new Error(error));
-        mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
-        const logSpy = Sinon.spy();
-
-        // exercise and verify
-        await expect(Database.plugin.register({ log: logSpy })).to.reject(Error, error);
-        expect(logSpy.called).to.be.true();
-        expect(logSpy.getCall(0).args[0]).to.be.an.array();
-        expect(logSpy.getCall(0).args[0]).to.include('server');
-        expect(logSpy.getCall(0).args[0]).to.include('db');
-        expect(logSpy.getCall(0).args[0]).to.include('error');
-        expect(logSpy.getCall(0).args[1]).to.equals(error);
-    });
-
-    it('logs database connection start', async () => {
-
-        // setup
-        mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
-        const logSpy = Sinon.spy();
-        const mockServer = {
-            log: logSpy,
-            decorate: function() { },
-            ext: function() { }
-        };
-
-        // exercise
-        await Database.plugin.register(mockServer);
-
-        //verify
-        expect(logSpy.called).to.be.true();
-        expect(logSpy.getCall(0).args[0]).to.be.an.array();
-        expect(logSpy.getCall(0).args[0]).to.include('server');
-        expect(logSpy.getCall(0).args[0]).to.include('db');
-        expect(logSpy.getCall(0).args[0]).to.include('start');
-        expect(logSpy.getCall(0).args[1]).to.equals(internals.knexConfig);
-    });
-
-    it('logs database connection stop', async () => {
-
-        // setup
-        mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
-        const logSpy = Sinon.spy();
-        const mockServer = {
-            log: logSpy,
-            decorate: function() { },
-            ext: function(hook, cb) {
-                if (hook !== 'onPreStop') {
-                    return;
-                }
-
-                cb(mockServer);
-            }
-        };
-
-        // exercise
-        await Database.plugin.register(mockServer);
-
-        //verify
-        expect(logSpy.called).to.be.true();
-        expect(logSpy.getCall(0).args[0]).to.be.an.array();
-        expect(logSpy.getCall(0).args[0]).to.include('server');
-        expect(logSpy.getCall(0).args[0]).to.include('db');
-        expect(logSpy.getCall(0).args[0]).to.include('stop');
     });
 
     it('decorates the server with knex and objection', async () => {
@@ -197,7 +133,7 @@ describe('Plugin: db', () => {
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const decorateSpy = Sinon.spy();
         const mockServer = {
-            log: function() { },
+            logger: () => Logger.fake,
             decorate: decorateSpy,
             ext: function() { }
         };
@@ -222,7 +158,7 @@ describe('Plugin: db', () => {
         mock('knex', knexStub);
         const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
         const mockServer = {
-            log: function() { },
+            logger: () => Logger.fake,
             decorate: function() { },
             ext: function(hook, cb) {
                 if (hook !== 'onPostStop') {

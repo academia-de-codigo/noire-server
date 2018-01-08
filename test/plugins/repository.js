@@ -6,6 +6,7 @@ const Objection = require('objection');
 const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
 const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
 const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const Model = Objection.Model;
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
@@ -18,6 +19,7 @@ describe('Plugin: repository', () => {
 
     beforeEach(() => {
         server = Hapi.server();
+        server.register(Logger);
     });
 
     afterEach(() => {
@@ -74,38 +76,12 @@ describe('Plugin: repository', () => {
         expect(() => Repository.create('invalid')).to.throw();
     });
 
-    it('logs repository creation', async () => {
-
-        // setup
-        const options = { models: ['user', 'role'] };
-        const logSpy = Sinon.spy();
-        const fakeServer = { log: logSpy, decorate: function() { } };
-
-        // exercise
-        await Repository.plugin.register(fakeServer, options);
-
-        // validate
-        expect(logSpy.calledTwice).to.be.true();
-        expect(logSpy.getCall(0).args[0]).to.be.an.array();
-        expect(logSpy.getCall(0).args[0]).to.include('server');
-        expect(logSpy.getCall(0).args[0]).to.include('db');
-        expect(logSpy.getCall(0).args[0]).to.include('model');
-        expect(logSpy.getCall(0).args[0]).to.include('debug');
-        expect(logSpy.getCall(0).args[1]).to.equals(options.models[0]);
-        expect(logSpy.getCall(1).args[0]).to.be.an.array();
-        expect(logSpy.getCall(1).args[0]).to.include('server');
-        expect(logSpy.getCall(1).args[0]).to.include('db');
-        expect(logSpy.getCall(1).args[0]).to.include('model');
-        expect(logSpy.getCall(1).args[0]).to.include('debug');
-        expect(logSpy.getCall(1).args[1]).to.equals(options.models[1]);
-    });
-
     it('decorates server with repositories', async () => {
 
         // setup
         const options = { models: ['user', 'role'] };
         const decorateSpy = Sinon.spy();
-        const fakeServer = { log: function() { }, decorate: decorateSpy };
+        const fakeServer = { logger: () => Logger.fake, decorate: decorateSpy };
 
         // exercise
         await Repository.plugin.register(fakeServer, options);
@@ -397,6 +373,7 @@ describe('Plugin: repository', () => {
         // setup
         const options = { models: ['user'] };
         const server = Hapi.server();
+        server.register(Logger);
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
         const fakeQuery = 'a fake query stub';
@@ -415,6 +392,7 @@ describe('Plugin: repository', () => {
         const error = 'error';
         const options = { models: ['user'] };
         const server = Hapi.server();
+        server.register(Logger);
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
         queryStub = Sinon.stub(Model, 'query').rejects(new Error(error));
@@ -428,6 +406,7 @@ describe('Plugin: repository', () => {
         // setup
         const options = { models: ['user', 'role'] };
         const server = Hapi.server();
+        server.register(Logger);
         await server.register({ plugin: Repository, options });
         txStub = Sinon.stub(Objection, 'transaction');
         txStub.withArgs(UserModel, RoleModel, Sinon.match.func).callsFake((userModel, roleModel, cb) => {
@@ -449,6 +428,7 @@ describe('Plugin: repository', () => {
         const error = 'error';
         const options = { models: ['user', 'role'] };
         const server = Hapi.server();
+        server.register(Logger);
         await server.register({ plugin: Repository, options });
         txStub = Sinon.stub(Objection, 'transaction');
         txStub.throws(new Error(error));

@@ -4,6 +4,7 @@ const Sinon = require('sinon');
 const Hapi = require('hapi');
 const AuthorizationController = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/authorization'));
 const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -20,8 +21,9 @@ describe('Controller: Authorization', () => {
 
     beforeEach(() => {
 
-        server = Hapi.server();
         authorizationStub = Sinon.stub(AuthorizationService, 'canUser');
+        server = Hapi.server();
+        server.register(Logger);
     });
 
     afterEach(() => {
