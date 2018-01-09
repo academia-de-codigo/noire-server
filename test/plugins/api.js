@@ -4,6 +4,7 @@ const mock = require('mock-require');
 const Hapi = require('hapi');
 const Api = require(Path.join(process.cwd(), 'lib/plugins/api'));
 const Package = require(Path.join(process.cwd(), 'package.json'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { after, describe, expect, it } = exports.lab = Lab.script();
 
@@ -32,6 +33,7 @@ describe('Plugin: api', () => {
         mock(Path.join(process.cwd(), 'lib/routes/api'), fakeRouteConfig);
         const Api = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/api'));
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await server.register(Api);
@@ -47,6 +49,7 @@ describe('Plugin: api', () => {
 
         // setup
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await server.register(Api);

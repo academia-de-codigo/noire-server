@@ -5,6 +5,7 @@ const Path = require('path');
 const Handlebars = require('handlebars');
 const Package = require(Path.join(process.cwd(), 'package.json'));
 const Views = require(Path.join(process.cwd(), 'lib/plugins/views'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -31,13 +32,17 @@ describe('Plugin: views', () => {
     beforeEach(async () => {
 
         server = Hapi.server();
+        server.register(Logger);
         await server.register(Views);
     });
 
     it('registers the vision plugin', async () => {
 
-        // exercise
+        // setup
         server = Hapi.server();
+        server.register(Logger);
+
+        // exercise
         await server.register(Views);
 
         // validate

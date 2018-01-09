@@ -2,6 +2,7 @@ const Lab = require('lab');
 const Hapi = require('hapi');
 const Path = require('path');
 const Csrf = require(Path.join(process.cwd(), 'lib/plugins/csrf'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -12,6 +13,7 @@ describe('Plugin: csrf', () => {
     beforeEach(async () => {
 
         server = Hapi.server();
+        server.register(Logger);
         await server.register(Csrf);
     });
 
@@ -48,6 +50,7 @@ describe('Plugin: csrf', () => {
 
         // setup
         const server = Hapi.server({ app: { name: 'api' } });
+        server.register(Logger);
         await server.register(Csrf);
 
         // exercise

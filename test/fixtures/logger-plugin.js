@@ -4,7 +4,8 @@ const internals = {};
 internals.logger = {
     info: () => { },
     debug: () => { },
-    error: () => { }
+    error: () => { },
+    child: () => internals.logger
 };
 
 const register = async function(server) {

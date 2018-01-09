@@ -5,6 +5,7 @@ const Joi = require('joi');
 const Errors = require(Path.join(process.cwd(), 'lib/plugins/route-errors'));
 const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
 const Auth = require(Path.join(process.cwd(), 'test/fixtures/auth-plugin'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -15,6 +16,7 @@ describe('Plugin: route-errors', () => {
     beforeEach(async () => {
 
         server = Hapi.server();
+        server.register(Logger);
         await server.register(Errors);
     });
 

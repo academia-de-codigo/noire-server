@@ -3,6 +3,7 @@ const Hapi = require('hapi');
 const Lab = require('lab'); // the test framework
 const Inert = require('inert');
 const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -19,6 +20,7 @@ describe('Plugin: assets', () => {
                 }
             }
         });
+        server.register(Logger);
         await server.register(Assets);
     });
 

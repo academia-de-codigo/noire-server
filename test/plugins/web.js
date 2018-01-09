@@ -4,6 +4,7 @@ const Sinon = require('sinon');
 const mock = require('mock-require');
 const Hapi = require('hapi');
 const Package = require(Path.join(process.cwd(), 'package.json'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { before, after, describe, expect, it } = exports.lab = Lab.script();
 
@@ -39,6 +40,7 @@ describe('Plugin: web', () => {
         const server = Hapi.server();
         const viewsSpy = Sinon.spy();
         server.decorate('server', 'views', viewsSpy);
+        server.register(Logger);
 
         // exercise
         await server.register([fakeViewsPlugin, Web]);
@@ -57,6 +59,7 @@ describe('Plugin: web', () => {
             }
         };
         const server = Hapi.server();
+        server.register(Logger);
 
         // exercise
         await server.register([fakeViewsPlugin, Web]);

@@ -5,6 +5,7 @@ const Vision = require('vision');
 const Inert = require('inert');
 const Lout = require('lout');
 const Docs = require(Path.join(process.cwd(), 'lib/plugins/docs'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { describe, expect, it } = exports.lab = Lab.script();
 
@@ -71,6 +72,7 @@ describe('Plugin: docs', () => {
 
         // setup
         const server = Hapi.server();
+        server.register(Logger);
         await server.register(Docs);
         await server.initialize();
 

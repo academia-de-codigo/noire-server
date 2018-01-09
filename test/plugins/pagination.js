@@ -1,6 +1,8 @@
 const Lab = require('lab');
 const Hapi = require('hapi');
-const Pagination = require('hapi-pagination');
+const Path = require('path');
+const Pagination = require(Path.join(process.cwd(), 'lib/plugins/pagination'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -11,6 +13,7 @@ describe('Plugin: pagination', () => {
     beforeEach(async () => {
 
         server = Hapi.server();
+        server.register(Logger);
     });
 
     it('registers the hapi-pagination plugin', async () => {

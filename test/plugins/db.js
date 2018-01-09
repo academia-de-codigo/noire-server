@@ -7,7 +7,6 @@ const Config = require(Path.join(process.cwd(), 'lib/config'));
 const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
 const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-
 const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
 const internals = {};

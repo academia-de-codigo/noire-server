@@ -4,6 +4,7 @@ const Path = require('path');
 const Url = require('url');
 const Config = require(Path.join(process.cwd(), 'lib/config'));
 const Redirect = require(Path.join(process.cwd(), 'lib/plugins/redirect'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
 const { after, before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
@@ -55,6 +56,8 @@ describe('Plugin: redirect', () => {
 
         web = Hapi.server({ app: { name: 'web' } });
         webTls = Hapi.server({ app: { name: 'webTls' } });
+        web.register(Logger);
+        webTls.register(Logger);
 
         await web.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin] } });
         await webTls.register({ plugin: Redirect, options: { tlsRoutes: [Config.prefixes.admin] } });
@@ -169,6 +172,7 @@ describe('Plugin: redirect', () => {
 
         // setup
         const server = Hapi.server({ app: { name: 'api' } });
+        server.register(Logger);
         await server.register({ plugin: Redirect, options: { tlsRoutes: [] } });
 
         // exercise
