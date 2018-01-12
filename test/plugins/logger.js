@@ -18,8 +18,6 @@ describe('Plugin: logger', () => {
 
     it('registers the hapi-pino plugin', async () => {
 
-        console.log('?: ', server.events.hasListeners('route'));
-
         // exercise
         await server.register(Logger);
 

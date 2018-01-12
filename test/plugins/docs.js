@@ -75,9 +75,13 @@ describe('Plugin: docs', () => {
         server.register(Logger);
         await server.register(Docs);
         await server.initialize();
+        server.route({ method: 'GET', path: '/', handler: () => { } });
 
         // exercise
-        const response = await server.inject('/docs');
+        const response = await server.inject({
+            method: 'GET',
+            url: '/docs'
+        });
 
         // validate
         expect(response.statusCode).to.equal(200);
