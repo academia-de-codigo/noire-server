@@ -46,6 +46,7 @@ describe('Plugin: views', () => {
         await server.register(Views);
 
         // validate
+        expect(server.registrations.vision).to.be.an.object();
         expect(server.decorations.toolkit).to.contains('view');
     });
 
