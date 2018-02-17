@@ -397,7 +397,7 @@ describe('Service: user', () => {
         cryptStub = Sinon.stub(Auth, 'crypt').rejects(NSError.AUTH_CRYPT_ERROR());
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR().messsage);
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR().message);
     });
 
     it('does not add a user with the same email as existing user', async () => {
