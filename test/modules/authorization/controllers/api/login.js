@@ -115,8 +115,8 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(response.headers.authorization).to.exist();
-        expect(response.headers.authorization).to.equals(token);
+        expect(response.headers['server-authorization']).to.exist();
+        expect(response.headers['server-authorization']).to.equals(token);
     });
 
     it('stores token in cookie if statefull login', async (flags) => {
