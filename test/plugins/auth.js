@@ -128,7 +128,7 @@ describe('Plugin: auth', () => {
         const fakeId = 9999;
 
         // exercise
-        const jwt = await Auth.getToken(fakeId, true);
+        const jwt = await Auth.getToken(fakeId, false);
 
         // validate
         JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
