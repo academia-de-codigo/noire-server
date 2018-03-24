@@ -1,5 +1,5 @@
 {
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "prettier"],
     "parserOptions": {
         "ecmaVersion": 2017,
         "ecmaFeatures": {
@@ -13,29 +13,42 @@
     "globals": {},
     "rules": {
         "strict": [2, "global"],
-        "indent": ["error", 4, {
-            "SwitchCase": 1
-        }],
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
         "linebreak-style": ["error", "unix"],
         "semi": [2, "always"],
         "quotes": [2, "single", "avoid-escape"],
         "eqeqeq": [2, "smart"],
         "brace-style": [2, "1tbs"],
-        "space-before-function-paren": ["error", {
-            "anonymous": "never",
-            "named": "never",
-            "asyncArrow": "always"
-        }],
+        "space-before-function-paren": [
+            "error",
+            {
+                "anonymous": "never",
+                "named": "never",
+                "asyncArrow": "always"
+            }
+        ],
         "space-before-blocks": [1, "always"],
         "no-console": "off",
-        "key-spacing": [2, {
-            "beforeColon": false,
-            "afterColon": true,
-            "mode": "minimum"
-        }],
-        "new-cap": [2, {
-            "properties": false
-        }]
+        "key-spacing": [
+            2,
+            {
+                "beforeColon": false,
+                "afterColon": true,
+                "mode": "minimum"
+            }
+        ],
+        "new-cap": [
+            2,
+            {
+                "properties": false
+            }
+        ]
     },
     "plugins": []
 }
