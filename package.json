@@ -16,8 +16,8 @@
         "token": "node lib/utils/auth.js token",
         "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
         "webpack": "webpack --hide-modules true --config webpack/webpack.dev.js",
-        "webpack:watch": "webpack --config webpack.config.js --watch",
-        "build": "npm run clean; npm run semantic; npm run webpack",
+        "webpack:prod": "webpack --config webpack/webpack.prod.js",
+        "build": "npm run clean; npm run semantic; npm run webpack:prod",
         "clean": "rm -rf client/dist/; rm -rf client/semantic/dist"
     },
     "repository": {
@@ -66,18 +66,23 @@
         "form-serializer": "^2.5.0",
         "glob": "^7.1.2",
         "gulp": "^3.9.1",
+        "html-minifier": "^3.5.13",
+        "html-webpack-plugin": "^3.2.0",
         "imports-loader": "^0.8.0",
         "jquery": "^3.3.1",
         "lab": "^15.4.1",
         "mini-css-extract-plugin": "^0.4.0",
         "mock-require": "^3.0.1",
+        "optimize-css-assets-webpack-plugin": "^4.0.0",
         "prettier": "^1.11.1",
         "prettier-eslint": "^8.8.1",
         "semantic-ui": "^2.3.1",
         "sinon": "^4.4.8",
         "style-loader": "^0.20.3",
+        "uglifyjs-webpack-plugin": "^1.2.4",
         "url-loader": "^1.0.1",
         "webpack": "4.4.1",
-        "webpack-cli": "^2.0.13"
+        "webpack-cli": "^2.0.13",
+        "webpack-merge": "^4.1.2"
     }
 }
