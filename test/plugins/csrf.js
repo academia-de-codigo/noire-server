@@ -1,166 +1,120 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var Promise = require('bluebird');
-var Path = require('path');
-var Exiting = require('exiting');
-var Manager = require('../../lib/manager');
-var Config = require('../../lib/config');
-var Csrf = require('../../lib/plugins/csrf');
-var UserService = require('../../lib/services/user');
+const Lab = require('lab');
+const Hapi = require('hapi');
+const Path = require('path');
+const Csrf = require(Path.join(process.cwd(), 'lib/plugins/csrf'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
+describe('Plugin: csrf', () => {
 
-var internals = {};
-internals.manifest = {
-    connections: [{
-        host: 'localhost',
-        port: 0,
-    }],
-    registrations: [{
-        plugin: '../test/fixtures/auth-plugin'
-    }, {
-        plugin: './plugins/views'
-    }, {
-        plugin: './plugins/web-tls'
-    }, {
-        plugin: './plugins/csrf'
-    }]
-};
+    let server;
 
-internals.user = {
-    'id': 0,
-    'username': 'test',
-    'email': 'test@gmail.com',
-    'password': 'test'
-};
+    beforeEach(async () => {
 
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
-
-describe('Plugin: csrf', function() {
-
-    before(function(done) {
-
-        // created using npm run token
-        internals.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
-
-        Exiting.reset();
-        done();
+        server = Hapi.server();
+        server.register(Logger);
+        await server.register(Csrf);
     });
 
-    afterEach(function(done) {
+    it('handles crumb plugin registration failure', async (flags) => {
 
-        // Manager might not be properly stopped when tests fail
-        if (Manager.getState() === 'started') {
-            Manager.stop(done);
-        } else {
-            done();
-        }
-
-    });
-
-    it('handle crumb plugin registration failure', function(done) {
-
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {};
-
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
+        // cleanup
+        let csrfRegister = Csrf.plugin.register;
+        flags.onCleanup = function() {
+            Csrf.plugin.register = csrfRegister;
         };
 
-        Csrf.register(fakeServer, null, function(error) {
+        // setup
+        const server = Hapi.server();
+        const PLUGIN_ERROR = 'plugin error';
+        Csrf.plugin.register = async function() {
+            throw new Error(PLUGIN_ERROR);
+        };
 
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-        });
+        // exercise and validate
+        await expect(server.register(Csrf)).to.reject(PLUGIN_ERROR);
     });
 
-    it('returns valid crumb', function(done) {
+    it('does not serve crumb endpoint if not api server', async () => {
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // exercise
+        const response = await server.inject('/generate');
 
-            expect(err).to.not.exists();
-
-            server.inject('/generate', function(response) {
-
-                expect(response.statusCode).to.equals(200);
-                expect(response.payload).to.be.a.string();
-                expect(JSON.parse(response.payload)).to.be.an.object();
-                expect(JSON.parse(response.payload).crumb).to.be.a.string();
-                Manager.stop(done);
-
-            });
-        });
+        // validate
+        expect(response.statusCode).to.equals(404);
+        expect(response.statusMessage).to.equals('Not Found');
     });
 
-    it('errors on missing crumb headers', function(done) {
+    it('serves crumb endpoint if api server', async () => {
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const server = Hapi.server({ app: { name: 'api' } });
+        server.register(Logger);
+        await server.register(Csrf);
 
-            expect(err).to.not.exists();
+        // exercise
+        const response = await server.inject('/generate');
 
-            server.inject({
-                method: 'POST',
-                url: Config.prefixes.login,
-                payload: {
-                    username: internals.user.username,
-                    password: internals.user.password
-                }
-            }, function(response) {
-
-                expect(response.statusCode).to.equals(403);
-                expect(response.statusMessage).to.equals('Forbidden');
-                Manager.stop(done);
-
-            });
-        });
+        // validate
+        expect(response.statusCode).to.equals(200);
+        expect(response.payload).to.be.a.string();
+        expect(JSON.parse(response.payload)).to.be.an.object();
+        expect(JSON.parse(response.payload).crumb).to.be.a.string();
     });
 
-    it('success if crumb headers present', function(done) {
+    it('handles missing crumb headers on post request', async () => {
 
-        var authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(internals.user.username, internals.user.password).returns(Promise.resolve(internals.token));
+        // setup
+        const fakeRoute = { path: '/login', method: 'POST', handler: () => { } };
+        server.route(fakeRoute);
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
-
-            expect(err).to.not.exists();
-
-            server.inject('/generate', function(response) {
-
-                var crumb = JSON.parse(response.payload).crumb;
-                server.inject({
-                    method: 'POST',
-                    url: Config.prefixes.login,
-                    payload: {
-                        username: internals.user.username,
-                        password: internals.user.password
-                    },
-                    headers: {
-                        'x-csrf-token': crumb,
-                        cookie: 'crumb=' + crumb
-                    }
-                }, function(response) {
-
-                    expect(UserService.authenticate.calledOnce).to.be.true();
-                    expect(response.statusCode).to.equals(200);
-
-                    authenticateStub.restore();
-                    Manager.stop(done);
-                });
-
-            });
-
+        // exercise
+        const response = await server.inject({
+            method: fakeRoute.method,
+            url: fakeRoute.path
         });
+
+        // validate
+        expect(response.statusCode).to.equals(403);
+        expect(response.statusMessage).to.equals('Forbidden');
     });
 
+    it('accepts post if crumb headers are valid', async () => {
+
+        // setup
+        const payload = 'payload';
+        const fakeCrumb = 'crumb';
+        const fakeRoute = { path: '/login', method: 'POST', handler: () => payload };
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject({
+            method: fakeRoute.method,
+            url: fakeRoute.path,
+            headers: { cookie: 'crumb=' + fakeCrumb, 'x-csrf-token': fakeCrumb }
+        });
+
+        // validate
+        expect(response.statusCode).to.equals(200);
+        expect(response.result).to.equals(payload);
+    });
+
+    it('does not accept post if crumb headers are invalid', async () => {
+
+        // setup
+        const fakeRoute = { path: '/login', method: 'POST', handler: () => { } };
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject({
+            method: fakeRoute.method,
+            url: fakeRoute.path,
+            headers: { cookie: 'crumb=valid', 'x-csrf-token': 'invalid' }
+        });
+
+        // validate
+        expect(response.statusCode).to.equals(403);
+        expect(response.statusMessage).to.equals('Forbidden');
+    });
 });

@@ -1,426 +1,439 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Sinon = require('sinon');
-var Objection = require('objection');
-var Repository = require('../../lib/plugins/repository');
-var UserModel = require('../../lib/models/user');
-var RoleModel = require('../../lib/models/role');
+const Path = require('path');
+const Hapi = require('hapi');
+const Lab = require('lab');
+const Sinon = require('sinon');
+const Objection = require('objection');
+const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
+const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
+const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-var Model = Objection.Model;
-var lab = exports.lab = Lab.script(); // export the test script
+const Model = Objection.Model;
+const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
+describe('Plugin: repository', () => {
 
-describe('Plugin: repository', function() {
+    let server;
+    let queryStub;
+    let txStub;
 
-    afterEach(function(done) {
+    beforeEach(() => {
+        server = Hapi.server();
+        server.register(Logger);
+    });
+
+    afterEach(() => {
+
         delete Repository.user;
         delete Repository.role;
-        done();
-    });
 
-    it('should create a repository object for each model present in configuration', function(done) {
+        // make sure no stubs are left in the event of unit test failure
 
-        var options = {
-            models: ['user', 'role']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            expect(Repository['user']).to.be.an.object();
-            expect(Repository['user'].model).to.equals(UserModel);
-            expect(Repository['role']).to.be.an.object();
-            expect(Repository['role'].model).to.equals(RoleModel);
-            done();
-        });
-    });
-
-    it('sould create a repository object for a specific model', function(done) {
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, {}, function() {
-
-            Repository.create('user');
-            expect(Repository['user']).to.be.an.object();
-            expect(Repository['user'].model).to.equals(UserModel);
-            done();
-        });
-    });
-
-    it('should log repository creation', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function(tags, model) {
-                expect(tags).to.be.an.array();
-                expect(tags).to.contains('server');
-                expect(tags).to.contains('db');
-                expect(tags).to.contains('model');
-                expect(tags).to.contains('debug');
-                expect(model).to.equals(options.models[0]);
-            },
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-            done();
-        });
-    });
-
-    it('should decorate server with repositories', function(done) {
-
-        var options = {
-            models: ['user', 'role']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function(type, property, value) {
-                expect(type).to.equals('server');
-                expect(property).to.equals('models');
-                expect(value).to.be.an.object();
-                expect(value['user'].model).to.equals(UserModel);
-                expect(value['role'].model).to.equals(RoleModel);
-            }
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            done();
-        });
-    });
-
-    it('should return records within limit with no args', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    limit: Sinon.stub().withArgs(1).callsFake(function() {
-                        return {
-                            offset: Sinon.stub().withArgs(2).callsFake(function() {
-                                return {
-                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
-                                };
-                            })
-                        };
-                    })
-                };
-            });
-
-            expect(repo.findAll()).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
+        if (queryStub && queryStub.restore) {
             queryStub.restore();
-            done();
+        }
+
+        if (txStub && txStub.restore) {
+            txStub.restore();
+        }
+    });
+
+    it('creates a repository object for each model present in configuration', async () => {
+
+        // setup
+        const options = { models: ['user', 'role'] };
+
+        // exercise
+        await server.register({ plugin: Repository, options });
+
+        // validate
+        expect(Repository['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(Repository['user'].model).to.equals(UserModel);
+        expect(Repository['role']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(Repository['role'].model).to.equals(RoleModel);
+    });
+
+    it('creates a repository object for a specific model', async () => {
+
+        // exercise
+        await server.register(Repository);
+        const repository = Repository.create('user');
+
+        // validate
+        expect(repository).to.be.an.instanceof(Repository.ModelRepository);
+        expect(Repository['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(repository).to.equals(Repository['user']);
+        expect(repository.model).to.equals(UserModel);
+    });
+
+    it('throws error when creating a repository for invalid model', async () => {
+
+        // exercise
+        await server.register(Repository);
+
+        // validate
+        // code requires a function as argument to assert exception
+        expect(() => Repository.create('invalid')).to.throw();
+    });
+
+    it('decorates server with repositories', async () => {
+
+        // setup
+        const options = { models: ['user', 'role'] };
+        const decorateSpy = Sinon.spy();
+        const fakeServer = { logger: () => Logger.fake, decorate: decorateSpy };
+
+        // exercise
+        await Repository.plugin.register(fakeServer, options);
+
+        // validate
+        expect(decorateSpy.calledOnce).to.be.true();
+        expect(decorateSpy.getCall(0).args[0]).to.equals('server');
+        expect(decorateSpy.getCall(0).args[1]).to.equals('models');
+        expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
+        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['user'].model).to.equals(UserModel);
+        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['role'].model).to.equals(RoleModel);
+    });
+
+    it('returns a specific record', async () => {
+
+        // setup
+        const fakeUser = { id: 1 };
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const findByIdStub = Sinon.stub().withArgs(fakeUser.id).resolves(fakeUser);
+        queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
+
+        // exercise
+        const user = await userRepository.findOne(fakeUser.id);
+
+        // validate
+        expect(queryStub.calledOnce).to.be.true();
+        expect(findByIdStub.calledOnce).to.be.true();
+        expect(user).to.equals(fakeUser);
+    });
+
+    it('handles error when querying for specific record', async () => {
+
+        // setup
+        const error = 'error';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const findByIdStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
+
+        // exercise and validate
+        await expect(userRepository.findOne(1)).to.reject(Error, error);
+    });
+
+    it('returns all records within limit', async () => {
+
+        // setup
+        const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
+        limitStub.withArgs(UserModel.LIMIT_DEFAULT).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs().returns({ modify: modifyStub });
+        modifyStub.resolves(fakeUsers);
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+
+        // exercise
+        const user = await userRepository.findAll();
+
+        // validate
+        expect(queryStub.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(user).to.equals(fakeUsers);
+    });
+
+    it('returns records within limit with a criteria object', async () => {
+
+        // setup
+        const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const fakeCriteria = { limit: 2, page: 2, sort: 'field1,-field2,+field3', search: 'fakesearch' };
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const limitStub = Sinon.stub();
+        const offsetStub = Sinon.stub();
+        const orderByStub = Sinon.stub();
+        const searchStub = Sinon.stub();
+        const modifyStub = Sinon.stub();
+        limitStub.withArgs(fakeCriteria.limit).returns({ offset: offsetStub });
+        offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
+        searchStub.withArgs(fakeCriteria.search).returns({ modify: modifyStub });
+        orderByStub.withArgs('field1', 'asc').returns();
+        orderByStub.withArgs('field2', 'desc').returns();
+        orderByStub.withArgs('field3', 'asc').returns();
+        modifyStub.callsFake((cb) => {
+            cb({ orderBy: orderByStub });
+            return fakeUsers;
+        });
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+        limitStub.throws(new Error('wrong limit criteria'));
+        offsetStub.throws(new Error('wrong offset criteria'));
+        orderByStub.throws(new Error('wrong orderby criteria'));
+        searchStub.throws(new Error('wrong search criteria'));
+
+        // exercise
+        const user = await userRepository.findAll(fakeCriteria);
+
+        // validate
+        expect(queryStub.calledOnce).to.be.true();
+        expect(limitStub.calledOnce).to.be.true();
+        expect(offsetStub.calledOnce).to.be.true();
+        expect(searchStub.calledOnce).to.be.true();
+        expect(orderByStub.calledThrice).to.be.true();
+        expect(user).to.equals(fakeUsers);
+    });
+
+    it('handles error when querying for all records', async () => {
+
+        // setup
+        const error = 'error';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const modifyStub = Sinon.stub().rejects(new Error(error));
+        const searchStub = Sinon.stub().returns({ modify: modifyStub });
+        const offsetStub = Sinon.stub().returns({ search: searchStub });
+        const limitStub = Sinon.stub().returns({ offset: offsetStub });
+        queryStub = Sinon.stub(Model, 'query').returns({ limit: limitStub });
+
+        // exercise and validate
+        await expect(userRepository.findAll()).to.reject(Error, error);
+    });
+
+    it('inserts a new record', async () => {
+
+        // setup
+        const fakeUser = 'a fake user';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const insertStub = Sinon.stub();
+        insertStub.withArgs(fakeUser).resolves();
+        insertStub.rejects(new Error('invalid insert query'));
+        queryStub = Sinon.stub(Model, 'query').returns({ insert: insertStub });
+
+        // exercise
+        await userRepository.add(fakeUser);
+
+        // validate
+        expect(queryStub.calledOnce).to.be.true();
+        expect(insertStub.calledOnce).to.be.true();
+    });
+
+    it('handles error inserting new record', async () => {
+
+        // setup
+        const error = 'error';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const insertStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ insert: insertStub });
+
+        // exercise and validate
+        await expect(userRepository.add('user')).to.reject(Error, error);
+    });
+
+    it('updates an existing record', async () => {
+
+        // setup
+        const fakeUser = { $query: Sinon.stub() };
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const updateStub = Sinon.stub().resolves();
+        fakeUser.$query.returns({ updateAndFetch: updateStub });
+
+        // exercise
+        await userRepository.update(fakeUser);
+
+        // validate
+        expect(fakeUser.$query.calledOnce).to.be.true();
+        expect(updateStub.calledOnce).to.be.true();
+    });
+
+    it('handles error updating an exiting record', async () => {
+
+        // setup
+        const fakeUser = { $query: Sinon.stub() };
+        const error = 'error';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const updateStub = Sinon.stub().rejects(new Error(error));
+        fakeUser.$query.returns({ updateAndFetch: updateStub });
+
+        // exercise and validate
+        await expect(userRepository.update(fakeUser)).to.reject(Error, error);
+    });
+
+    it('removes an existing record', async () => {
+        // setup
+        const fakeId = 1;
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const deleteByIdStub = Sinon.stub();
+        deleteByIdStub.withArgs(fakeId).resolves();
+        deleteByIdStub.rejects(new Error('invalid query'));
+        queryStub = Sinon.stub(Model, 'query').returns({ deleteById: deleteByIdStub });
+
+        // exercise
+        await userRepository.remove(fakeId);
+
+        // validate
+        expect(deleteByIdStub.calledOnce).to.be.true();
+        expect(queryStub.calledOnce).to.be.true();
+        expect(deleteByIdStub.calledOnce).to.be.true();
+    });
+
+    it('handles error removing an exiting record', async () => {
+
+        // setup
+        const error = 'error';
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const deleteByIdStub = Sinon.stub().rejects(new Error(error));
+        queryStub = Sinon.stub(Model, 'query').returns({ deleteById: deleteByIdStub });
+
+        // exercise and validate
+        await expect(userRepository.remove(1)).to.reject(Error, error);
+    });
+
+    it('counts the number of records', async () => {
+
+        // setup
+        const fakeUserCount = 5;
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const firstStub = Sinon.stub().resolves(fakeUserCount);
+        const countStub = Sinon.stub().returns({ first: firstStub });
+        queryStub = Sinon.stub(Model, 'query').returns({ count: countStub });
+
+        // exercise
+        const userCount = await userRepository.count();
+
+        // exercise and validate
+        expect(firstStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(queryStub.calledOnce).to.be.true();
+        expect(userCount).to.equals(fakeUserCount);
+    });
+
+    it('counts the number of records with search criteria', async () => {
+
+        // setup
+        const fakeUserCount = 5;
+        const fakeCriteria = { search: 'fakesearch' };
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+
+        const firstStub = Sinon.stub().resolves(fakeUserCount);
+        const asStub = Sinon.stub().withArgs(Sinon.match.string).returns();
+        const fromStub = Sinon.stub();
+        const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
+        const searchStub = Sinon.stub().withArgs(fakeCriteria.search).returns({ as: asStub });
+        queryStub = Sinon.stub(Model, 'query').onCall(0).returns({ count: countStub });
+        queryStub.onCall(1).returns({ search: searchStub });
+
+        // exercise
+        const userCount = await userRepository.count(fakeCriteria);
+
+        // exercise and validate
+        expect(firstStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(fromStub.calledOnce).to.be.true();
+        expect(asStub.calledOnce).to.be.true();
+        expect(queryStub.calledTwice).to.be.true();
+        expect(userCount).to.equals(fakeUserCount);
+    });
+
+
+    it('creates a query for a model', async () => {
+        // setup
+        const options = { models: ['user'] };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        const fakeQuery = 'a fake query stub';
+        queryStub = Sinon.stub(Model, 'query').returns(fakeQuery);
+
+        // exercise
+        const modelQuery = await userRepository.query();
+
+        // validate
+        expect(queryStub.calledOnce).to.be.true();
+        expect(modelQuery).to.equals(fakeQuery);
+    });
+
+    it('handles error creating a query for a model', async () => {
+        // setup
+        const error = 'error';
+        const options = { models: ['user'] };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['user'];
+        queryStub = Sinon.stub(Model, 'query').rejects(new Error(error));
+
+        // exercise and validate
+        await expect(userRepository.query()).to.reject(Error, error);
+    });
+
+    it('obtains transaction repositories from models', async () => {
+
+        // setup
+        const options = { models: ['user', 'role'] };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register({ plugin: Repository, options });
+        txStub = Sinon.stub(Objection, 'transaction');
+        txStub.withArgs(UserModel, RoleModel, Sinon.match.func).callsFake((userModel, roleModel, cb) => {
+            cb(userModel, roleModel);
+        }).resolves();
+
+        // exercise
+        Repository.tx(UserModel, RoleModel, (userTxRepo, roleTxRepo) => {
+
+            // validate
+            expect(userTxRepo.model).to.equals(Repository['user'].model);
+            expect(roleTxRepo.model).to.equals(Repository['role'].model);
         });
     });
 
-    it('should return records within limit with a criteria object', function(done) {
+    it('handles errors obtaining transaction repositories from models', async () => {
 
-        var options = {
-            models: ['user']
-        };
+        // setup
+        const error = 'error';
+        const options = { models: ['user', 'role'] };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register({ plugin: Repository, options });
+        txStub = Sinon.stub(Objection, 'transaction');
+        txStub.throws(new Error(error));
 
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var criteria = {};
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    limit: Sinon.stub().withArgs(1).callsFake(function() {
-                        return {
-                            offset: Sinon.stub().withArgs(2).callsFake(function() {
-                                return {
-                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
-                                };
-                            })
-                        };
-                    })
-                };
-            });
-
-            expect(repo.findAll(criteria)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should return records within limit with a number as criteria', function(done) {
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-        Repository.register(fakeServer, options, function() {
-
-            var criteria = 1;
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    limit: Sinon.stub().withArgs(1).callsFake(function() {
-                        return {
-                            offset: Sinon.stub().withArgs(2).callsFake(function() {
-                                return {
-                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
-                                };
-                            })
-                        };
-                    })
-                };
-            });
-
-            expect(repo.findAll(criteria)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should return records ordered by a column with a string as criteria', function(done) {
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-        Repository.register(fakeServer, options, function() {
-
-            var criteria = 'column';
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    limit: Sinon.stub().withArgs(1).callsFake(function() {
-                        return {
-                            offset: Sinon.stub().withArgs(2).callsFake(function() {
-                                return {
-                                    orderBy: Sinon.stub().withArgs(1).returns(fakePromise)
-                                };
-                            })
-                        };
-                    })
-                };
-            });
-
-            expect(repo.findAll(criteria)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should return a specific record', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var id = 1;
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    findById: Sinon.stub().withArgs(1).returns(fakePromise)
-                };
-            });
-
-            expect(repo.findOne(id)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should insert a new record', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var fakeUser = {
-                name: 'name'
-            };
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    insert: Sinon.stub().withArgs(fakeUser).returns(fakePromise)
-                };
-            });
-
-            expect(repo.add(fakeUser)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should update an existing record', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var fakeUser = {
-                $query: function() {
-
-                    expect(arguments.length).to.equals(0);
-                    return {
-                        updateAndFetch: Sinon.stub().withArgs().returns(fakePromise)
-                    };
-                }
-            };
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-
-            expect(repo.update(fakeUser)).to.equals(fakePromise);
-            done();
-        });
-    });
-
-    it('should remove a specific record', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var id = 1;
-            var fakePromise = 'a fake promise';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return {
-                    deleteById: Sinon.stub().withArgs(1).returns(fakePromise)
-                };
-            });
-
-            expect(repo.remove(id)).to.equals(fakePromise);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should perform any knex query', function(done) {
-
-        var options = {
-            models: ['user']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        Repository.register(fakeServer, options, function() {
-
-            var fakeQueryBuilder = 'a fake query builder';
-            var repo = Repository['user'];
-            var queryStub = Sinon.stub(Model, 'query').callsFake(function() {
-                return fakeQueryBuilder;
-            });
-
-            expect(repo.query()).to.equals(fakeQueryBuilder);
-            Sinon.assert.calledOnce(queryStub);
-            queryStub.restore();
-            done();
-        });
-    });
-
-    it('should obtain transaction repositories from models', function(done) {
-
-        var options = {
-            models: ['user', 'role']
-        };
-
-        var fakeServer = {
-            log: function() {},
-            decorate: function() {}
-        };
-
-        var fakeTxUserRepo = 'fake tx user repo';
-        var fakeTxRoleRepo = 'fake tx role repo';
-
-        var txStub = Sinon.stub(Objection, 'transaction').callsFake(function(userModel, roleModel, cb) {
-            cb(fakeTxUserRepo, fakeTxRoleRepo);
-        });
-
-        Repository.register(fakeServer, options, function() {
-
-            Repository.tx(UserModel, RoleModel, function(userTxRepo, roleTxRepo) {
-
-                expect(userTxRepo.model).to.equals(fakeTxUserRepo);
-                expect(roleTxRepo.model).to.equals(fakeTxRoleRepo);
-                txStub.restore();
-                done();
-            });
-        });
+        // exercise
+        await expect(Repository.tx(UserModel, RoleModel, () => { })).to.reject(Error, error);
     });
 });

@@ -1,4 +1,4 @@
-var Path = require('path');
+const Path = require('path');
 
 module.exports = {
 
@@ -36,7 +36,7 @@ module.exports = {
             tx: true,
             pool: false,
             client: false,
-            bindings: false
+            bindings: true
         }
     },
 
@@ -44,9 +44,9 @@ module.exports = {
         client: 'postgresql',
         connection: {
             host: '127.0.0.1',
-            database: 'hapi_starter',
-            user: 'hapi_starter',
-            password: 'hapi_starter'
+            database: 'noire',
+            user: 'noire',
+            password: 'noire'
         },
         pool: {
             min: 2,
@@ -59,15 +59,22 @@ module.exports = {
             directory: './db/seeds/staging'
         },
         acquireConnectionTimeout: 1000,
+        debug: {
+            query: true,
+            tx: true,
+            pool: false,
+            client: false,
+            bindings: true
+        }
     },
 
     production: {
         client: 'postgresql',
         connection: {
             host: '127.0.0.1',
-            database: 'hapi_starter',
-            user: 'hapi_starter',
-            password: 'hapi_starter'
+            database: 'noire',
+            user: 'noire',
+            password: 'noire'
         },
         pool: {
             min: 2,
@@ -81,5 +88,4 @@ module.exports = {
         },
         acquireConnectionTimeout: 5000,
     }
-
 };

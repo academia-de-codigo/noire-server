@@ -2,9 +2,7 @@ language: node_js
 env:
   - CXX=g++-4.8
 node_js:
-    - "7"
-    - "6"
-    - "5"
+    - "8"
 branches:
     only:
         - master
@@ -15,5 +13,7 @@ addons:
     packages:
     - g++-4.8
 script:
+  - npm run build
+after_success:
   - npm test
   - npm run codecov

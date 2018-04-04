@@ -1,0 +1,36 @@
+{
+    "AUTH_INVALID_USERNAME": {
+        "message": "invalid user credentials",
+        "statusCode": 401
+    },
+    "AUTH_INVALID_PASSWORD": {
+        "message": "invalid user credentials",
+        "statusCode": 401
+    },
+    "AUTH_UNAUTHORIZED": {
+        "message": "insufficient privileges",
+        "statusCode": 403
+    },
+    "AUTH_ERROR": "authentication error",
+    "AUTH_CRYPT_ERROR": "encryption error",
+    "RESOURCE_FETCH": "error fetching resource",
+    "RESOURCE_DELETE": "error deleting resource",
+    "RESOURCE_INSERT": "error creating resource",
+    "RESOURCE_UPDATE": "error updating resource",
+    "RESOURCE_NOT_FOUND": {
+        "message": "resource not found",
+        "statusCode": 404
+    },
+    "RESOURCE_DUPLICATE": {
+        "message": "resource already exists",
+        "statusCode": 409
+    },
+    "RESOURCE_RELATION": {
+        "message": "resource contains associated resources",
+        "statusCode": 409
+    },
+    "RESOURCE_STATE": {
+        "message": "resource is not in a valid state for this action",
+        "statusCode": 409
+    }
+}

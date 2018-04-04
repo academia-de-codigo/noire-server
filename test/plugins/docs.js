@@ -1,135 +1,91 @@
-var Code = require('code'); // the assertions library
-var Lab = require('lab'); // the test framework
-var Path = require('path');
-var Exiting = require('exiting');
-var Manager = require('../../lib/manager');
-var Docs = require('../../lib/plugins/docs');
+const Lab = require('lab'); // the test framework
+const Hapi = require('hapi');
+const Path = require('path');
+const Vision = require('vision');
+const Inert = require('inert');
+const Lout = require('lout');
+const Docs = require(Path.join(process.cwd(), 'lib/plugins/docs'));
+const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-var lab = exports.lab = Lab.script(); // export the test script
+const { describe, expect, it } = exports.lab = Lab.script();
 
-// make lab feel like jasmine
-var describe = lab.experiment;
-var before = lab.before;
-var afterEach = lab.afterEach;
-var it = lab.test;
-var expect = Code.expect;
+describe('Plugin: docs', () => {
 
-var internals = {};
+    it('handles vision plugin registration failures', async (flags) => {
 
-internals.manifest = {
-    connections: [{
-        port: 0,
-    }],
-    registrations: [{
-        plugin: 'inert'
-    }, {
-        plugin: './plugins/views'
-    }, {
-        plugin: './plugins/docs'
-    }]
-};
-
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
-
-describe('Plugin: docs', function() {
-
-    before(function(done) {
-
-        Exiting.reset();
-        done();
-    });
-
-    afterEach(function(done) {
-
-        // Manager might not be properly stopped when tests fail
-        if (Manager.getState() === 'started') {
-            Manager.stop(done);
-        } else {
-            done();
-        }
-    });
-
-    it('depends on views plugin', function(done) {
-
-        var fakeServer = {
-            dependency: function(plugin) {
-                expect(plugin).to.equals('views');
-            },
-            register: function(options, next) {
-                next();
-            }
+        // cleanup
+        const visionRegister = Vision.plugin.register;
+        flags.onCleanup = function() {
+            Vision.plugin.register = visionRegister;
         };
 
-        Docs.register(fakeServer, null, function() {
-            done();
-        });
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        Vision.plugin.register = async function() {
+            throw new Error(PLUGIN_ERROR);
+        };
+        const server = Hapi.server();
+
+        // exercise and validate
+        await expect(server.register(Docs)).to.reject(PLUGIN_ERROR);
     });
 
-    it('registers the lout plugin', function(done) {
+    it('handles inert plugin registration failures', async (flags) => {
 
-        var fakeServer = {
-            dependency: function() {},
-            register: function(options, next) {
-                expect(options.register).to.exists();
-                expect(options.register.register).to.exists();
-                expect(options.register.register.attributes).to.exists();
-                expect(options.register.register.attributes.pkg).to.exists();
-                expect(options.register.register.attributes.pkg.name).to.equals('lout');
-                next();
-            }
+        // cleanup
+        const inertRegister = Inert.plugin.register;
+        flags.onCleanup = function() {
+            Inert.plugin.register = inertRegister;
         };
 
-        Docs.register(fakeServer, null, function() {
-            done();
-        });
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        Inert.plugin.register = async function() {
+            throw new Error(PLUGIN_ERROR);
+        };
+        const server = Hapi.server();
 
+        // exercise and validate
+        await expect(server.register(Docs)).to.reject(PLUGIN_ERROR);
     });
 
-    it('handle lout plugin registration failures', function(done) {
-        var PLUGIN_ERROR = 'plugin error';
-        var fakeServer = {
-            dependency: function() {}
+    it('handles inert plugin registration failures', async (flags) => {
+
+        // cleanup
+        const loutRegister = Lout.plugin.register;
+        flags.onCleanup = function() {
+            Lout.plugin.register = loutRegister;
         };
 
-        fakeServer.register = function(plugin, next) {
-            return next(new Error(PLUGIN_ERROR));
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        Lout.plugin.register = async function() {
+            throw new Error(PLUGIN_ERROR);
         };
+        const server = Hapi.server();
 
-        Docs.register(fakeServer, null, function(error) {
-
-            expect(error).to.exist();
-            expect(error.message).to.equals(PLUGIN_ERROR);
-            done();
-        });
+        // exercise and validate
+        await expect(server.register(Docs)).to.reject(PLUGIN_ERROR);
     });
 
-    it('returns the docs view', function(done) {
+    it('returns the docs view', async () => {
 
-        Manager.start(internals.manifest, internals.composeOptions, function(err, server) {
+        // setup
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register(Docs);
+        await server.initialize();
+        server.route({ method: 'GET', path: '/', handler: () => { } });
 
-            expect(err).to.not.exist();
-
-            // lout does not work if the server routing table is empty
-            server.route({
-                path: '/',
-                method: 'GET',
-                config: {
-                    auth: false,
-                    handler: function(request, reply) {
-                        return reply();
-                    }
-                }
-            });
-
-            server.inject('/docs', function(response) {
-
-                expect(response.statusCode).to.equal(200);
-                expect(response.result).to.be.a.string();
-                Manager.stop(done);
-
-            });
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/docs'
         });
+
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.payload).to.be.a.string();
     });
 });

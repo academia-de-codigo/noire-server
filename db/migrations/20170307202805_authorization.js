@@ -15,6 +15,7 @@ exports.up = function(knex, Promise) {
         knex.schema.createTable('role_permission', function(table) {
             table.integer('role_id').unsigned().references('id').inTable('role');
             table.integer('permission_id').unsigned().references('id').inTable('permission');
+            table.unique(['role_id', 'permission_id']);
             table.timestamps();
         })
     ]);

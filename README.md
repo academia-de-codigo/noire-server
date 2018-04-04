@@ -1,3 +1,4 @@
+[![last commit](https://img.shields.io/github/last-commit/academia-de-codigo/noire-server.svg)]()
 [![Build Status](https://api.travis-ci.org/academia-de-codigo/noire-server.svg?branch=master)](https://travis-ci.org/academia-de-codigo/noire-server)
 [![Coverage](https://codecov.io/gh/academia-de-codigo/noire-server/branch/master/graph/badge.svg)](https://codecov.io/gh/academia-de-codigo/noire-server)
 
@@ -10,7 +11,9 @@ Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 # Noire Server
 
-Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
+Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
+
+**WARNING: Noire is currently under active development and not ready for production use**
 
 ### View Layer
 * Accept data
@@ -43,16 +46,15 @@ Extremely opinionated ES5 [Hapi](http://hapijs.com) boilerplate using a layered 
 * RBAC authorization
 * AJAX login form
 * Client side caching of assets
-* Logging to console and file - ops, error, auth and access logs
+* Logging to console and file - ops, error, auth and access logs [currently BROKEN]
 * Testing, code coverage and Travis CI integration
 * Graceful server shutdown
 * Database ORM (Objection) with migrations (Knex) support
-* Usage of Promises with Bluebird
+* Usage of native Promises and async/await
 
 ### Desired Features
 
-* Jobs with Agenda
-* User management
+* Admin interface
 
 ## Get it Running
 
@@ -73,16 +75,16 @@ Edit files in `lib/config`
 * `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
 * `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
 
-### Run the unit tests
-
-`npm test`
-
 ### Reset the database to it's original state
 
 `npm run reset`
 
 ### Build Semantic-UI
-`npm run semantic`
+`npm run build`
+
+### Run the unit tests
+
+`npm test`
 
 ### Launch the server
 

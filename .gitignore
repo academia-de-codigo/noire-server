@@ -1,5 +1,5 @@
-# frontend build
-client/semantic/dist
+# semantic source files frontend build
+client/semantic
 client/dist
 
 # database files
@@ -17,3 +17,6 @@ npm-debug.log
 
 # osx
 .DS_STORE
+
+# IDEs
+.vscode
