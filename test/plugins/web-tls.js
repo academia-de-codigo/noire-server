@@ -6,20 +6,21 @@ const Hapi = require('hapi');
 const Package = require(Path.join(process.cwd(), 'package.json'));
 const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-const { after, before, describe, expect, it } = exports.lab = Lab.script();
+const { after, before, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: web-tls', () => {
-
     const fakeRouteId = 'fake-route';
     const fakeRouteConfig = {
-        endpoints: [{
-            method: 'GET',
-            path: '/',
-            config: {
-                id: fakeRouteId,
-                handler: () => { }
+        endpoints: [
+            {
+                method: 'GET',
+                path: '/',
+                config: {
+                    id: fakeRouteId,
+                    handler: () => {}
+                }
             }
-        }]
+        ]
     };
 
     let WebTls;
@@ -34,12 +35,13 @@ describe('Plugin: web-tls', () => {
     });
 
     it('registers the view handler', async () => {
-
         // setup
-        const fakeViewsPlugin = { name: 'views', pkg: Package, register: function() { } };
+        const fakeViewsPlugin = { name: 'views', pkg: Package, register: function() {} };
         const server = Hapi.server();
-        const viewsSpy = Sinon.spy();
-        server.decorate('server', 'views', viewsSpy);
+        const viewsStub = Sinon.stub().returns({
+            registerHelper: () => {}
+        });
+        server.decorate('server', 'views', viewsStub);
         server.register(Logger);
 
         // exercise
@@ -47,15 +49,18 @@ describe('Plugin: web-tls', () => {
         await server.initialize();
 
         // validate
-        expect(viewsSpy.calledOnce).to.be.true();
+        expect(viewsStub.calledOnce).to.be.true();
     });
 
     it('registers the route handlers', async () => {
-
         // setup
         const fakeViewsPlugin = {
-            name: 'views', pkg: Package, register: function(server) {
-                server.decorate('server', 'views', () => { });
+            name: 'views',
+            pkg: Package,
+            register: server => {
+                server.decorate('server', 'views', () => ({
+                    registerHelper: () => {}
+                }));
             }
         };
         const server = Hapi.server();

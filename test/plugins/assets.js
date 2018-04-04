@@ -5,14 +5,12 @@ const Inert = require('inert');
 const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
 const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: assets', () => {
-
     let server;
 
     beforeEach(async () => {
-
         server = Hapi.server({
             routes: {
                 files: {
@@ -25,7 +23,6 @@ describe('Plugin: assets', () => {
     });
 
     it('returns the favicon', async () => {
-
         // exercise
         const response = await server.inject('/favicon.ico');
 
@@ -35,7 +32,6 @@ describe('Plugin: assets', () => {
     });
 
     it('returns an image', async () => {
-
         // exercise
         const response = await server.inject('/img/low_contrast_linen.png');
 
@@ -45,9 +41,8 @@ describe('Plugin: assets', () => {
     });
 
     it('returns css', async () => {
-
         // exercise
-        const response = await server.inject('/css/commons.css');
+        const response = await server.inject('/css/login.css');
 
         // validate
         expect(response.statusCode).to.equal(200);
@@ -55,9 +50,8 @@ describe('Plugin: assets', () => {
     });
 
     it('returns javascript', async () => {
-
         // exercise
-        const response = await server.inject('/js/commons.bundle.js');
+        const response = await server.inject('/js/login.js');
 
         // validate
         expect(response.statusCode).to.equal(200);
@@ -65,7 +59,6 @@ describe('Plugin: assets', () => {
     });
 
     it('returns fonts', async () => {
-
         // exercise
         const response = await server.inject('/fonts/OpenSans.woff2');
 
@@ -73,8 +66,7 @@ describe('Plugin: assets', () => {
         expect(response.result).to.be.a.string();
     });
 
-    it('handles inert plugin registration failures', async (flags) => {
-
+    it('handles inert plugin registration failures', async flags => {
         // setup
         const PLUGIN_ERROR = 'plugin error';
         const inertRegister = Inert.plugin.register;
