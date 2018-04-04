@@ -1,4 +1,3 @@
-require('jquery');
 require('form-serializer');
 require('../../semantic/dist/semantic.css');
 require('../assets/css/app.css');
