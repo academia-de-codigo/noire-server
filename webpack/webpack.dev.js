@@ -3,6 +3,7 @@ const path = require('path');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const Config = require(path.join(process.cwd(), 'lib/config/index'));
 
 const BUILD_DIR = path.join(process.cwd(), 'client/dist');
@@ -31,7 +32,11 @@ const internals = {
             {
                 debug: Config.debug
             }
-        )
+        ),
+        miniCss: new MiniCssExtractPlugin({
+            filename: 'css/[name].css',
+            chunkFilename: '[id].css'
+        })
     }
 };
 
@@ -45,14 +50,14 @@ module.exports = {
     entry: internals.entries,
     output: {
         path: BUILD_DIR,
-        filename: 'js/[name].bundle.js'
+        filename: 'js/[name].js'
     },
     module: {
         rules: [
             {
                 test: /\.css$/,
                 include: [/client/],
-                use: ['style-loader', 'css-loader']
+                use: [MiniCssExtractPlugin.loader, 'css-loader']
             },
             {
                 test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
@@ -65,5 +70,10 @@ module.exports = {
             }
         ]
     },
-    plugins: [internals.plugins.jquery, internals.plugins.clean, internals.plugins.copy]
+    plugins: [
+        internals.plugins.jquery,
+        internals.plugins.clean,
+        internals.plugins.copy,
+        internals.plugins.miniCss
+    ]
 };
