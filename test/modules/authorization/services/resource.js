@@ -3,22 +3,19 @@ const Hapi = require('hapi');
 const Knex = require('knex');
 const Sinon = require('sinon');
 const Objection = require('objection');
-const Path = require('path');
-const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
-const ResourceService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/resource'));
-const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
-const ResourceModel = require(Path.join(process.cwd(), 'lib/models/resource'));
-const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const KnexConfig = require('knexfile');
+const ResourceService = require('modules/authorization/services/resource');
+const Repository = require('plugins/repository');
+const ResourceModel = require('models/resource');
+const NSError = require('errors/nserror');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Service: resource', () => {
-
     let txSpy;
 
     beforeEach(async () => {
-
         /*jshint -W064 */
         const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
@@ -36,14 +33,12 @@ describe('Service: resource', () => {
     });
 
     afterEach(() => {
-
         if (txSpy) {
             txSpy.restore();
         }
     });
 
     it('counts resources', async () => {
-
         // exercise
         const result = await ResourceService.count();
 
@@ -52,7 +47,6 @@ describe('Service: resource', () => {
     });
 
     it('counts resources with search criteria', async () => {
-
         // setup
         const criteria = { search: 'user' };
 
@@ -64,7 +58,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources', async () => {
-
         // exercise
         const results = await ResourceService.list();
 
@@ -79,7 +72,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources with a search clause', async () => {
-
         // setup
         const criteria = { search: 'use' };
 
@@ -93,7 +85,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources with limit', async () => {
-
         // setup
         const criteria = { limit: 2 };
 
@@ -112,7 +103,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources with offset', async () => {
-
         // setup
         const criteria = { page: 4, limit: 1 };
 
@@ -130,7 +120,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources ordered by column', async () => {
-
         // setup
         const criteria = { sort: 'name' };
 
@@ -148,7 +137,6 @@ describe('Service: resource', () => {
     });
 
     it('lists resources ordered by id, descending', async () => {
-
         // setup
         const criteria = { sort: '-id' };
 
@@ -165,7 +153,6 @@ describe('Service: resource', () => {
     });
 
     it('gets valid resource by id', async () => {
-
         // setup
         const id = 1;
         const resource = { name: 'user' };
@@ -181,13 +168,14 @@ describe('Service: resource', () => {
     });
 
     it('handles getting invalid resource by id', async () => {
-
         // exercise and validate
-        await expect(ResourceService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.findById(999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('gets valid resource by name', async () => {
-
         // setup
         const resource = { id: 1, name: 'user' };
 
@@ -199,13 +187,14 @@ describe('Service: resource', () => {
     });
 
     it('handles getting invalid resource by name', async () => {
-
         // exercise and validate
-        await expect(ResourceService.findByName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.findByName('invalid')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('adds a new resource', async () => {
-
         // setup
         const resource = { id: 10, name: 'newresource' };
 
@@ -222,13 +211,14 @@ describe('Service: resource', () => {
     });
 
     it('does not add an existing resource', async () => {
-
         // exercise and validate
-        await expect(ResourceService.add({ name: 'user' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(ResourceService.add({ name: 'user' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 
     it('deletes an existing resource', async () => {
-
         // exercise
         const result = await ResourceService.delete(3);
 
@@ -238,19 +228,22 @@ describe('Service: resource', () => {
     });
 
     it('handles deleting a non existing resource', async () => {
-
         // exercise and validate
-        await expect(ResourceService.delete(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.delete(999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not delete a resource if permissions using it exist', async () => {
-
         // exercise and validate
-        await expect(ResourceService.delete(1)).to.reject(Error, NSError.RESOURCE_RELATION().message);
+        await expect(ResourceService.delete(1)).to.reject(
+            Error,
+            NSError.RESOURCE_RELATION().message
+        );
     });
 
     it('updates an existing resource', async () => {
-
         // setup
         const id = 3;
         const resource = { name: 'newname' };
@@ -268,14 +261,18 @@ describe('Service: resource', () => {
     });
 
     it('handles updating a non existing resource', async () => {
-
         // exercise and validate
-        await expect(ResourceService.update(999, { name: 'newname' })).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(ResourceService.update(999, { name: 'newname' })).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not update a resource with same name as an already existing resource', async () => {
-
         // exercise and validate
-        await expect(ResourceService.update(3, { name: 'user' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(ResourceService.update(3, { name: 'user' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 });

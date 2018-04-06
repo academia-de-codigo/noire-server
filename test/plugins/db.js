@@ -1,18 +1,16 @@
-const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Sinon = require('sinon');
 const mock = require('mock-require');
-const Config = require(Path.join(process.cwd(), 'lib/config'));
-const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Config = require('config');
+const KnexConfig = require('knexfile');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 const internals = {};
 
 describe('Plugin: db', () => {
-
     let configStub;
     let knexConfigStub;
     let rawQueryStub;
@@ -26,17 +24,15 @@ describe('Plugin: db', () => {
     });
 
     afterEach(() => {
-
         configStub.restore();
         knexConfigStub.restore();
         mock.stopAll();
     });
 
     it('initializes the knex db library', async () => {
-
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
@@ -50,13 +46,12 @@ describe('Plugin: db', () => {
     });
 
     it('handles db connection error', async () => {
-
         // setup
         const error = 'fakeError';
         rawQueryStub = Sinon.stub().rejects(new Error(error));
         knexStub = Sinon.stub().returns({ raw: rawQueryStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
@@ -65,12 +60,11 @@ describe('Plugin: db', () => {
     });
 
     it('handles missing connection', async () => {
-
         // setup
         knexConfigStub.restore(); // stubbing twice breaks restore
         knexConfigStub = Sinon.stub(KnexConfig, 'testing').value({});
         mock('knex', Sinon.stub());
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
@@ -79,12 +73,11 @@ describe('Plugin: db', () => {
     });
 
     it('handles missing database name', async () => {
-
         // setup
         knexConfigStub.restore(); // stubbing twice breaks restore
         knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfigMissingDb);
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
@@ -93,13 +86,12 @@ describe('Plugin: db', () => {
     });
 
     it('does not require database name for sqlite', async () => {
-
         // setup
 
         knexConfigStub.restore(); // stubbing twice breaks restore
         knexConfigStub = Sinon.stub(KnexConfig, 'testing').value(internals.knexConfigSqlite);
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
@@ -112,29 +104,30 @@ describe('Plugin: db', () => {
     });
 
     it('handles db connection test unexpected result', async () => {
-
         // setup
         rawQueryStub = Sinon.stub().resolves([{ result: 0 }]);
         knexStub = Sinon.stub().returns({ raw: rawQueryStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const server = Hapi.server();
         server.register(Logger);
 
         // exercise
-        await expect(server.register(Database)).to.reject(Error, 'database connection test returned wrong result');
+        await expect(server.register(Database)).to.reject(
+            Error,
+            'database connection test returned wrong result'
+        );
     });
 
     it('decorates the server with knex and objection', async () => {
-
         // setup
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const decorateSpy = Sinon.spy();
         const mockServer = {
             logger: () => Logger.fake,
             decorate: decorateSpy,
-            ext: function() { }
+            ext: function() {}
         };
 
         // exercise
@@ -150,15 +143,14 @@ describe('Plugin: db', () => {
     });
 
     it('destroys knex after server stop', async () => {
-
         // setup
         const destroyStub = Sinon.stub();
         knexStub = Sinon.stub().returns({ raw: rawQueryStub, destroy: destroyStub });
         mock('knex', knexStub);
-        const Database = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/db'));
+        const Database = mock.reRequire('plugins/db');
         const mockServer = {
             logger: () => Logger.fake,
-            decorate: function() { },
+            decorate: function() {},
             ext: function(hook, cb) {
                 if (hook !== 'onPostStop') {
                     return;

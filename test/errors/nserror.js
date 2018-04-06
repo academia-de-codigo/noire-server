@@ -1,14 +1,11 @@
 const Lab = require('lab');
 const Boom = require('boom');
-const Path = require('path');
-const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const NSError = require('errors/nserror');
 
-const { describe, expect, it } = exports.lab = Lab.script();
+const { describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Errors', () => {
-
     it('do nothing if error is boom', () => {
-
         // exercise
         let boomError = NSError.create(Boom.notFound());
 
@@ -17,7 +14,6 @@ describe('Errors', () => {
     });
 
     it('adds timestamps to errors created from boom', () => {
-
         // exercise
         let boomError = NSError.create(Boom.notFound());
 
@@ -27,7 +23,6 @@ describe('Errors', () => {
     });
 
     it('wrap error object with 500 boom', () => {
-
         // setup
         let errorMessage = 'Error Message';
 
@@ -41,7 +36,6 @@ describe('Errors', () => {
     });
 
     it('adds timestamps to errors created from error objects ', () => {
-
         // setup
         let errorMessage = 'Error Message';
 
@@ -54,7 +48,6 @@ describe('Errors', () => {
     });
 
     it('wrap string with 500 boom', () => {
-
         // setup
         let errorMessage = 'Error Message';
 
@@ -68,7 +61,6 @@ describe('Errors', () => {
     });
 
     it('adds timestamps to errors created from strings', () => {
-
         // setup
         let errorMessage = 'Error Message';
 
@@ -81,25 +73,21 @@ describe('Errors', () => {
     });
 
     it('wraps auth errors with 401 boom', () => {
-
         expect(NSError.AUTH_INVALID_USERNAME().output.statusCode).to.equals(401);
         expect(NSError.AUTH_INVALID_PASSWORD().output.statusCode).to.equals(401);
     });
 
     it('wrap not found errors with 404 boom', () => {
-
         expect(NSError.RESOURCE_NOT_FOUND().output.statusCode).to.equals(404);
     });
 
     it('wrap conflict errors with 409 boom', () => {
-
         expect(NSError.RESOURCE_DUPLICATE().output.statusCode).to.equals(409);
         expect(NSError.RESOURCE_RELATION().output.statusCode).to.equals(409);
         expect(NSError.RESOURCE_STATE().output.statusCode).to.equals(409);
     });
 
     it('wrap server erors with 500 boom', () => {
-
         expect(NSError.AUTH_ERROR().output.statusCode).to.equals(500);
         expect(NSError.AUTH_CRYPT_ERROR().output.statusCode).to.equals(500);
         expect(NSError.RESOURCE_FETCH().output.statusCode).to.equals(500);
@@ -109,7 +97,6 @@ describe('Errors', () => {
     });
 
     it('adds timestamps to object generated boom errors', () => {
-
         // exercise
         let boomError = NSError.RESOURCE_NOT_FOUND();
 
@@ -119,7 +106,6 @@ describe('Errors', () => {
     });
 
     it('adds timestamps to string generated boom errors', () => {
-
         // exercise
         let boomError = NSError.AUTH_ERROR();
 
@@ -129,7 +115,6 @@ describe('Errors', () => {
     });
 
     it('does not add timestamp if already present', () => {
-
         // setup
         let error = Boom.notFound();
         error.data = { timestamp: -1 };
@@ -142,7 +127,6 @@ describe('Errors', () => {
     });
 
     it('matches error type to string generated boom errors', () => {
-
         // setup
         let error1 = NSError.AUTH_ERROR();
         let error2 = NSError.AUTH_CRYPT_ERROR();
@@ -155,7 +139,6 @@ describe('Errors', () => {
     });
 
     it('matched error type of object generated boom errors', () => {
-
         // setup
         let error1 = NSError.AUTH_INVALID_PASSWORD();
         let error2 = NSError.RESOURCE_NOT_FOUND();

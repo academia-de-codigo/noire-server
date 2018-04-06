@@ -1,18 +1,15 @@
 const Lab = require('lab'); // the test framework
 const Hapi = require('hapi');
-const Path = require('path');
 const Vision = require('vision');
 const Inert = require('inert');
 const Lout = require('lout');
-const Docs = require(Path.join(process.cwd(), 'lib/plugins/docs'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Docs = require('plugins/docs');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { describe, expect, it } = exports.lab = Lab.script();
+const { describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: docs', () => {
-
-    it('handles vision plugin registration failures', async (flags) => {
-
+    it('handles vision plugin registration failures', async flags => {
         // cleanup
         const visionRegister = Vision.plugin.register;
         flags.onCleanup = function() {
@@ -30,8 +27,7 @@ describe('Plugin: docs', () => {
         await expect(server.register(Docs)).to.reject(PLUGIN_ERROR);
     });
 
-    it('handles inert plugin registration failures', async (flags) => {
-
+    it('handles inert plugin registration failures', async flags => {
         // cleanup
         const inertRegister = Inert.plugin.register;
         flags.onCleanup = function() {
@@ -49,8 +45,7 @@ describe('Plugin: docs', () => {
         await expect(server.register(Docs)).to.reject(PLUGIN_ERROR);
     });
 
-    it('handles inert plugin registration failures', async (flags) => {
-
+    it('handles inert plugin registration failures', async flags => {
         // cleanup
         const loutRegister = Lout.plugin.register;
         flags.onCleanup = function() {
@@ -69,13 +64,12 @@ describe('Plugin: docs', () => {
     });
 
     it('returns the docs view', async () => {
-
         // setup
         const server = Hapi.server();
         server.register(Logger);
         await server.register(Docs);
         await server.initialize();
-        server.route({ method: 'GET', path: '/', handler: () => { } });
+        server.route({ method: 'GET', path: '/', handler: () => {} });
 
         // exercise
         const response = await server.inject({

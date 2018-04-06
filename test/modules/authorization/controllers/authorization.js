@@ -1,15 +1,13 @@
-const Path = require('path');
 const Lab = require('lab');
 const Sinon = require('sinon');
 const Hapi = require('hapi');
-const AuthorizationController = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/authorization'));
-const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const AuthorizationController = require('modules/authorization/controllers/authorization');
+const AuthorizationService = require('modules/authorization/services/authorization');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Controller: Authorization', () => {
-
     const action = 'read';
     const resource = 'role';
     const username = 'username';
@@ -20,19 +18,16 @@ describe('Controller: Authorization', () => {
     let authorizationStub;
 
     beforeEach(() => {
-
         authorizationStub = Sinon.stub(AuthorizationService, 'canUser');
         server = Hapi.server();
         server.register(Logger);
     });
 
     afterEach(() => {
-
         authorizationStub.restore();
     });
 
     it('authorizes user to access resource with explicit action', async () => {
-
         // setup
         authorizationStub.withArgs(username, action, resource).returns(Promise.resolve(true));
 
@@ -53,7 +48,6 @@ describe('Controller: Authorization', () => {
     });
 
     it('authorizes user to access resource with implicit action', async () => {
-
         // setup
         authorizationStub.withArgs(username, action, resource).returns(Promise.resolve(true));
 
@@ -74,7 +68,6 @@ describe('Controller: Authorization', () => {
     });
 
     it('does not authorize user to access resource', async () => {
-
         // setup
         authorizationStub.withArgs(username, action, resource).returns(Promise.resolve(false));
 
@@ -96,7 +89,6 @@ describe('Controller: Authorization', () => {
     });
 
     it('handles errors while authorizing', async () => {
-
         // setup
         authorizationStub.withArgs(username, action, resource).returns(Promise.reject(new Error()));
 

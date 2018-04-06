@@ -1,9 +1,9 @@
-const Path = require('path');
 const Lab = require('lab');
+const Path = require('path');
 const Exiting = require('exiting');
-const Manager = require(Path.join(process.cwd(), 'lib/utils/manager'));
+const Manager = require('utils/manager');
 
-const { before, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 const internals = {};
 
@@ -12,20 +12,16 @@ internals.composeOptions = {
 };
 
 describe('Manager', () => {
-
     before(() => {
-
         // Silence log messages
-        Exiting.log = function() { };
+        Exiting.log = function() {};
     });
 
     beforeEach(() => {
-
         Manager.reset();
     });
 
     it('returns servers object for single server', async () => {
-
         // setup
         const server = 'server';
         const manifest = { server: { app: { name: server } } };
@@ -40,7 +36,6 @@ describe('Manager', () => {
     });
 
     it('returns servers object for multiple servers', async () => {
-
         // setup
         const server1 = 'server1';
         const server2 = 'server2';
@@ -62,7 +57,6 @@ describe('Manager', () => {
     });
 
     it('starts servers on specified ports', async () => {
-
         // setup
         const server1 = 'server1';
         const server2 = 'server2';
@@ -82,7 +76,6 @@ describe('Manager', () => {
     });
 
     it('stops a started server', async () => {
-
         // setup
         const server = 'server';
         const manifests = [
@@ -104,7 +97,6 @@ describe('Manager', () => {
     });
 
     it('returns proper server state', async () => {
-
         // setup
         const manifest = { server: { app: { name: 'server' } } };
 
@@ -122,7 +114,6 @@ describe('Manager', () => {
     });
 
     it('handles plugin registration failures', async () => {
-
         // setup
         const PLUGIN_ERROR = 'plugin error';
         const fakePlugin = {
@@ -132,18 +123,22 @@ describe('Manager', () => {
             name: 'fakePlugin',
             pkg: {}
         };
-        const manifests = [{
-            server: {
-                app: {
-                    name: 'server1'
+        const manifests = [
+            {
+                server: {
+                    app: {
+                        name: 'server1'
+                    }
+                },
+                register: {
+                    plugins: [
+                        {
+                            plugin: fakePlugin
+                        }
+                    ]
                 }
-            },
-            register: {
-                plugins: [{
-                    plugin: fakePlugin
-                }]
             }
-        }];
+        ];
         manifests.push({ server: { app: { name: 'server2' } } });
 
         // exercise and validate

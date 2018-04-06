@@ -1,5 +1,5 @@
 const Boom = require('boom');
-const Package = require('../../package.json');
+const Package = require('package.json');
 
 exports.authenticate = true;
 
@@ -10,15 +10,13 @@ exports.credentials = {
 };
 
 exports.validate = function(request, h) {
-    return exports.authenticate ?
-        h.authenticated({ credentials: exports.credentials }) :
-        h.unauthenticated(Boom.unauthorized('error'));
+    return exports.authenticate
+        ? h.authenticated({ credentials: exports.credentials })
+        : h.unauthenticated(Boom.unauthorized('error'));
 };
 
 const register = function(server) {
-
     server.auth.scheme('mock', () => {
-
         return { authenticate: exports.validate };
     });
 

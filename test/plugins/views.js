@@ -3,11 +3,11 @@ const Hapi = require('hapi');
 const Vision = require('vision');
 const Path = require('path');
 const Handlebars = require('handlebars');
-const Package = require(Path.join(process.cwd(), 'package.json'));
-const Views = require(Path.join(process.cwd(), 'lib/plugins/views'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Package = require('package.json');
+const Views = require('plugins/views');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 const internals = {};
 internals.viewOptions = {
@@ -26,18 +26,15 @@ internals.viewFixture = 'page';
 internals.fakeTemplate = 'pages/' + internals.viewFixture;
 
 describe('Plugin: views', () => {
-
     let server;
 
     beforeEach(async () => {
-
         server = Hapi.server();
         server.register(Logger);
         await server.register(Views);
     });
 
     it('registers the vision plugin', async () => {
-
         // setup
         server = Hapi.server();
         server.register(Logger);
@@ -50,9 +47,7 @@ describe('Plugin: views', () => {
         expect(server.decorations.toolkit).to.contains('view');
     });
 
-
-    it('handles vision plugin registration failures', async (flags) => {
-
+    it('handles vision plugin registration failures', async flags => {
         // cleanup
         const visionRegister = Vision.plugin.register;
         flags.onCleanup = function() {
@@ -71,7 +66,6 @@ describe('Plugin: views', () => {
     });
 
     it('ignores non view responses', async () => {
-
         // setup
         const fakeResult = 'ok';
         const fakeRoute = {
@@ -90,7 +84,6 @@ describe('Plugin: views', () => {
     });
 
     it('adds global context property to the view context', async () => {
-
         // setup
         const fakeRoute = {
             method: 'GET',
@@ -111,7 +104,6 @@ describe('Plugin: views', () => {
     });
 
     it('adds version number to a new local view context', async () => {
-
         // setup
         const fakeRoute = {
             method: 'GET',
@@ -132,7 +124,6 @@ describe('Plugin: views', () => {
     });
 
     it('adds version number an existing local view context', async () => {
-
         // setup
         const fakeRoute = {
             method: 'GET',
@@ -157,7 +148,6 @@ describe('Plugin: views', () => {
     });
 
     it('adds logged in user to view context if authenticated', async () => {
-
         // setup
         const credentials = 'test';
         const fakeRoute = {
@@ -181,7 +171,6 @@ describe('Plugin: views', () => {
     });
 
     it('does not add logged in user to view context if not authenticated', async () => {
-
         // setup
         const credentials = 'test';
         const fakeRoute = {
@@ -204,7 +193,6 @@ describe('Plugin: views', () => {
     });
 
     it('adds view name to view context', async () => {
-
         // setup
         const fakeRoute = {
             method: 'GET',

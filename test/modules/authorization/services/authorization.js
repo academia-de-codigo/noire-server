@@ -2,19 +2,16 @@ const Lab = require('lab');
 const Hapi = require('hapi');
 const Knex = require('knex');
 const Objection = require('objection');
-const Path = require('path');
-const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
-const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
-const AuthorizationService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/authorization'));
-const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const KnexConfig = require('knexfile');
+const Repository = require('plugins/repository');
+const AuthorizationService = require('modules/authorization/services/authorization');
+const NSError = require('errors/nserror');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Service: authorization', () => {
-
     beforeEach(async () => {
-
         /*jshint -W064 */
         const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
@@ -26,12 +23,13 @@ describe('Service: authorization', () => {
 
         const server = Hapi.server();
         server.register(Logger);
-        server.register({ plugin: Repository, options: { models: ['user', 'role', 'resource', 'permission'] } });
-
+        server.register({
+            plugin: Repository,
+            options: { models: ['user', 'role', 'resource', 'permission'] }
+        });
     });
 
     it('authorizes a role with the right permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canRole('admin', 'read', 'user');
 
@@ -40,7 +38,6 @@ describe('Service: authorization', () => {
     });
 
     it('does not authorize a role with the wrong permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canRole('user', 'create', 'user');
 
@@ -49,7 +46,6 @@ describe('Service: authorization', () => {
     });
 
     it('does not authorize a role with no permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canRole('guest', 'read', 'role');
 
@@ -58,7 +54,6 @@ describe('Service: authorization', () => {
     });
 
     it('does not authorize a role for an invalid action', async () => {
-
         // exercise
         const result = await AuthorizationService.canRole('guest', 'invalid action', 'role');
 
@@ -67,19 +62,22 @@ describe('Service: authorization', () => {
     });
 
     it('handles authorization for a non existing role', async () => {
-
         // exercise and validate
-        await expect(AuthorizationService.canRole('invalid', 'read', 'role')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(AuthorizationService.canRole('invalid', 'read', 'role')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('handles authorization for a non existing resource', async () => {
-
         // exercise and validate
-        await expect(AuthorizationService.canRole('guest', 'read', 'invalid resource')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(AuthorizationService.canRole('guest', 'read', 'invalid resource')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('authorizes a user that has a role with the right permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canUser('admin', 'create', 'user');
 
@@ -88,7 +86,6 @@ describe('Service: authorization', () => {
     });
 
     it('authorizes a user that has multiple roles with the right permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canUser('admin', 'read', 'role');
 
@@ -97,7 +94,6 @@ describe('Service: authorization', () => {
     });
 
     it('does not authorize a user that has no roles with the right permissions', async () => {
-
         // exercise
         const result = await AuthorizationService.canUser('test', 'create', 'user');
 
@@ -106,7 +102,6 @@ describe('Service: authorization', () => {
     });
 
     it('does not authorize a user that has no roles', async () => {
-
         // exercise
         const result = await AuthorizationService.canUser('noroles', 'read', 'role');
 
@@ -115,8 +110,10 @@ describe('Service: authorization', () => {
     });
 
     it('handles authorization for a non existing user', async () => {
-
         // exercise and validate
-        await expect(AuthorizationService.canUser('invalid user', 'read', 'role')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(AuthorizationService.canUser('invalid user', 'read', 'role')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 });

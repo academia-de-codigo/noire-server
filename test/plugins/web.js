@@ -1,10 +1,9 @@
 const Lab = require('lab');
-const Path = require('path');
 const Sinon = require('sinon');
 const mock = require('mock-require');
 const Hapi = require('hapi');
-const Package = require(Path.join(process.cwd(), 'package.json'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Package = require('package.json');
+const Logger = require('test/fixtures/logger-plugin');
 
 const { before, after, describe, expect, it } = (exports.lab = Lab.script());
 
@@ -26,8 +25,8 @@ describe('Plugin: web', () => {
     let Web;
 
     before(() => {
-        mock(Path.join(process.cwd(), 'lib/routes/web'), fakeRouteConfig);
-        Web = mock.reRequire(Path.join(process.cwd(), 'lib/plugins/web'));
+        mock('routes/web', fakeRouteConfig);
+        Web = mock.reRequire('plugins/web');
     });
 
     after(() => {

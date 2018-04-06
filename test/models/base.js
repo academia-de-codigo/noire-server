@@ -1,11 +1,10 @@
 const Lab = require('lab');
 const Objection = require('objection');
-const BaseModel = require('../../lib/models/base');
+const BaseModel = require('models/base');
 
-const { before, describe, expect, it } = exports.lab = Lab.script();
+const { before, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Model: base', function() {
-
     let baseModel;
 
     before(() => {
@@ -13,22 +12,18 @@ describe('Model: base', function() {
     });
 
     it('fectches relation models from the models directory', () => {
-
         expect(BaseModel.modelPaths[0]).to.endsWith('/lib/models');
     });
 
     it('should persist timestamp fields', () => {
-
         expect(BaseModel.pickJsonSchemaProperties).to.be.false();
     });
 
     it('extends from objection model', () => {
-
         expect(baseModel).to.be.an.instanceof(Objection.Model);
     });
 
     it('should set created timestamp before creating new record', () => {
-
         // exercise
         baseModel.$beforeInsert();
 
@@ -38,7 +33,6 @@ describe('Model: base', function() {
     });
 
     it('should set updated timestamp before record update', () => {
-
         // exercise
         baseModel.$beforeUpdate();
 
@@ -48,7 +42,6 @@ describe('Model: base', function() {
     });
 
     it('should remove created timestamp after creating new record', () => {
-
         // exercise
         baseModel.$beforeInsert();
         baseModel.$afterInsert();
@@ -58,7 +51,6 @@ describe('Model: base', function() {
     });
 
     it('should remove updated timestamp after record update', () => {
-
         // exercise
         baseModel.$beforeUpdate();
         baseModel.$afterUpdate();
@@ -68,7 +60,6 @@ describe('Model: base', function() {
     });
 
     it('should remove all timestamps after record get', () => {
-
         // exercise
         baseModel.$beforeInsert();
         baseModel.$beforeUpdate();

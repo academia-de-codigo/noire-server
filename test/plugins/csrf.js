@@ -1,24 +1,20 @@
 const Lab = require('lab');
 const Hapi = require('hapi');
-const Path = require('path');
-const Csrf = require(Path.join(process.cwd(), 'lib/plugins/csrf'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Csrf = require('plugins/csrf');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: csrf', () => {
-
     let server;
 
     beforeEach(async () => {
-
         server = Hapi.server();
         server.register(Logger);
         await server.register(Csrf);
     });
 
-    it('handles crumb plugin registration failure', async (flags) => {
-
+    it('handles crumb plugin registration failure', async flags => {
         // cleanup
         let csrfRegister = Csrf.plugin.register;
         flags.onCleanup = function() {
@@ -37,7 +33,6 @@ describe('Plugin: csrf', () => {
     });
 
     it('does not serve crumb endpoint if not api server', async () => {
-
         // exercise
         const response = await server.inject('/generate');
 
@@ -47,7 +42,6 @@ describe('Plugin: csrf', () => {
     });
 
     it('serves crumb endpoint if api server', async () => {
-
         // setup
         const server = Hapi.server({ app: { name: 'api' } });
         server.register(Logger);
@@ -64,9 +58,8 @@ describe('Plugin: csrf', () => {
     });
 
     it('handles missing crumb headers on post request', async () => {
-
         // setup
-        const fakeRoute = { path: '/login', method: 'POST', handler: () => { } };
+        const fakeRoute = { path: '/login', method: 'POST', handler: () => {} };
         server.route(fakeRoute);
 
         // exercise
@@ -81,7 +74,6 @@ describe('Plugin: csrf', () => {
     });
 
     it('accepts post if crumb headers are valid', async () => {
-
         // setup
         const payload = 'payload';
         const fakeCrumb = 'crumb';
@@ -101,9 +93,8 @@ describe('Plugin: csrf', () => {
     });
 
     it('does not accept post if crumb headers are invalid', async () => {
-
         // setup
-        const fakeRoute = { path: '/login', method: 'POST', handler: () => { } };
+        const fakeRoute = { path: '/login', method: 'POST', handler: () => {} };
         server.route(fakeRoute);
 
         // exercise

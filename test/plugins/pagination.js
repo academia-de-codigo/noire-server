@@ -1,23 +1,19 @@
 const Lab = require('lab');
 const Hapi = require('hapi');
-const Path = require('path');
-const Pagination = require(Path.join(process.cwd(), 'lib/plugins/pagination'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Pagination = require('plugins/pagination');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: pagination', () => {
-
     let server;
 
     beforeEach(async () => {
-
         server = Hapi.server();
         server.register(Logger);
     });
 
     it('registers the hapi-pagination plugin', async () => {
-
         // exercise
         await server.register(Pagination);
 
@@ -25,8 +21,7 @@ describe('Plugin: pagination', () => {
         expect(server.decorations.toolkit).to.contains('paginate');
     });
 
-    it('handles hapi-pagination plugin registration failures', async (flags) => {
-
+    it('handles hapi-pagination plugin registration failures', async flags => {
         // cleanup
         const paginationRegister = Pagination.plugin.register;
         flags.onCleanup = function() {
@@ -43,5 +38,4 @@ describe('Plugin: pagination', () => {
         // exercise and validate
         await expect(server.register(Pagination)).to.reject(PLUGIN_ERROR);
     });
-
 });

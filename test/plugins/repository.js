@@ -1,18 +1,16 @@
-const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Sinon = require('sinon');
 const Objection = require('objection');
-const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
-const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
-const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Repository = require('plugins/repository');
+const UserModel = require('models/user');
+const RoleModel = require('models/role');
+const Logger = require('test/fixtures/logger-plugin');
 
 const Model = Objection.Model;
-const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: repository', () => {
-
     let server;
     let queryStub;
     let txStub;
@@ -23,7 +21,6 @@ describe('Plugin: repository', () => {
     });
 
     afterEach(() => {
-
         delete Repository.user;
         delete Repository.role;
 
@@ -39,7 +36,6 @@ describe('Plugin: repository', () => {
     });
 
     it('creates a repository object for each model present in configuration', async () => {
-
         // setup
         const options = { models: ['user', 'role'] };
 
@@ -54,7 +50,6 @@ describe('Plugin: repository', () => {
     });
 
     it('creates a repository object for a specific model', async () => {
-
         // exercise
         await server.register(Repository);
         const repository = Repository.create('user');
@@ -67,7 +62,6 @@ describe('Plugin: repository', () => {
     });
 
     it('throws error when creating a repository for invalid model', async () => {
-
         // exercise
         await server.register(Repository);
 
@@ -77,7 +71,6 @@ describe('Plugin: repository', () => {
     });
 
     it('decorates server with repositories', async () => {
-
         // setup
         const options = { models: ['user', 'role'] };
         const decorateSpy = Sinon.spy();
@@ -91,20 +84,25 @@ describe('Plugin: repository', () => {
         expect(decorateSpy.getCall(0).args[0]).to.equals('server');
         expect(decorateSpy.getCall(0).args[1]).to.equals('models');
         expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
-        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(
+            Repository.ModelRepository
+        );
         expect(decorateSpy.getCall(0).args[2]['user'].model).to.equals(UserModel);
-        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(
+            Repository.ModelRepository
+        );
         expect(decorateSpy.getCall(0).args[2]['role'].model).to.equals(RoleModel);
     });
 
     it('returns a specific record', async () => {
-
         // setup
         const fakeUser = { id: 1 };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
-        const findByIdStub = Sinon.stub().withArgs(fakeUser.id).resolves(fakeUser);
+        const findByIdStub = Sinon.stub()
+            .withArgs(fakeUser.id)
+            .resolves(fakeUser);
         queryStub = Sinon.stub(Model, 'query').returns({ findById: findByIdStub });
 
         // exercise
@@ -117,7 +115,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles error when querying for specific record', async () => {
-
         // setup
         const error = 'error';
         const options = { models: ['user'] };
@@ -131,7 +128,6 @@ describe('Plugin: repository', () => {
     });
 
     it('returns all records within limit', async () => {
-
         // setup
         const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         const options = { models: ['user'] };
@@ -160,10 +156,14 @@ describe('Plugin: repository', () => {
     });
 
     it('returns records within limit with a criteria object', async () => {
-
         // setup
         const fakeUsers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const fakeCriteria = { limit: 2, page: 2, sort: 'field1,-field2,+field3', search: 'fakesearch' };
+        const fakeCriteria = {
+            limit: 2,
+            page: 2,
+            sort: 'field1,-field2,+field3',
+            search: 'fakesearch'
+        };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['user'];
@@ -178,7 +178,7 @@ describe('Plugin: repository', () => {
         orderByStub.withArgs('field1', 'asc').returns();
         orderByStub.withArgs('field2', 'desc').returns();
         orderByStub.withArgs('field3', 'asc').returns();
-        modifyStub.callsFake((cb) => {
+        modifyStub.callsFake(cb => {
             cb({ orderBy: orderByStub });
             return fakeUsers;
         });
@@ -201,7 +201,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles error when querying for all records', async () => {
-
         // setup
         const error = 'error';
         const options = { models: ['user'] };
@@ -218,7 +217,6 @@ describe('Plugin: repository', () => {
     });
 
     it('inserts a new record', async () => {
-
         // setup
         const fakeUser = 'a fake user';
         const options = { models: ['user'] };
@@ -238,7 +236,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles error inserting new record', async () => {
-
         // setup
         const error = 'error';
         const options = { models: ['user'] };
@@ -252,7 +249,6 @@ describe('Plugin: repository', () => {
     });
 
     it('updates an existing record', async () => {
-
         // setup
         const fakeUser = { $query: Sinon.stub() };
         const options = { models: ['user'] };
@@ -270,7 +266,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles error updating an exiting record', async () => {
-
         // setup
         const fakeUser = { $query: Sinon.stub() };
         const error = 'error';
@@ -305,7 +300,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles error removing an exiting record', async () => {
-
         // setup
         const error = 'error';
         const options = { models: ['user'] };
@@ -319,7 +313,6 @@ describe('Plugin: repository', () => {
     });
 
     it('counts the number of records', async () => {
-
         // setup
         const fakeUserCount = 5;
         const options = { models: ['user'] };
@@ -340,7 +333,6 @@ describe('Plugin: repository', () => {
     });
 
     it('counts the number of records with search criteria', async () => {
-
         // setup
         const fakeUserCount = 5;
         const fakeCriteria = { search: 'fakesearch' };
@@ -349,11 +341,17 @@ describe('Plugin: repository', () => {
         const userRepository = Repository['user'];
 
         const firstStub = Sinon.stub().resolves(fakeUserCount);
-        const asStub = Sinon.stub().withArgs(Sinon.match.string).returns();
+        const asStub = Sinon.stub()
+            .withArgs(Sinon.match.string)
+            .returns();
         const fromStub = Sinon.stub();
         const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
-        const searchStub = Sinon.stub().withArgs(fakeCriteria.search).returns({ as: asStub });
-        queryStub = Sinon.stub(Model, 'query').onCall(0).returns({ count: countStub });
+        const searchStub = Sinon.stub()
+            .withArgs(fakeCriteria.search)
+            .returns({ as: asStub });
+        queryStub = Sinon.stub(Model, 'query')
+            .onCall(0)
+            .returns({ count: countStub });
         queryStub.onCall(1).returns({ search: searchStub });
 
         // exercise
@@ -367,7 +365,6 @@ describe('Plugin: repository', () => {
         expect(queryStub.calledTwice).to.be.true();
         expect(userCount).to.equals(fakeUserCount);
     });
-
 
     it('creates a query for a model', async () => {
         // setup
@@ -402,20 +399,21 @@ describe('Plugin: repository', () => {
     });
 
     it('obtains transaction repositories from models', async () => {
-
         // setup
         const options = { models: ['user', 'role'] };
         const server = Hapi.server();
         server.register(Logger);
         await server.register({ plugin: Repository, options });
         txStub = Sinon.stub(Objection, 'transaction');
-        txStub.withArgs(UserModel, RoleModel, Sinon.match.func).callsFake((userModel, roleModel, cb) => {
-            cb(userModel, roleModel);
-        }).resolves();
+        txStub
+            .withArgs(UserModel, RoleModel, Sinon.match.func)
+            .callsFake((userModel, roleModel, cb) => {
+                cb(userModel, roleModel);
+            })
+            .resolves();
 
         // exercise
         Repository.tx(UserModel, RoleModel, (userTxRepo, roleTxRepo) => {
-
             // validate
             expect(userTxRepo.model).to.equals(Repository['user'].model);
             expect(roleTxRepo.model).to.equals(Repository['role'].model);
@@ -423,7 +421,6 @@ describe('Plugin: repository', () => {
     });
 
     it('handles errors obtaining transaction repositories from models', async () => {
-
         // setup
         const error = 'error';
         const options = { models: ['user', 'role'] };
@@ -434,6 +431,6 @@ describe('Plugin: repository', () => {
         txStub.throws(new Error(error));
 
         // exercise
-        await expect(Repository.tx(UserModel, RoleModel, () => { })).to.reject(Error, error);
+        await expect(Repository.tx(UserModel, RoleModel, () => {})).to.reject(Error, error);
     });
 });

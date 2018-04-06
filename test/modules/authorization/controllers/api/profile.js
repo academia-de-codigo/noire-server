@@ -1,16 +1,14 @@
-const Path = require('path');
 const Hoek = require('hoek');
 const Lab = require('lab');
 const Sinon = require('sinon');
 const Hapi = require('hapi');
-const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
-const ProfileCtrl = require(Path.join(process.cwd(), 'lib/modules/authorization/controllers/api/profile'));
-const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
+const UserService = require('modules/authorization/services/user');
+const ProfileCtrl = require('modules/authorization/controllers/api/profile');
+const NSError = require('errors/nserror');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('API Controller: Profile', () => {
-
     const user = {
         id: 1,
         username: 'test',
@@ -24,8 +22,7 @@ describe('API Controller: Profile', () => {
         server = Hapi.server({ debug: { log: false, request: false } });
     });
 
-    it('gets the user profile', async (flags) => {
-
+    it('gets the user profile', async flags => {
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.withArgs(user.id).resolves(user);
@@ -48,8 +45,7 @@ describe('API Controller: Profile', () => {
         expect(JSON.parse(response.payload)).to.equal(user);
     });
 
-    it('handles get of a non existing user profile', async (flags) => {
-
+    it('handles get of a non existing user profile', async flags => {
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_NOT_FOUND());
@@ -70,11 +66,12 @@ describe('API Controller: Profile', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(404);
         expect(response.statusMessage).to.equals('Not Found');
-        expect(JSON.parse(response.payload).message).to.equals(NSError.RESOURCE_NOT_FOUND().message);
+        expect(JSON.parse(response.payload).message).to.equals(
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
-    it('handles server errors when getting the user profile', async (flags) => {
-
+    it('handles server errors when getting the user profile', async flags => {
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_FETCH());
@@ -96,8 +93,7 @@ describe('API Controller: Profile', () => {
         expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 
-    it('updates the user profile', async (flags) => {
-
+    it('updates the user profile', async flags => {
         // setup
         const entity = { username: 'test2', name: 'test2', password: 'test2' };
         const updateStub = Sinon.stub(UserService, 'update');
@@ -126,8 +122,7 @@ describe('API Controller: Profile', () => {
         expect(JSON.parse(response.payload).name).to.equals(entity.name);
     });
 
-    it('handles updating a user that does not exit', async (flags) => {
-
+    it('handles updating a user that does not exit', async flags => {
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_NOT_FOUND());
@@ -151,8 +146,7 @@ describe('API Controller: Profile', () => {
         expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
-    it('does not update a user if username or email is taken', async (flags) => {
-
+    it('does not update a user if username or email is taken', async flags => {
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_DUPLICATE());
@@ -174,8 +168,7 @@ describe('API Controller: Profile', () => {
         expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
-    it('handles server errors while updating a user', async (flags) => {
-
+    it('handles server errors while updating a user', async flags => {
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_UPDATE());

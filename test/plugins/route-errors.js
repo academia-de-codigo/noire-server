@@ -1,27 +1,23 @@
-const Path = require('path');
 const Hapi = require('hapi');
 const Lab = require('lab');
 const Joi = require('joi');
-const Errors = require(Path.join(process.cwd(), 'lib/plugins/route-errors'));
-const Assets = require(Path.join(process.cwd(), 'lib/plugins/assets'));
-const Auth = require(Path.join(process.cwd(), 'test/fixtures/auth-plugin'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const Errors = require('plugins/route-errors');
+const Assets = require('plugins/assets');
+const Auth = require('test/fixtures/auth-plugin');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Plugin: route-errors', () => {
-
     let server;
 
     beforeEach(async () => {
-
         server = Hapi.server();
         server.register(Logger);
         await server.register(Errors);
     });
 
     it('should not redirect on valid route with no errors', async () => {
-
         // setup
         const fakeResult = 'ok';
         const fakeRoute = { path: '/', method: 'GET', handler: () => fakeResult };
@@ -36,7 +32,6 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should redirect 404 not found errors to root', async () => {
-
         // exercise
         const response = await server.inject('/invalid-route');
 
@@ -47,7 +42,6 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should not redirect assets', async () => {
-
         // setup
         await server.register(Assets);
 
@@ -60,7 +54,6 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should return 400 malformed data on post errors', async () => {
-
         // setup
         const fakeRoute = {
             path: '/',
@@ -86,7 +79,6 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should redirect on insufficient scope', async () => {
-
         // setup
         const fakeRoute = {
             path: '/',
@@ -102,7 +94,11 @@ describe('Plugin: route-errors', () => {
         server.route(fakeRoute);
 
         // exercise
-        const response = await server.inject({ method: 'GET', url: fakeRoute.path, credentials: { scope: 'user' } });
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            credentials: { scope: 'user' }
+        });
 
         // validate
         expect(response.statusCode).to.equal(302);
@@ -111,7 +107,6 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should not redirect on insufficient scope when redirect set to false', async () => {
-
         // setup
         const fakeRoute = {
             path: '/',
@@ -130,15 +125,18 @@ describe('Plugin: route-errors', () => {
         server.route(fakeRoute);
 
         // exercise
-        const response = await server.inject({ method: 'GET', url: fakeRoute.path, credentials: { scope: 'user' } });
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            credentials: { scope: 'user' }
+        });
 
         // validate
         expect(response.statusCode).to.equal(403);
         expect(response.statusMessage).to.equal('Forbidden');
     });
 
-    it('should not redirect on failed authentication', async (flags) => {
-
+    it('should not redirect on failed authentication', async flags => {
         // setup
         Auth.authenticate = false;
         flags.onCleanup = function() {

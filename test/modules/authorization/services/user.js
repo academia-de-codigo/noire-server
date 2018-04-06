@@ -3,25 +3,22 @@ const Hapi = require('hapi');
 const Sinon = require('sinon');
 const Knex = require('knex');
 const Objection = require('objection');
-const Path = require('path');
-const KnexConfig = require(Path.join(process.cwd(), 'knexfile'));
-const UserService = require(Path.join(process.cwd(), 'lib/modules/authorization/services/user'));
-const Repository = require(Path.join(process.cwd(), 'lib/plugins/repository'));
-const UserModel = require(Path.join(process.cwd(), 'lib/models/user'));
-const RoleModel = require(Path.join(process.cwd(), 'lib/models/role'));
-const Auth = require(Path.join(process.cwd(), 'lib/plugins/auth'));
-const NSError = require(Path.join(process.cwd(), 'lib/errors/nserror'));
-const Logger = require(Path.join(process.cwd(), 'test/fixtures/logger-plugin'));
+const KnexConfig = require('knexfile');
+const UserService = require('modules/authorization/services/user');
+const Repository = require('plugins/repository');
+const UserModel = require('models/user');
+const RoleModel = require('models/role');
+const Auth = require('plugins/auth');
+const NSError = require('errors/nserror');
+const Logger = require('test/fixtures/logger-plugin');
 
-const { afterEach, beforeEach, describe, expect, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Service: user', () => {
-
     let cryptStub;
     let txSpy;
 
     beforeEach(async () => {
-
         /*jshint -W064 */
         const knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
@@ -39,7 +36,6 @@ describe('Service: user', () => {
     });
 
     afterEach(() => {
-
         if (txSpy) {
             txSpy.restore();
         }
@@ -50,7 +46,6 @@ describe('Service: user', () => {
     });
 
     it('counts users', async () => {
-
         // exercise
         const result = await UserService.count();
 
@@ -59,7 +54,6 @@ describe('Service: user', () => {
     });
 
     it('counts users with a search criteria', async () => {
-
         // setup
         const criteria = { search: 't u' }; //finds guest and test users
 
@@ -71,7 +65,6 @@ describe('Service: user', () => {
     });
 
     it('lists users', async () => {
-
         // exercise
         const results = await UserService.list();
 
@@ -89,7 +82,6 @@ describe('Service: user', () => {
     });
 
     it('lists users with a search clause', async () => {
-
         // setup
         const criteria = { search: 'tes' };
 
@@ -108,7 +100,6 @@ describe('Service: user', () => {
     });
 
     it('lists users with limit', async () => {
-
         // setup
         const criteria = { limit: 2 };
 
@@ -128,7 +119,6 @@ describe('Service: user', () => {
     });
 
     it('lists users with offset', async () => {
-
         // setup
         const criteria = { page: 4, limit: 1 };
 
@@ -148,7 +138,6 @@ describe('Service: user', () => {
     });
 
     it('lists users ordered by column', async () => {
-
         // setup
         const criteria = { sort: 'username' };
 
@@ -168,9 +157,8 @@ describe('Service: user', () => {
     });
 
     it('lists users order by id descending', async () => {
-
         // setup
-        const criteria = { sort: '-id', };
+        const criteria = { sort: '-id' };
 
         // exercise
         const results = await UserService.list(criteria);
@@ -190,7 +178,6 @@ describe('Service: user', () => {
     });
 
     it('gets valid user by id', async () => {
-
         // setup
         const id = 1;
         const user = { username: 'admin', email: 'admin@gmail.com' };
@@ -208,13 +195,14 @@ describe('Service: user', () => {
     });
 
     it('handles getting invalid user by id', async () => {
-
         // exercise and validate
-        await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findById(999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('populates role associations when getting user by id', async () => {
-
         // exercise
         const result = await UserService.findById(1);
 
@@ -230,7 +218,6 @@ describe('Service: user', () => {
     });
 
     it('gets valid user by username', async () => {
-
         // setup
         const user = { id: 1, username: 'admin', email: 'admin@gmail.com' };
 
@@ -246,7 +233,6 @@ describe('Service: user', () => {
     });
 
     it('populates role associations when getting user by username', async () => {
-
         // exercise
         const result = await UserService.findByUserName('admin');
 
@@ -262,13 +248,14 @@ describe('Service: user', () => {
     });
 
     it('handles getting invalid user by username', async () => {
-
         // exercise and validate
-        await expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findByUserName('invalid')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('gets valid user by name', async () => {
-
         // setup
         const user = { id: 1, name: 'Admin User' };
 
@@ -286,7 +273,6 @@ describe('Service: user', () => {
     });
 
     it('gets invalid user by name', async () => {
-
         // exercise
         const result = await UserService.findByName('invalid');
 
@@ -296,7 +282,6 @@ describe('Service: user', () => {
     });
 
     it('gets valid user by email', async () => {
-
         // setup
         const user = {
             id: 1,
@@ -315,13 +300,14 @@ describe('Service: user', () => {
     });
 
     it('handles geting invalid user by email', async () => {
-
         // exercise and validate
-        await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findByEmail('invalid')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
-    it('authenticates user with valid credentials', async (flags) => {
-
+    it('authenticates user with valid credentials', async flags => {
         // setup
         const fakeUser = { id: 1, username: 'admin', password: 'admin' };
         const fakeToken = 'fake token';
@@ -339,25 +325,30 @@ describe('Service: user', () => {
     });
 
     it('does not authenticate inactive user', async () => {
-
         // exercise and validate
-        await expect(UserService.authenticate('guest', 'guest')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
+        await expect(UserService.authenticate('guest', 'guest')).to.reject(
+            Error,
+            NSError.AUTH_INVALID_USERNAME().message
+        );
     });
 
     it('does not authenticate invalid username', async () => {
-
         // exercise and validate
-        await expect(UserService.authenticate('invalid', 'admin')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
+        await expect(UserService.authenticate('invalid', 'admin')).to.reject(
+            Error,
+            NSError.AUTH_INVALID_USERNAME().message
+        );
     });
 
     it('does not authenticate invalid password', async () => {
-
         // exercise and validate
-        await expect(UserService.authenticate('admin', 'invalid')).to.reject(Error, NSError.AUTH_INVALID_USERNAME().message);
+        await expect(UserService.authenticate('admin', 'invalid')).to.reject(
+            Error,
+            NSError.AUTH_INVALID_USERNAME().message
+        );
     });
 
     it('adds a new user', async () => {
-
         // setup
         const fakeHash = 'hash';
         const newUser = { username: 'test2', email: 'test2@gmail.com', password: 'test2' };
@@ -383,38 +374,50 @@ describe('Service: user', () => {
     });
 
     it('does not add an existing user', async () => {
-
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 
     it('does not add a user with no password', async () => {
-
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').rejects(NSError.AUTH_CRYPT_ERROR());
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(Error, NSError.AUTH_CRYPT_ERROR().message);
+        await expect(UserService.add({ username: 'test', email: 'test@gmail.com' })).to.reject(
+            Error,
+            NSError.AUTH_CRYPT_ERROR().message
+        );
     });
 
     it('does not add a user with the same email as existing user', async () => {
-
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
         // exercise and validate
-        await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(UserService.add({ username: 'test2', email: 'test@gmail.com' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 
     it('updates an existing user', async () => {
-
         // setup
         const id = 2;
         const fakeHash = 'hash';
-        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2', avatar: 'newavatar', active: true };
+        const user = {
+            username: 'test2',
+            name: 'test2',
+            email: 'test2@gmail.com',
+            password: 'test2',
+            avatar: 'newavatar',
+            active: true
+        };
         cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
 
         // exercise
@@ -431,14 +434,14 @@ describe('Service: user', () => {
         expect(result.email).to.equals(user.email);
         expect(result.avatar).to.equals(user.avatar);
         expect(result.password).to.equals(fakeHash);
-        expect(result.active).to.satisfy(value =>
-            // accommodate boolean in both sqlite and postgres
-            value === true || value === 1
+        expect(result.active).to.satisfy(
+            value =>
+                // accommodate boolean in both sqlite and postgres
+                value === true || value === 1
         );
     });
 
     it('updates an existing user without updating the username', async () => {
-
         // setup
         const id = 2;
         const user = { name: 'test2', email: 'test2@gmail.com', active: true };
@@ -456,14 +459,14 @@ describe('Service: user', () => {
         expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.exists();
-        expect(result.active).to.satisfy(value =>
-            // accommodate boolean in both sqlite and postgres
-            value === true || value === 1
+        expect(result.active).to.satisfy(
+            value =>
+                // accommodate boolean in both sqlite and postgres
+                value === true || value === 1
         );
     });
 
     it('updates an existing user with same username and id as request parameters string', async () => {
-
         // setup
         const id = 2;
         const user = { username: 'test' };
@@ -480,7 +483,6 @@ describe('Service: user', () => {
     });
 
     it('updates an existing user with same username and email', async () => {
-
         // setup
         const id = 2;
         const user = { username: 'test', email: 'test@gmail.com' };
@@ -499,11 +501,15 @@ describe('Service: user', () => {
     });
 
     it('handles user update with no active property', async () => {
-
         // setup
         const id = 2;
         const fakeHash = 'hash';
-        const user = { username: 'test2', name: 'test2', email: 'test2@gmail.com', password: 'test2' };
+        const user = {
+            username: 'test2',
+            name: 'test2',
+            email: 'test2@gmail.com',
+            password: 'test2'
+        };
         const cryptStub = Sinon.stub(Auth, 'crypt').resolves(fakeHash);
 
         const result = await UserService.update(id, user);
@@ -518,29 +524,34 @@ describe('Service: user', () => {
         expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.equals(fakeHash);
-        expect(result.active).to.satisfy(value =>
-            // accommodate boolean in both sqlite and postgres
-            value === true || value === 1
+        expect(result.active).to.satisfy(
+            value =>
+                // accommodate boolean in both sqlite and postgres
+                value === true || value === 1
         );
     });
 
     it('handles updating a non existing user', async () => {
-
-        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.update(900, {})).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not update a user with same username as existing user', async () => {
-
-        await expect(UserService.update(2, { username: 'admin' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(UserService.update(2, { username: 'admin' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 
     it('does not update a user with same email as existing user', async () => {
-
-        await expect(UserService.update(2, { username: 'test', email: 'admin@gmail.com' })).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(
+            UserService.update(2, { username: 'test', email: 'admin@gmail.com' })
+        ).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('deletes an existing user', async () => {
-
         // exercise
         const result = await UserService.delete(3);
 
@@ -552,13 +563,14 @@ describe('Service: user', () => {
     });
 
     it('handles deleting a non existing user', async () => {
-
         // exercise and validate
-        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.delete(9999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not delete an active user', async () => {
-
         // exercise and validate
         await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE().message);
     });
