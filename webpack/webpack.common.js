@@ -4,18 +4,22 @@ const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
 const Config = require(path.join(process.cwd(), 'lib/config/index'));
 
-const BUILD_DIR = path.join(process.cwd(), 'client/dist');
-const SRC_DIR = path.join(process.cwd(), 'client/src');
-const JS_SRC_DIR = path.join(SRC_DIR, 'js/pages');
-const IMAGES_SRC_DIR = path.join(SRC_DIR, 'assets/img');
-const FONTS_SRC_DIR = path.join(SRC_DIR, 'assets/fonts');
+const srcPath = path.join(process.cwd(), Config.build.src);
+const distPath = path.join(process.cwd(), Config.build.dist);
+const scriptSrc = path.join(srcPath, Config.build.scripts);
+const imagesSrc = path.join(srcPath, Config.build.assets, Config.build.images);
+const imagesDst = path.join(distPath, Config.build.images);
+const fontsSrc = path.join(srcPath, Config.build.assets, Config.build.fonts);
+const fontsDst = path.join(distPath, Config.build.fonts);
+const favIconSrc = path.join(srcPath, Config.build.assets, 'favicon.ico');
 
 const internals = {
     entries: {},
     plugins: {
-        clean: new CleanWebpackPlugin([BUILD_DIR], {
+        clean: new CleanWebpackPlugin([distPath], {
             root: process.cwd()
         }),
         jquery: new webpack.ProvidePlugin({
@@ -24,9 +28,9 @@ const internals = {
         }),
         copyAssets: new CopyWebpackPlugin(
             [
-                { from: IMAGES_SRC_DIR, to: path.join(BUILD_DIR, 'img') },
-                { from: FONTS_SRC_DIR, to: path.join(BUILD_DIR, 'fonts') },
-                { from: path.join(SRC_DIR, 'assets', 'favicon.ico'), to: BUILD_DIR }
+                { from: imagesSrc, to: imagesDst },
+                { from: fontsSrc, to: fontsDst },
+                { from: favIconSrc, to: distPath }
             ],
             {
                 debug: Config.debug
@@ -35,20 +39,23 @@ const internals = {
         miniCss: new MiniCssExtractPlugin({
             filename: 'css/[name].css',
             chunkFilename: '[id].css'
+        }),
+        progress: new SimpleProgressWebpackPlugin({
+            format: 'compact'
         })
     }
 };
 
-glob.sync(`${JS_SRC_DIR}/**/*.js`).forEach(entry => {
+glob.sync(`${scriptSrc}/**/*.js`).forEach(entry => {
     internals.entries[
-        path.parse(path.relative(JS_SRC_DIR, entry)).dir + '/' + path.parse(entry).name
+        path.join(path.parse(path.relative(scriptSrc, entry)).dir, path.parse(entry).name)
     ] = entry;
 });
 
 module.exports = {
     entry: internals.entries,
     output: {
-        path: BUILD_DIR,
+        path: distPath,
         filename: 'js/[name].js'
     },
     stats: {
@@ -78,6 +85,7 @@ module.exports = {
         internals.plugins.jquery,
         internals.plugins.clean,
         internals.plugins.copyAssets,
-        internals.plugins.miniCss
+        internals.plugins.miniCss,
+        internals.plugins.progress
     ]
 };

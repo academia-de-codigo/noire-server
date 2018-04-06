@@ -4,18 +4,14 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const common = require('./webpack.common.js');
 const Config = require(path.join(process.cwd(), 'lib/config/index'));
 
-const BUILD_DIR = path.join(process.cwd(), 'client/dist');
-const SRC_DIR = path.join(process.cwd(), 'client/src');
-const VIEWS_SRC_DIR = path.join(SRC_DIR, 'views');
+const viewsSrc = path.join(process.cwd(), Config.build.src, Config.build.views);
+const viewsDst = path.join(process.cwd(), Config.build.dist, Config.build.views);
 
 const internals = {
     plugins: {
-        copyHbs: new CopyWebpackPlugin(
-            [{ from: VIEWS_SRC_DIR, to: path.join(BUILD_DIR, 'views') }],
-            {
-                debug: Config.debug
-            }
-        )
+        copyHbs: new CopyWebpackPlugin([{ from: viewsSrc, to: viewsDst }], {
+            debug: Config.debug
+        })
     }
 };
 

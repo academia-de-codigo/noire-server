@@ -13,13 +13,6 @@
     "globals": {},
     "rules": {
         "strict": [2, "global"],
-        "indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 1
-            }
-        ],
         "linebreak-style": ["error", "unix"],
         "semi": [2, "always"],
         "quotes": [2, "single", "avoid-escape"],
@@ -48,7 +41,10 @@
             {
                 "properties": false
             }
-        ]
+        ],
+        "rules": {
+            "prettier/prettier": "error"
+        }
     },
     "plugins": []
 }
