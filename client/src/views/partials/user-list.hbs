@@ -1,0 +1,32 @@
+<div class="ui main stackable grid">
+
+    <div class="ui one column row">
+        <div class="ui column">
+            <div class="ui basic segment">
+                <table class="ui selectable celled user table">
+                    <thead>
+                        <tr>
+                            <th>Avatar</th>
+                            <th>User</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each users}}
+                        <tr data-id="{{this.id}}">
+                            <!-- disabling this element prevents click events -->
+                            <td {{#if this.active}} class="user-row link" {{else}} class="disabled" {{/if}}>
+                                <img class="ui avatar image {{#unless this.active}} disabled {{/unless}}" src="{{this.avatar}}" alt="avatar">
+                            </td>
+                            <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.username}}</td>
+                            <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.name}}</td>
+                            <td {{#if this.active}} class="user-row" {{else}} class="disabled" {{/if}}>{{this.email}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

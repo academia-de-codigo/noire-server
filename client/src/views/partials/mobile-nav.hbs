@@ -3,13 +3,12 @@
 <a class="item" href="#">Two</a>
 <a class="item" href="#">Three</a>
 <a class="item" href="#">Four</a>
-{{#if credentials}}
-    {{#if credentials.admin}}
-        <a class="item" href="/admin">Admin</a>
-    {{else}}
-        <a class="item" href="/">Home</a>
-    {{/if}}
-    <a class="item logout" href="/logout">Logout</a>
+{{#if credentials}} {{#if credentials.admin}}
+<a class="item" href="/admin">Admin</a>
 {{else}}
-    <a class="item" href="/login">Login</a>
+<a class="item" href="/">Home</a>
+{{/if}}
+<a class="item logout" href="/logout">Logout</a>
+{{else}}
+<a class="item" href="/login">Login</a>
 {{/if}}

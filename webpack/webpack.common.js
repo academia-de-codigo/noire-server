@@ -9,7 +9,7 @@ const Config = require(path.join(process.cwd(), 'lib/config/index'));
 
 const srcPath = path.join(process.cwd(), Config.build.src);
 const distPath = path.join(process.cwd(), Config.build.dist);
-const scriptSrc = path.join(srcPath, Config.build.scripts);
+const scriptSrc = path.join(srcPath, Config.build.scripts, Config.build.pages);
 const imagesSrc = path.join(srcPath, Config.build.assets, Config.build.images);
 const imagesDst = path.join(distPath, Config.build.images);
 const fontsSrc = path.join(srcPath, Config.build.assets, Config.build.fonts);
