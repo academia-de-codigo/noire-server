@@ -149,4 +149,13 @@ describe('Errors', () => {
         expect(NSError.AUTH_INVALID_PASSWORD.match(error2)).to.be.false();
         expect(NSError.RESOURCE_NOT_FOUND.match(error1)).to.be.false();
     });
+
+    it('creates errors with custom error message', () => {
+        // setup
+        const message = 'a custom error message';
+
+        // verify
+        expect(NSError.AUTH_ERROR(message).message).to.equals(message);
+        expect(NSError.RESOURCE_NOT_FOUND(message).message).to.equals(message);
+    });
 });
