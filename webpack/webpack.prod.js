@@ -12,8 +12,8 @@ const distPath = path.join(process.cwd(), Config.build.dist);
 const viewsSrc = path.join(srcPath, Config.build.views);
 const viewsDst = path.join(distPath, Config.build.views);
 
-const hbAttrWrapOpen = /\{\{#[^}]+\}\}/;
-const hbAttrWrapClose = /\{\{\/[^}]+\}\}/;
+const hbAttrWrapOpen = /(?:(?:\{\{.*?)?\}\})?/;
+const hbAttrWrapClose = /(?:\{\{(?:.*?\}\})?)?/;
 const hbAttrWrapPair = [hbAttrWrapOpen, hbAttrWrapClose];
 
 const internals = {
@@ -25,9 +25,14 @@ const internals = {
                     to: viewsDst,
                     transform: function(fileContent) {
                         return htmlMinifier.minify(fileContent.toString(), {
-                            removeComments: true,
+                            customAttrSurround: [hbAttrWrapPair],
+                            collapseBooleanAttributes: true,
+                            collapseInlineTagWhitespace: true,
                             collapseWhitespace: true,
-                            customAttrSurround: [hbAttrWrapPair]
+                            decodeEntities: true,
+                            removeComments: true,
+                            removeCommentsFromCDATA: true,
+                            keepClosingSlash: true
                         });
                     }
                 }
