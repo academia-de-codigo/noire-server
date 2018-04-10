@@ -5,6 +5,7 @@ const UserService = require('modules/authorization/services/user');
 const LoginCtrl = require('modules/authorization/controllers/api/login');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
+const JWT = require('jsonwebtoken');
 
 const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
@@ -28,6 +29,12 @@ describe('API Controller: login', () => {
             method: 'GET',
             path: '/logout',
             config: { handler: LoginCtrl.logout, plugins: { stateless: true } }
+        });
+
+        server.route({
+            method: 'GET',
+            path: '/renew',
+            config: { handler: LoginCtrl.renew, plugins: { stateless: true } }
         });
     });
 
@@ -198,5 +205,26 @@ describe('API Controller: login', () => {
         expect(response.headers['set-cookie']).to.be.an.array();
         expect(response.headers['set-cookie'][0]).to.be.a.string();
         expect(response.headers['set-cookie'][0].startsWith('token=;')).to.be.true();
+    });
+
+    it('renews authentication token', async () => {
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/renew',
+            headers: {
+                authorization: `Basic ${token}`
+            }
+        });
+
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.headers['server-authorization']).to.exist();
+        expect(response.headers['server-authorization']).not.to.equals(token);
+        expect(JWT.decode(response.headers['server-authorization']).id).to.equals(
+            JWT.decode(token).id
+        );
+        expect(JWT.decode(response.headers['server-authorization']).exp).to.be.a.number();
     });
 });

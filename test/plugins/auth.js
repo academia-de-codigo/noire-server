@@ -177,6 +177,35 @@ describe('Plugin: auth', () => {
         expect(response.result.message).to.equals('Invalid token');
     });
 
+    it('does not authenticate if token expired', async () => {
+        // setup
+        const expiredToken = JWT.sign(
+            {
+                id: 0,
+                exp: Math.floor(Date.now() / 1000),
+                iat: Date.now() / 1000 - 1
+            },
+            new Buffer(process.env.JWT_SECRET, 'base64')
+        );
+
+        const fakeRoute = { path: '/', method: 'GET', handler: () => {} };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register(Auth);
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: { authorization: expiredToken }
+        });
+
+        expect(response.statusCode, 'Status code').to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Expired token');
+    });
+
     it('does not authenticate if invalid user id in token', async flags => {
         // cleanup
         flags.onCleanup = function() {
