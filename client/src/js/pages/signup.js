@@ -1,20 +1,13 @@
-/*
-    Login form using ajax
- */
-
-// TODO: Would be nice to provide user with timeout error instead of a generic one
-// https://github.com/Semantic-Org/Semantic-UI/issues/5121
-
 require('../app');
-require('../../assets/css/login.css');
+require('../../assets/css/signup.css');
 
 const commons = require('../commons');
 const config = require('../config');
 
-let formElement, checkBoxElement, passwordElement, errorElement;
+let formElement, errorElement;
 
 const apiSettings = {
-    action: 'login',
+    action: 'signup',
     method: 'post',
     serializeForm: true,
     timeout: config.api.XHR_OPTIONS.TIMEOUT,
@@ -31,8 +24,7 @@ const apiSettings = {
 const validationRules = {
     on: 'blur', // validate form when user changes field
     fields: {
-        username: config.validation.username(),
-        password: config.validation.password()
+        email: config.validation.email()
     },
     onValid: updateUI,
     onInvalid: updateUI
@@ -40,25 +32,15 @@ const validationRules = {
 
 $(document).ready(function() {
     grabDomElements();
-    setupCheckBoxBehaviour();
-    setupLoginFormBehaviour();
+    setupSignupFormBehaviour();
 });
 
 function grabDomElements() {
     formElement = $('.ui.form');
-    checkBoxElement = $('.ui.checkbox');
-    passwordElement = $('#form-password');
     errorElement = $('.ui.message.error');
 }
 
-function setupCheckBoxBehaviour() {
-    checkBoxElement.checkbox({
-        onChecked: showPassword,
-        onUnchecked: hidePassword
-    });
-}
-
-function setupLoginFormBehaviour() {
+function setupSignupFormBehaviour() {
     formElement.form(validationRules).api(apiSettings);
     commons.utils.disableFormKeyHandlers(formElement);
 }
@@ -75,14 +57,6 @@ function updateSubmitButton() {
     } else {
         $('form .submit.button').attr('disabled', true);
     }
-}
-
-function showPassword() {
-    passwordElement.attr('type', 'text');
-}
-
-function hidePassword() {
-    passwordElement.attr('type', 'password');
 }
 
 function showFailure(response) {

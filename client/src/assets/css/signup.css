@@ -1,0 +1,13 @@
+body {
+    background-color: #ecf0f1;
+}
+
+.signup {
+    padding-top: 200px;
+}
+
+.login {
+    font-size: 1.2em;
+    padding-top: 20px;
+    text-align: center;
+}

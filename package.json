@@ -5,7 +5,7 @@
     "main": "lib/index.js",
     "keywords": ["hapi", "boilerplate"],
     "scripts": {
-        "start": "NODE_PATH=$NODE_PATH:lib:. node lib/index.js",
+        "start": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true node lib/index.js",
         "test": "NODE_PATH=$NODE_PATH:lib:. lab",
         "codecov":
             "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
