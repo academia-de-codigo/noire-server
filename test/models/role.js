@@ -14,7 +14,7 @@ describe('Model: role', () => {
     });
 
     it('should persist to a table named role', () => {
-        expect(RoleModel.tableName).to.equals('role');
+        expect(RoleModel.tableName).to.equals('roles');
     });
 
     it('should contain a schema', () => {

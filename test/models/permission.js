@@ -14,7 +14,7 @@ describe('Model: permission', () => {
     });
 
     it('should persist to a table named permission', () => {
-        expect(PermissionModel.tableName).to.equals('permission');
+        expect(PermissionModel.tableName).to.equals('permissions');
     });
 
     it('should contain a schema', () => {

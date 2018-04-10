@@ -14,7 +14,7 @@ describe('Model: resource', () => {
     });
 
     it('should persist to a table named resource', () => {
-        expect(ResourceModel.tableName).to.equals('resource');
+        expect(ResourceModel.tableName).to.equals('resources');
     });
 
     it('should contain a schema', () => {

@@ -14,7 +14,7 @@ describe('Model: user', () => {
     });
 
     it('should persist to a table named user', () => {
-        expect(UserModel.tableName).to.equals('user');
+        expect(UserModel.tableName).to.equals('users');
     });
 
     it('should contain a schema', () => {
