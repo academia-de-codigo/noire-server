@@ -3,7 +3,10 @@
     "version": "0.4.0",
     "description": "Noire Server",
     "main": "lib/index.js",
-    "keywords": ["hapi", "boilerplate"],
+    "keywords": [
+        "hapi",
+        "boilerplate"
+    ],
     "scripts": {
         "start": "NODE_PATH=$NODE_PATH:lib:. node lib/index.js",
         "test": "NODE_PATH=$NODE_PATH:lib:. lab",
@@ -28,7 +31,7 @@
     },
     "homepage": "https://github.com/academia-de-codigo/noire-server",
     "dependencies": {
-        "bcrypt": "^1.0.3",
+        "bcrypt": "^2.0.0",
         "boom": "^7.2.0",
         "crumb": "^7.0.0",
         "exiting": "^4.0.0",
@@ -42,7 +45,7 @@
         "inert": "^5.1.0",
         "joi": "^13.1.2",
         "jsonwebtoken": "^8.2.1",
-        "knex": "0.14.4",
+        "knex": "0.14.5",
         "lout": "^11.0.0",
         "objection": "^1.1.3",
         "pg": "^7.4.1",
