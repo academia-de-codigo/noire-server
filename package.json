@@ -6,6 +6,7 @@
     "keywords": ["hapi", "boilerplate"],
     "scripts": {
         "start": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true node lib/index.js",
+        "watch": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true nodemon --watch lib lib/index.js",
         "test": "NODE_PATH=$NODE_PATH:lib:. lab",
         "codecov":
             "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
@@ -70,6 +71,7 @@
         "lab": "^15.4.1",
         "mini-css-extract-plugin": "^0.4.0",
         "mock-require": "^3.0.2",
+        "nodemon": "^1.17.3",
         "optimize-css-assets-webpack-plugin": "^4.0.0",
         "prettier": "^1.11.1",
         "prettier-eslint": "^8.8.1",
