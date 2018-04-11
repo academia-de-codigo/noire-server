@@ -45,4 +45,16 @@ describe('Plugin: logger', () => {
         // validate
         expect(server.events.hasListeners('route')).to.be.true();
     });
+
+    it('decorates plugin with logging instance', async () => {
+        // setup
+        const levels = ['fatal', 'error', 'warn', 'info', 'debug'];
+
+        // exercise
+        await server.register(Logger);
+
+        levels.forEach(level => {
+            expect(Logger[level]).to.be.a.function();
+        });
+    });
 });
