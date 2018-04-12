@@ -46,15 +46,7 @@ describe('Plugin: logger', () => {
         expect(server.events.hasListeners('route')).to.be.true();
     });
 
-    it('decorates plugin with logging instance', async () => {
-        // setup
-        const levels = ['fatal', 'error', 'warn', 'info', 'debug'];
-
-        // exercise
-        await server.register(Logger);
-
-        levels.forEach(level => {
-            expect(Logger[level]).to.be.a.function();
-        });
+    it('returns a new logger instance', () => {
+        expect(Logger.getLogger().LOG_VERSION).to.be.a.number();
     });
 });
