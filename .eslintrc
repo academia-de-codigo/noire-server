@@ -36,12 +36,6 @@
                 "mode": "minimum"
             }
         ],
-        "new-cap": [
-            2,
-            {
-                "properties": false
-            }
-        ],
         "rules": {
             "prettier/prettier": "error"
         }

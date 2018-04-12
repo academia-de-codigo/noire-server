@@ -16,45 +16,45 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 **WARNING: Noire is currently under active development and not ready for production use**
 
 ### View Layer
-* Accept data
-* Apply style and formatting
-* Rendering
+
+*   Accept data
+*   Apply style and formatting
+*   Rendering
 
 ### Controllers
-* Map routes
-* Extract route parameters
-* Kick off some work
-* Send the result to a View for rendering
+
+*   Map routes
+*   Extract route parameters
+*   Kick off some work
+*   Send the result to a View for rendering
 
 ### Service Layer
-* Perform work for the Controller
-* Return the result for the Controller
+
+*   Perform work for the Controller
+*   Return the result for the Controller
 
 ### Data Access Layer
-* Repository pattern for data entities
-* Thin models
-* ORM with transactional capabilities
+
+*   Repository pattern for data entities
+*   Thin models
+*   ORM with transactional capabilities
 
 ## Features
 
-* HTTP and HTTPS support
-* Server rendered views using the Semantic-UI front-end framework and Handlebars template engine
-* API routes for rendering on the client side and building SPAs
-* Automated API documentation generation
-* Stateless JWT auth for API endpoints
-* Cookie stored JWT auth for web app with CSRF protection
-* RBAC authorization
-* AJAX login form
-* Client side caching of assets
-* Logging to console and file - ops, error, auth and access logs [currently BROKEN]
-* Testing, code coverage and Travis CI integration
-* Graceful server shutdown
-* Database ORM (Objection) with migrations (Knex) support
-* Usage of native Promises and async/await
-
-### Desired Features
-
-* Admin interface
+*   HTTP and HTTPS support
+*   Server rendered views using the Semantic-UI front-end framework and Handlebars template engine
+*   API routes for rendering on the client side and building SPAs
+*   Automated API documentation generation
+*   Stateless JWT auth for API endpoints
+*   Cookie stored JWT auth for web app with CSRF protection
+*   RBAC authorization
+*   AJAX login and signup forms
+*   Client side caching of assets
+*   Fast and flexible logging (Pino)
+*   Testing, code coverage and Travis CI integration
+*   Graceful server shutdown
+*   Database ORM (Objection) with migrations (Knex) support
+*   Usage of native Promises and async/await
 
 ## Get it Running
 
@@ -72,14 +72,15 @@ Edit files in `lib/config`
 
 ### Setup environment variables
 
-* `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
-* `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
+*   `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
+*   `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
 
 ### Reset the database to it's original state
 
 `npm run reset`
 
 ### Build Semantic-UI
+
 `npm run build`
 
 ### Run the unit tests
