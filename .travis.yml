@@ -14,7 +14,8 @@ addons:
     packages:
     - g++-4.8
 script:
+  - npm test
+before_script:
   - npm run build
 after_success:
-  - npm test
   - npm run codecov
