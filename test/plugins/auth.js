@@ -16,6 +16,10 @@ describe('Plugin: auth', () => {
     const secret =
         'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
 
+    const tokenOptions = {
+        audience: 'noire:auth'
+    };
+
     before(() => {
         process.env.JWT_SECRET = secret;
     });
@@ -104,11 +108,17 @@ describe('Plugin: auth', () => {
         const jwt = await Auth.getToken(fakeId);
 
         // validate
-        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
-            expect(err).not.to.exist();
-            expect(decoded.id).to.equals(fakeId);
-            expect(decoded.exp).to.exist();
-        });
+        JWT.verify(
+            jwt,
+            new Buffer(process.env.JWT_SECRET, 'base64'),
+            tokenOptions,
+            (err, decoded) => {
+                expect(err).not.to.exist();
+                expect(decoded.id).to.equals(fakeId);
+                expect(decoded.exp).to.exist();
+                expect(decoded.aud).to.equals([tokenOptions.audience]);
+            }
+        );
     });
 
     it('gets token without expiration date', async () => {
@@ -204,6 +214,30 @@ describe('Plugin: auth', () => {
         expect(response.statusCode, 'Status code').to.equal(401);
         expect(response.result.error).to.equals('Unauthorized');
         expect(response.result.message).to.equals('Expired token');
+    });
+
+    it('does not authenticate if invalid audience', async () => {
+        // setup
+        const invalidToken = JWT.sign({ id: 0 }, new Buffer(process.env.JWT_SECRET, 'base64'), {
+            audience: 'invalid'
+        });
+
+        const fakeRoute = { path: '/', method: 'GET', handler: () => {} };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register(Auth);
+        server.route(fakeRoute);
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: { authorization: invalidToken }
+        });
+
+        expect(response.statusCode, 'Status code').to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Invalid token');
     });
 
     it('does not authenticate if invalid user id in token', async flags => {

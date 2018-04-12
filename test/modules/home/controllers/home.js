@@ -1,6 +1,6 @@
 const Lab = require('lab');
 const Sinon = require('sinon');
-const HomeCtrl = require('modules/home/controllers/home');
+const HomeCtrl = require('modules/home/controllers/web/home');
 
 const { describe, expect, it } = (exports.lab = Lab.script());
 
