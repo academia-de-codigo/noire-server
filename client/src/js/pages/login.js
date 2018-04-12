@@ -88,6 +88,8 @@ function hidePassword() {
 function showFailure(response) {
     if (response && response.message) {
         showError(response.message);
+    } else {
+        showError('Invalid server response');
     }
 }
 

@@ -1,16 +1,17 @@
 /*
-    SignUp form using ajax
-*/
+    Registration form using ajax
+ */
 require('../app');
-require('../../assets/css/signup.css');
+require('../../assets/css/register.css');
 
+const qs = require('qs');
 const commons = require('../commons');
 const config = require('../config');
 
-let formElement, errorElement;
+let formElement, checkBoxElement, passwordElement, errorElement;
 
 const apiSettings = {
-    action: 'signup',
+    action: 'register',
     method: 'post',
     serializeForm: true,
     timeout: config.api.XHR_OPTIONS.TIMEOUT,
@@ -21,29 +22,57 @@ const apiSettings = {
     successTest: commons.utils.isSuccess,
     onFailure: showFailure,
     onError: showError,
-    onAbort: addShowError
+    onAbort: addShowError,
+    urlData: {
+        token: 'invalid-token'
+    }
 };
 
 const validationRules = {
     on: 'blur', // validate form when user changes field
     fields: {
-        email: config.validation.email()
+        name: config.validation.name(),
+        email: config.validation.email(),
+        username: config.validation.username(),
+        password: config.validation.password()
     },
     onValid: updateUI,
     onInvalid: updateUI
 };
 
 $(document).ready(function() {
+    setupFormUrl();
     grabDomElements();
-    setupSignupFormBehaviour();
+    setupCheckBoxBehaviour();
+    setupRegisterFormBehaviour();
 });
+
+function setupFormUrl() {
+    // grab the current query string
+    const query = window.location.search.substring(1).split('&')[0];
+
+    // it should contain a token query parameter
+    const token = qs.parse(query).token;
+
+    // make sure we include it when submitting the form
+    apiSettings.urlData.token = token;
+}
 
 function grabDomElements() {
     formElement = $('.ui.form');
+    checkBoxElement = $('.ui.checkbox');
+    passwordElement = $('#form-password');
     errorElement = $('.ui.message.error');
 }
 
-function setupSignupFormBehaviour() {
+function setupCheckBoxBehaviour() {
+    checkBoxElement.checkbox({
+        onChecked: showPassword,
+        onUnchecked: hidePassword
+    });
+}
+
+function setupRegisterFormBehaviour() {
     formElement.form(validationRules).api(apiSettings);
     commons.utils.disableFormKeyHandlers(formElement);
 }
@@ -60,6 +89,14 @@ function updateSubmitButton() {
     } else {
         $('form .submit.button').attr('disabled', true);
     }
+}
+
+function showPassword() {
+    passwordElement.attr('type', 'text');
+}
+
+function hidePassword() {
+    passwordElement.attr('type', 'password');
 }
 
 function showFailure(response) {

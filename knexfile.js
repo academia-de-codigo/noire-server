@@ -1,7 +1,6 @@
 const Path = require('path');
 
 module.exports = {
-
     testing: {
         client: 'sqlite3',
         connection: ':memory:',
@@ -21,7 +20,7 @@ module.exports = {
         },
         pool: {
             min: 1,
-            max: 1
+            max: 2
         },
         migrations: {
             directory: './db/migrations'
@@ -86,6 +85,6 @@ module.exports = {
         seeds: {
             directory: './db/seeds/prod'
         },
-        acquireConnectionTimeout: 5000,
+        acquireConnectionTimeout: 5000
     }
 };
