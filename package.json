@@ -3,15 +3,13 @@
     "version": "0.4.1",
     "description": "Noire Server",
     "main": "lib/index.js",
-    "keywords": [
-        "hapi",
-        "boilerplate"
-    ],
+    "keywords": ["hapi", "boilerplate"],
     "scripts": {
         "start": "NODE_PATH=$NODE_PATH:lib:. node lib/index.js",
         "watch": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true nodemon --watch lib lib/index.js",
         "test": "NODE_PATH=$NODE_PATH:lib:. lab",
-        "codecov": "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
+        "codecov":
+            "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
         "reset": "knex migrate:latest; knex seed:run",
         "secret": "node lib/utils/auth.js secret",
         "token": "node lib/utils/auth.js token",

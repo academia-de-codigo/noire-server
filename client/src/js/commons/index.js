@@ -1,9 +1,24 @@
 exports.utils = {
     redirectTo: redirectTo,
     setCsrfTokenHeader: setCsrfTokenHeader,
-    isSuccess: isSuccess,
+    isXHRSuccess: isXHRSuccess,
     disableFormKeyHandlers: disableFormKeyHandlers
 };
+
+exports.toast = {
+    show: showToast
+};
+
+function showToast({ header, message, time = 20, onClose }) {
+    $.suiAlert({
+        title: header,
+        description: message,
+        type: 'success',
+        position: 'top-right',
+        time,
+        onClose
+    });
+}
 
 function setCsrfTokenHeader(xhr) {
     var crumbToken = $('meta[name=crumb]').attr('content');
@@ -16,7 +31,7 @@ function redirectTo(url) {
     };
 }
 
-function isSuccess(response) {
+function isXHRSuccess(response) {
     return response.success || false;
 }
 

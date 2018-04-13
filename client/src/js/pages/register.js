@@ -8,7 +8,7 @@ const qs = require('qs');
 const commons = require('../commons');
 const config = require('../config');
 
-let formElement, checkBoxElement, passwordElement, errorElement;
+let segmentElement, formElement, submitElement, checkBoxElement, passwordElement, errorElement;
 
 const apiSettings = {
     action: 'register',
@@ -18,8 +18,8 @@ const apiSettings = {
     verbose: config.api.XHR_OPTIONS.VERBOSE,
     debug: config.api.XHR_OPTIONS.DEBUG,
     beforeXHR: commons.utils.setCsrfTokenHeader,
-    onSuccess: commons.utils.redirectTo('/home'),
-    successTest: commons.utils.isSuccess,
+    onSuccess: success,
+    successTest: commons.utils.isXHRSuccess,
     onFailure: showFailure,
     onError: showError,
     onAbort: addShowError,
@@ -47,6 +47,18 @@ $(document).ready(function() {
     setupRegisterFormBehaviour();
 });
 
+function success() {
+    segmentElement.addClass('disabled');
+    submitElement.attr('disabled', true);
+
+    commons.toast.show({
+        header: 'User registration successful',
+        message: 'You can now login with your credentials',
+        time: 20,
+        onClose: commons.utils.redirectTo('/home')
+    });
+}
+
 function setupFormUrl() {
     // grab the current query string
     const query = window.location.search.substring(1).split('&')[0];
@@ -59,7 +71,9 @@ function setupFormUrl() {
 }
 
 function grabDomElements() {
+    segmentElement = $('.ui.segment');
     formElement = $('.ui.form');
+    submitElement = $('form .submit.button');
     checkBoxElement = $('.ui.checkbox');
     passwordElement = $('#form-password');
     errorElement = $('.ui.message.error');
@@ -85,9 +99,9 @@ function updateUI() {
 function updateSubmitButton() {
     // enable submit button only if form is valid
     if (formElement.form('is valid')) {
-        $('form .submit.button').attr('disabled', false);
+        submitElement.attr('disabled', false);
     } else {
-        $('form .submit.button').attr('disabled', true);
+        submitElement.attr('disabled', true);
     }
 }
 

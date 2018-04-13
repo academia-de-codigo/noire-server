@@ -11,7 +11,7 @@ require('../../assets/css/login.css');
 const commons = require('../commons');
 const config = require('../config');
 
-let formElement, checkBoxElement, passwordElement, errorElement;
+let segmentElement, formElement, submitElement, checkBoxElement, passwordElement, errorElement;
 
 const apiSettings = {
     action: 'login',
@@ -21,8 +21,8 @@ const apiSettings = {
     verbose: config.api.XHR_OPTIONS.VERBOSE,
     debug: config.api.XHR_OPTIONS.DEBUG,
     beforeXHR: commons.utils.setCsrfTokenHeader,
-    onSuccess: commons.utils.redirectTo('/home'),
-    successTest: commons.utils.isSuccess,
+    onSuccess: success,
+    successTest: commons.utils.isXHRSuccess,
     onFailure: showFailure,
     onError: showError,
     onAbort: addShowError
@@ -44,8 +44,16 @@ $(document).ready(function() {
     setupLoginFormBehaviour();
 });
 
+function success() {
+    segmentElement.addClass('disabled');
+    submitElement.attr('disabled', true);
+    commons.utils.redirectTo('/home')();
+}
+
 function grabDomElements() {
+    segmentElement = $('.ui.segment');
     formElement = $('.ui.form');
+    submitElement = $('form .submit.button');
     checkBoxElement = $('.ui.checkbox');
     passwordElement = $('#form-password');
     errorElement = $('.ui.message.error');
@@ -71,9 +79,9 @@ function updateUI() {
 function updateSubmitButton() {
     // enable submit button only if form is valid
     if (formElement.form('is valid')) {
-        $('form .submit.button').attr('disabled', false);
+        submitElement.attr('disabled', false);
     } else {
-        $('form .submit.button').attr('disabled', true);
+        submitElement.attr('disabled', true);
     }
 }
 
