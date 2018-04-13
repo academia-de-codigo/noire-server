@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "system"
+        // "diagnostics": true,
+        // "baseUrl": "lib",
+        // "paths": {
+        //     "**/*": ["**/*"]
+        // }
+    }
+    // "exclude": ["node_modules", "client/dist", "client/semantic"]
+}
