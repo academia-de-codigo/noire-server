@@ -3,6 +3,7 @@ exports.routes = {
     logout: '/logout',
     signup: '/signup',
     register: '/register?token={token}',
+    'password reset': '/password-reset',
     'update profile': '/profile',
     'view user': '/admin/user/{id}',
     'view role': '/admin/role/{id}',
