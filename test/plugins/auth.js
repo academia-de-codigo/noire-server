@@ -105,7 +105,7 @@ describe('Plugin: auth', () => {
         const fakeId = 9999;
 
         // exercise
-        const jwt = await Auth.getToken(fakeId);
+        const jwt = await Auth.getToken({ id: fakeId });
 
         // validate
         JWT.verify(
@@ -126,7 +126,7 @@ describe('Plugin: auth', () => {
         const fakeId = 9999;
 
         // exercise
-        const jwt = await Auth.getToken(fakeId, false);
+        const jwt = await Auth.getToken({ id: fakeId }, false);
 
         // validate
         JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
@@ -141,7 +141,7 @@ describe('Plugin: auth', () => {
         const fakeId = 9999;
 
         // exercise
-        const jwt = await Auth.getToken(fakeId);
+        const jwt = await Auth.getToken({ id: fakeId });
         JWT.verify(jwt, 'invalid secret', (err, decoded) => {
             expect(err).to.exist();
             expect(err.name).to.equals('JsonWebTokenError');
@@ -259,7 +259,7 @@ describe('Plugin: auth', () => {
             method: 'GET',
             url: fakeRoute.path,
             headers: {
-                authorization: await Auth.getToken(9999)
+                authorization: await Auth.getToken({ id: 9999 })
             }
         });
 
@@ -297,7 +297,7 @@ describe('Plugin: auth', () => {
             method: 'GET',
             url: fakeRoute.path,
             headers: {
-                authorization: await Auth.getToken(fakeUser.id)
+                authorization: await Auth.getToken({ id: fakeUser.id })
             }
         });
 
@@ -341,7 +341,7 @@ describe('Plugin: auth', () => {
             method: 'GET',
             url: fakeRoute.path,
             headers: {
-                authorization: await Auth.getToken(fakeUser.id)
+                authorization: await Auth.getToken({ id: fakeUser.id })
             }
         });
 

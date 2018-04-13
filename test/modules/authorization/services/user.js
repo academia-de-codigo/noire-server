@@ -312,7 +312,7 @@ describe('Service: user', () => {
         const fakeUser = { id: 1, username: 'admin', password: 'admin' };
         const fakeToken = 'fake token';
         const getTokenStub = Sinon.stub(Auth, 'getToken');
-        getTokenStub.withArgs(fakeUser.id).returns(fakeToken);
+        getTokenStub.withArgs({ id: fakeUser.id }).returns(fakeToken);
         flags.onCleanup = function() {
             getTokenStub.restore();
         };
