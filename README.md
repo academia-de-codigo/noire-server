@@ -48,7 +48,8 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 *   Stateless JWT auth for API endpoints
 *   Cookie stored JWT auth for web app with CSRF protection
 *   RBAC authorization
-*   AJAX login and signup forms
+*   AJAX login, signup, registration and password reset forms
+*   Email sending using handlebars templates
 *   Client side caching of assets
 *   Fast and flexible logging (Pino)
 *   Testing, code coverage and Travis CI integration
@@ -74,12 +75,14 @@ Edit files in `lib/config`
 
 *   `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
 *   `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
+*   SMTP credentials should be configured using the `SMTP_USER` and `SMTP_PASS` variables
+*   All environment variables can be setup inside a `.env` file which should not be commited and is sourced when the server starts
 
 ### Reset the database to it's original state
 
 `npm run reset`
 
-### Build Semantic-UI
+### Generate Frontend Build
 
 `npm run build`
 
@@ -90,3 +93,8 @@ Edit files in `lib/config`
 ### Launch the server
 
 `npm start`
+
+### Development
+
+*   Update frontend build running `npm run webpack`
+*   Start the server in watch mode with `npm run watch`
