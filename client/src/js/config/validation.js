@@ -73,3 +73,28 @@ exports.password = function(optional) {
         ]
     };
 };
+
+exports.passwordConfirm = function(optional) {
+    return {
+        identifier: 'password-confirm',
+        optional: optional,
+        rules: [
+            {
+                type: 'empty',
+                prompt: 'Please enter a password'
+            },
+            {
+                type: 'minLength[3]',
+                prompt: 'Your password needs at least {ruleValue} characters'
+            },
+            {
+                type: 'maxLength[30]',
+                prompt: 'Your password can not have more than {ruleValue} characters'
+            },
+            {
+                type: 'match[password]',
+                prompt: 'Passwords do not match'
+            }
+        ]
+    };
+};

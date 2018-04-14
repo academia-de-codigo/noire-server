@@ -2,7 +2,7 @@
     Registration form using ajax
  */
 require('../app');
-require('../../assets/css/register.css');
+require('../../assets/css/password-update.css');
 
 const qs = require('qs');
 const commons = require('../commons');
@@ -17,7 +17,7 @@ let segmentElement,
     errorElement;
 
 const apiSettings = {
-    action: 'register',
+    action: 'password update',
     method: 'post',
     serializeForm: true,
     timeout: config.api.XHR_OPTIONS.TIMEOUT,
@@ -37,9 +37,7 @@ const apiSettings = {
 const validationRules = {
     on: 'blur', // validate form when user changes field
     fields: {
-        name: config.validation.name(),
         email: config.validation.email(),
-        username: config.validation.username(),
         password: config.validation.password(),
         'password-confirm': config.validation.passwordConfirm()
     },
@@ -59,7 +57,7 @@ function success() {
     submitElement.attr('disabled', true);
 
     commons.toast.show({
-        header: 'User registration successful',
+        header: 'Password update successful',
         message: 'You can now login with your credentials',
         time: 20,
         onClose: commons.utils.redirectTo('/home')

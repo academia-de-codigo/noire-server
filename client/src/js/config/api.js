@@ -4,6 +4,7 @@ exports.routes = {
     signup: '/signup',
     register: '/register?token={token}',
     'password reset': '/password-reset',
+    'password update': '/password-update?token={token}',
     'update profile': '/profile',
     'view user': '/admin/user/{id}',
     'view role': '/admin/role/{id}',
