@@ -1,11 +1,7 @@
 {
     "compilerOptions": {
-        "module": "system"
-        // "diagnostics": true,
-        // "baseUrl": "lib",
-        // "paths": {
-        //     "**/*": ["**/*"]
-        // }
+        "target": "esnext",
+        "moduleResolution": "node",
+        "baseUrl": "lib"
     }
-    // "exclude": ["node_modules", "client/dist", "client/semantic"]
 }
