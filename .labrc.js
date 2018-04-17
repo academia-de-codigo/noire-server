@@ -6,13 +6,7 @@ module.exports = {
     lint: true,
     assert: 'code',
     'coverage-path': 'lib',
-    'coverage-exclude': 'config',
-    paths: [
-        'test/errors',
-        'test/utils',
-        'test/models',
-        'test/plugins',
-        'test/modules'
-    ],
-	globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
+    'coverage-exclude': ['config.js', 'config-views.js'],
+    paths: ['test/errors', 'test/utils', 'test/models', 'test/plugins', 'test/modules'],
+    globals: '__core-js_shared__' // https://github.com/tgriesser/knex/issues/1720
 };

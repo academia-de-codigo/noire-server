@@ -1,11 +1,12 @@
 const Lab = require('lab');
 const Sinon = require('sinon');
 const Hapi = require('hapi');
+const JWT = require('jsonwebtoken');
 const UserService = require('modules/authorization/services/user');
 const LoginCtrl = require('modules/authorization/controllers/api/login');
+const Auth = require('plugins/auth');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
-const JWT = require('jsonwebtoken');
 
 const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
@@ -16,10 +17,10 @@ describe('API Controller: login', () => {
 
     let server;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // make server quiet, 500s are rethrown and logged by default..
         server = Hapi.server({ debug: { log: false, request: false } });
-        server.register(Logger);
+        await server.register(Logger);
         server.route({
             method: 'POST',
             path: '/login',
@@ -36,18 +37,32 @@ describe('API Controller: login', () => {
             path: '/renew',
             config: { handler: LoginCtrl.renew, plugins: { stateless: true } }
         });
+
+        server.route({
+            method: 'POST',
+            path: '/password-reset',
+            config: { handler: LoginCtrl.passwordReset, plugins: { stateless: true } }
+        });
+
+        server.route({
+            method: 'POST',
+            path: '/password-update',
+            config: { handler: LoginCtrl.passwordUpdate, plugins: { stateless: true } }
+        });
     });
 
     it('rejects login with invalid username', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            authenticateStub.restore();
+        };
+
         // setup
         const credentials = { username: 'invalid', password: 'secret' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub
             .withArgs(credentials.username, credentials.password)
             .rejects(NSError.AUTH_INVALID_USERNAME());
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -66,15 +81,17 @@ describe('API Controller: login', () => {
     });
 
     it('rejects login with invalid password', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            authenticateStub.restore();
+        };
+
         // setup
         const credentials = { username: 'test', password: '' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub
             .withArgs(credentials.username, credentials.password)
             .rejects(NSError.AUTH_INVALID_PASSWORD());
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -93,15 +110,17 @@ describe('API Controller: login', () => {
     });
 
     it('handles internal server errors', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            authenticateStub.restore();
+        };
+
         // setup
         const credentials = { username: 'test', password: 'test' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub
             .withArgs(credentials.username, credentials.password)
             .rejects(NSError.AUTH_ERROR());
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -117,13 +136,15 @@ describe('API Controller: login', () => {
     });
 
     it('login user with valid credentials', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            authenticateStub.restore();
+        };
+
         // setup
         const credentials = { username: 'test', password: 'secret' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub.withArgs(credentials.username, credentials.password).resolves(token);
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -140,6 +161,11 @@ describe('API Controller: login', () => {
     });
 
     it('stores token in cookie if statefull login', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            authenticateStub.restore();
+        };
+
         // setup
         server = Hapi.server();
         server.route({
@@ -150,9 +176,6 @@ describe('API Controller: login', () => {
         const credentials = { username: 'invalid', password: 'secret' };
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub.withArgs(credentials.username, credentials.password).resolves(token);
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -226,5 +249,229 @@ describe('API Controller: login', () => {
             JWT.decode(token).id
         );
         expect(JWT.decode(response.headers['server-authorization']).exp).to.be.a.number();
+    });
+
+    it('sends password reset email', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.sendPasswordResetEmail.restore();
+        };
+
+        // setup
+        Sinon.stub(UserService, 'sendPasswordResetEmail').resolves();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/password-reset',
+            payload: { email: '' }
+        });
+
+        // validate
+        expect(UserService.sendPasswordResetEmail.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload).success).to.be.true();
+        expect(JSON.parse(response.payload).message).to.equals('password reset');
+    });
+
+    it('handles sending password reset email errors', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.sendPasswordResetEmail.restore();
+        };
+
+        // setup
+        Sinon.stub(UserService, 'sendPasswordResetEmail').rejects();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: '/password-reset',
+            payload: { email: '' }
+        });
+
+        // validate
+        expect(UserService.sendPasswordResetEmail.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+    });
+
+    it('updates the user password', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+            UserService.findById.restore();
+            UserService.update.restore();
+        };
+
+        // setup
+        const fakePass = 'new-password';
+        const user = { id: 1, username: 'admin', email: 'admin@gmail.com', active: true };
+        Sinon.stub(Auth, 'decodeToken')
+            .withArgs(token, Auth.token.PASSWORD_RESET)
+            .resolves({ id: user.id });
+        Sinon.stub(UserService, 'findById')
+            .withArgs(user.id)
+            .resolves(user);
+        Sinon.stub(UserService, 'update')
+            .withArgs(user.id, { email: user.email, password: fakePass })
+            .resolves();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`,
+            payload: {
+                password: fakePass,
+                email: user.email
+            }
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(UserService.update.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(JSON.parse(response.payload).success).to.be.true();
+        expect(JSON.parse(response.payload).message).to.equals('password update');
+    });
+
+    it('does not update the user password when token verification fails', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+        };
+
+        // setup
+        Sinon.stub(Auth, 'decodeToken').rejects();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(403);
+        expect(response.statusMessage).to.equal('Forbidden');
+        expect(JSON.parse(response.payload).message).to.equal('Authentication Failure');
+    });
+
+    it('does not update the user password when user is not found', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+            UserService.findById.restore();
+        };
+
+        // setup
+        Sinon.stub(Auth, 'decodeToken').resolves({ id: 1 });
+        Sinon.stub(UserService, 'findById').rejects();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(403);
+        expect(response.statusMessage).to.equal('Forbidden');
+        expect(JSON.parse(response.payload).message).to.equal('Authentication Failure');
+    });
+
+    it('does not update the user password when user is not active', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+            UserService.findById.restore();
+        };
+
+        // setup
+        const user = { id: 1, username: 'admin', email: 'admin@gmail.com', active: false };
+        Sinon.stub(Auth, 'decodeToken').resolves({ id: user.id });
+        Sinon.stub(UserService, 'findById').resolves(user);
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(403);
+        expect(response.statusMessage).to.equal('Forbidden');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
+    });
+
+    it('does not update the user password if email is incorrect', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+            UserService.findById.restore();
+        };
+
+        // setup
+        const user = { id: 1, username: 'admin', email: 'admin@gmail.com', active: true };
+        Sinon.stub(Auth, 'decodeToken').resolves({ id: user.id });
+        Sinon.stub(UserService, 'findById').resolves(user);
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`,
+            payload: {
+                password: 'password',
+                email: 'invalid'
+            }
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(403);
+        expect(response.statusMessage).to.equal('Forbidden');
+        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
+    });
+
+    it('handles update password errors', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.decodeToken.restore();
+            UserService.findById.restore();
+            UserService.update.restore();
+        };
+
+        // setup
+        const user = { id: 1, username: 'admin', email: 'admin@gmail.com', active: true };
+        Sinon.stub(Auth, 'decodeToken').resolves({ id: user.id });
+        Sinon.stub(UserService, 'findById').resolves(user);
+        Sinon.stub(UserService, 'update').rejects();
+
+        // exercise
+        const response = await server.inject({
+            method: 'POST',
+            url: `/password-update?token=${token}`,
+            payload: {
+                password: 'password',
+                email: user.email
+            }
+        });
+
+        // validate
+        expect(Auth.decodeToken.calledOnce).to.be.true();
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(UserService.update.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
     });
 });

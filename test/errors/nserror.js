@@ -150,6 +150,16 @@ describe('Errors', () => {
         expect(NSError.RESOURCE_NOT_FOUND.match(error1)).to.be.false();
     });
 
+    it('does not match generic error', () => {
+        expect(NSError.AUTH_ERROR.match(Error())).to.be.false();
+        expect(NSError.RESOURCE_NOT_FOUND.match(Error())).to.be.false();
+    });
+
+    it('does not match non error objects', () => {
+        expect(NSError.AUTH_ERROR.match({})).to.be.false();
+        expect(NSError.RESOURCE_NOT_FOUND.match({})).to.be.false();
+    });
+
     it('creates errors with custom error message', () => {
         // setup
         const message = 'a custom error message';
@@ -157,5 +167,11 @@ describe('Errors', () => {
         // verify
         expect(NSError.AUTH_ERROR(message).message).to.equals(message);
         expect(NSError.RESOURCE_NOT_FOUND(message).message).to.equals(message);
+    });
+
+    it('creates bad implementation on unknown errors', () => {
+        // verify
+        expect(NSError.create({}).output.statusCode).to.equals(500);
+        expect(NSError.create([]).output.statusCode).to.equals(500);
     });
 });

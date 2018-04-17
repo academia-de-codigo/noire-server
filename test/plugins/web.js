@@ -1,6 +1,6 @@
 const Lab = require('lab');
 const Sinon = require('sinon');
-const mock = require('mock-require');
+const Mock = require('mock-require');
 const Hapi = require('hapi');
 const Package = require('package.json');
 const Logger = require('test/fixtures/logger-plugin');
@@ -25,12 +25,12 @@ describe('Plugin: web', () => {
     let Web;
 
     before(() => {
-        mock('routes/web', fakeRouteConfig);
-        Web = mock.reRequire('plugins/web');
+        Mock('routes/web', fakeRouteConfig);
+        Web = Mock.reRequire('plugins/web');
     });
 
     after(() => {
-        mock.stopAll();
+        Mock.stopAll();
     });
 
     it('registers the view handler', async () => {

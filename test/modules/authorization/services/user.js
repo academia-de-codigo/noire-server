@@ -9,6 +9,7 @@ const Repository = require('plugins/repository');
 const UserModel = require('models/user');
 const RoleModel = require('models/role');
 const Auth = require('plugins/auth');
+const Mailer = require('utils/mailer');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
 
@@ -308,14 +309,16 @@ describe('Service: user', () => {
     });
 
     it('authenticates user with valid credentials', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            getTokenStub.restore();
+        };
+
         // setup
         const fakeUser = { id: 1, username: 'admin', password: 'admin' };
         const fakeToken = 'fake token';
         const getTokenStub = Sinon.stub(Auth, 'getToken');
         getTokenStub.withArgs({ id: fakeUser.id }).returns(fakeToken);
-        flags.onCleanup = function() {
-            getTokenStub.restore();
-        };
 
         // exercise
         const token = await UserService.authenticate(fakeUser.username, fakeUser.password);
@@ -348,7 +351,12 @@ describe('Service: user', () => {
         );
     });
 
-    it('adds a new user', async () => {
+    it('adds a new user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         const fakeHash = 'hash';
         const newUser = { username: 'test2', email: 'test2@gmail.com', password: 'test2' };
@@ -373,7 +381,12 @@ describe('Service: user', () => {
         expect(result.password).to.equals(fakeHash);
     });
 
-    it('does not add an existing user', async () => {
+    it('does not add an existing user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
@@ -384,7 +397,12 @@ describe('Service: user', () => {
         );
     });
 
-    it('does not add a user with no password', async () => {
+    it('does not add a user with no password', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').rejects(NSError.AUTH_CRYPT_ERROR());
 
@@ -395,7 +413,12 @@ describe('Service: user', () => {
         );
     });
 
-    it('does not add a user with the same email as existing user', async () => {
+    it('does not add a user with the same email as existing user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         cryptStub = Sinon.stub(Auth, 'crypt').resolves('hash');
 
@@ -406,7 +429,12 @@ describe('Service: user', () => {
         );
     });
 
-    it('updates an existing user', async () => {
+    it('updates an existing user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         const id = 2;
         const fakeHash = 'hash';
@@ -500,7 +528,12 @@ describe('Service: user', () => {
         expect(result.password).to.exists();
     });
 
-    it('handles user update with no active property', async () => {
+    it('handles user update with no active property', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
         // setup
         const id = 2;
         const fakeHash = 'hash';
@@ -573,5 +606,45 @@ describe('Service: user', () => {
     it('does not delete an active user', async () => {
         // exercise and validate
         await expect(UserService.delete(2)).to.reject(Error, NSError.RESOURCE_STATE().message);
+    });
+
+    it('sends a password reset email', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.getToken.restore();
+            Mailer.sendMail.restore();
+        };
+
+        // setup
+        const fakeToken = 'fake-token';
+        const email = 'admin@gmail.com';
+        Sinon.stub(Auth, 'getToken').returns(fakeToken);
+        Sinon.stub(Mailer, 'sendMail').callsFake(mail => {
+            expect(mail.to).to.equal(email);
+            expect(mail.context).to.be.an.object();
+            expect(mail.context.url).to.contains(fakeToken);
+            return Promise.resolve();
+        });
+
+        // exercise
+        await UserService.sendPasswordResetEmail(email);
+
+        // validate
+        expect(Mailer.sendMail.calledOnce).to.be.true();
+    });
+
+    it('handles send password reset email for non existing user', async () => {
+        // exercise
+        await expect(UserService.sendPasswordResetEmail('invalid@email')).to.reject(
+            Error,
+            'Email address not found'
+        );
+
+        try {
+            await UserService.sendPasswordResetEmail('invalid@email');
+        } catch (error) {
+            expect(error.isBoom).to.be.true();
+            expect(error.output.statusCode).to.equals(404);
+        }
     });
 });

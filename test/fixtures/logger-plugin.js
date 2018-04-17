@@ -15,6 +15,8 @@ const register = async function(server) {
 
 exports.fake = internals.logger;
 
+exports.getLogger = () => internals.logger;
+
 exports.plugin = {
     name: 'logger',
     pkg: Package,

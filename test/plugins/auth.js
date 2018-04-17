@@ -17,7 +17,7 @@ describe('Plugin: auth', () => {
         'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
 
     const tokenOptions = {
-        audience: 'noire:auth'
+        audience: Auth.token.AUTH
     };
 
     before(() => {
@@ -354,5 +354,48 @@ describe('Plugin: auth', () => {
         expect(response.request.auth.credentials.email).to.equal(fakeUser.email);
         expect(response.request.auth.credentials.scope[0]).to.equal(fakeUser.roles[0].name);
         expect(response.result).to.equals(payload);
+    });
+
+    it('decodes a valid token', async () => {
+        // setup
+        const payload = { id: 10 };
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const token = JWT.sign(payload, secret, {
+            audience: Auth.token.SIGNUP
+        });
+
+        // exercise
+        const decoded = await Auth.decodeToken(token, Auth.token.SIGNUP);
+        expect(decoded.id).to.equal(payload.id);
+    });
+
+    it('does not decode an invalid token', async () => {
+        // setup
+        const token = JWT.sign({}, 'invalid');
+
+        // exercise and verify
+        await expect(Auth.decodeToken(token)).to.reject('invalid signature');
+    });
+
+    it('does not decode an expired token', async () => {
+        // setup
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const token = JWT.sign({ exp: Math.floor(Date.now() / 1000) - 30 }, secret, {
+            audience: Auth.token.AUTH
+        });
+
+        // exercise and verify
+        await expect(Auth.decodeToken(token)).to.reject('jwt expired');
+    });
+
+    it('does not decode a token with an invalid audience', async () => {
+        // setup
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const token = JWT.sign({}, secret, { audience: 'invalid' });
+
+        // exercise and verify
+        await expect(Auth.decodeToken(token)).to.reject(
+            `jwt audience invalid. expected: ${Auth.token.AUTH}`
+        );
     });
 });

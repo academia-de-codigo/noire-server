@@ -9,6 +9,22 @@ const Logger = require('test/fixtures/logger-plugin');
 const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 const internals = {};
+internals.knexConfig = {
+    client: 'mock',
+    connection: {
+        database: 'mock'
+    }
+};
+
+internals.knexConfigMissingDb = {
+    client: 'mock',
+    connection: {}
+};
+
+internals.knexConfigSqlite = {
+    client: 'sqlite',
+    connection: {}
+};
 
 describe('Plugin: db', () => {
     let configStub;
@@ -150,8 +166,8 @@ describe('Plugin: db', () => {
         const Database = mock.reRequire('plugins/db');
         const mockServer = {
             logger: () => Logger.fake,
-            decorate: function() {},
-            ext: function(hook, cb) {
+            decorate: () => {},
+            ext: (hook, cb) => {
                 if (hook !== 'onPostStop') {
                     return;
                 }
@@ -166,21 +182,36 @@ describe('Plugin: db', () => {
         //verify
         expect(destroyStub.called).to.be.true();
     });
+
+    it('logs server plugin stop', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Logger.fake.child.restore();
+            Logger.fake.debug.restore();
+        };
+
+        // setup
+        mock('knex', knexStub);
+        Sinon.spy(Logger.fake, 'child');
+        Sinon.spy(Logger.fake, 'debug');
+        const Database = mock.reRequire('plugins/db');
+        const mockServer = {
+            logger: () => Logger.fake,
+            decorate: () => {},
+            ext: (hook, cb) => {
+                if (hook !== 'onPreStop') {
+                    return;
+                }
+
+                cb(mockServer);
+            }
+        };
+
+        // exercise
+        await Database.plugin.register(mockServer);
+
+        // verify
+        expect(Logger.fake.child.calledWith({ plugin: 'db' })).to.be.true();
+        expect(Logger.fake.debug.calledWith('stopped')).to.be.true();
+    });
 });
-
-internals.knexConfig = {
-    client: 'mock',
-    connection: {
-        database: 'mock'
-    }
-};
-
-internals.knexConfigMissingDb = {
-    client: 'mock',
-    connection: {}
-};
-
-internals.knexConfigSqlite = {
-    client: 'sqlite',
-    connection: {}
-};
