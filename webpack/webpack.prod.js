@@ -5,7 +5,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const htmlMinifier = require('html-minifier');
 const common = require('./webpack.common.js');
-const Config = require(path.join(process.cwd(), 'lib/config/index'));
+const Config = require(path.join(process.cwd(), 'lib/config'));
 
 const srcPath = path.join(process.cwd(), Config.build.src);
 const distPath = path.join(process.cwd(), Config.build.dist);

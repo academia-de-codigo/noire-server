@@ -5,7 +5,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const SimpleProgressWebpackPlugin = require('simple-progress-webpack-plugin');
-const Config = require(path.join(process.cwd(), 'lib/config/index'));
+const Config = require(path.join(process.cwd(), 'lib/config'));
 
 const srcPath = path.join(process.cwd(), Config.build.src);
 const distPath = path.join(process.cwd(), Config.build.dist);
