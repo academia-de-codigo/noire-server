@@ -13,7 +13,7 @@ Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered architecture for proper separation of concerns
 
-**WARNING: Noire is currently under active development and not ready for production use**
+**WARNING: Noire is currently under active development and might not be ready for heavy production use**
 
 ### View Layer
 
@@ -69,14 +69,14 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 
 ### Adjust the configuration files to suit your environment
 
-Edit files in `lib/config`
+Edit all `lib/config/*` files
 
 ### Setup environment variables
 
 *   `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
-*   `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`. Running `` `npm run secret | grep export` `` will automatically set it for you (don't forget the backticks)
-*   SMTP credentials should be configured using the `SMTP_USER` and `SMTP_PASS` variables
-*   All environment variables can be setup inside a `.env` file which should not be commited and is sourced when the server starts
+*   `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`.
+*   SMTP credentials should be configured using the `SMTP_USER` and `SMTP_PASS` environment variables
+*   All environment variables can be setup inside a `.env` file which should not be commited and is sourced when the server starts. A sample `example.env` file is provided.
 
 ### Reset the database to it's original state
 
@@ -90,11 +90,46 @@ Edit files in `lib/config`
 
 `npm test`
 
-### Launch the server
+### Launch the server in production mode
 
-`npm start`
+*   Make sure `NODE_ENV=production`
+*   Update frontend build running `npm run webpack:prod`
+*   Start the server with `npm start`
 
 ### Development
 
+*   Set `NODE_ENV=development`
 *   Update frontend build running `npm run webpack`
 *   Start the server in watch mode with `npm run watch`
+
+#### Development Environment
+
+Noire is developed using Visual Studio Code and the following plugins:
+
+*   Babel ES6/ES7
+*   Document This
+*   DotENV
+*   EditorConfig for VS Code
+*   ESLint
+*   HTMLHint
+*   Node.js Modules Intellisense
+*   npm
+*   Path Autocomplete
+*   Prettier
+
+For proper code formatting and module intellisense, the following VSCode settings are recommended:
+
+```json
+"settings": {
+		"editor.formatOnSave": true,
+		"node-module-intellisense.scanBuiltinModules": true,
+		"node-module-intellisense.scanDevDependencies": true,
+		"node-module-intellisense.scanFileModules": true,
+		"node-module-intellisense.modulePaths": [
+			"lib"
+		],
+		"node-module-intellisense.autoStripExtensions": [
+			".js"
+		]
+	}
+```

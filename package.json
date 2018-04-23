@@ -32,7 +32,7 @@
     },
     "homepage": "https://github.com/academia-de-codigo/noire-server",
     "dependencies": {
-        "bcrypt": "^2.0.0",
+        "bcrypt": "^2.0.1",
         "boom": "^7.2.0",
         "crumb": "^7.0.0",
         "dotenv": "^5.0.1",
@@ -84,11 +84,11 @@
         "semantic-ui": "^2.3.1",
         "simple-progress-webpack-plugin": "^1.1.2",
         "sinon": "^4.5.0",
-        "style-loader": "^0.20.3",
-        "uglifyjs-webpack-plugin": "^1.2.4",
+        "style-loader": "^0.21.0",
+        "uglifyjs-webpack-plugin": "^1.2.5",
         "url-loader": "^1.0.1",
         "webpack": "4.6.0",
-        "webpack-cli": "^2.0.14",
+        "webpack-cli": "^2.0.15",
         "webpack-merge": "^4.1.2"
     }
 }

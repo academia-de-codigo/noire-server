@@ -13,7 +13,7 @@ exports.routes = {
 };
 
 exports.XHR_OPTIONS = {
-    TIMEOUT: 5000,
+    TIMEOUT: 10000,
     VERBOSE: true,
     DEBUG: true
 };
