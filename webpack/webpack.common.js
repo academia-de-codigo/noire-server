@@ -37,7 +37,7 @@ const internals = {
             }
         ),
         miniCss: new MiniCssExtractPlugin({
-            filename: 'css/[name].css',
+            filename: `${Config.build.styles}/[name].css`,
             chunkFilename: '[id].css'
         }),
         progress: new SimpleProgressWebpackPlugin({
