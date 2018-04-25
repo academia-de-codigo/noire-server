@@ -10,13 +10,14 @@ const NSError = require('errors/nserror');
 const { after, afterEach, before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Utils: mailer', () => {
-    let mailConfig, smtpConfig;
+    let mailConfig, smtpConfig, buildConfig;
     let Mailer;
     let nodeMailerStub;
 
     before(() => {
         mailConfig = Config.mail;
         smtpConfig = Config.smtp;
+        buildConfig = Config.build;
 
         Mock('plugins/logger', Logger);
         Mailer = Mock.reRequire('utils/mailer');
@@ -25,6 +26,7 @@ describe('Utils: mailer', () => {
     after(() => {
         Config.mail = mailConfig;
         Config.smtp = smtpConfig;
+        Config.build = buildConfig;
 
         Mock.stopAll();
     });
@@ -33,8 +35,12 @@ describe('Utils: mailer', () => {
         process.env.SMTP_USER = 'user';
         process.env.SMTP_PASS = 'pass';
 
+        Config.build = {
+            dist: 'test'
+        };
+
         Config.mail = {
-            templates: 'test/fixtures/email-templates',
+            templates: 'fixtures/email-templates',
             compile: '**/*.hbs'
         };
 

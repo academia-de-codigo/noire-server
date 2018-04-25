@@ -21,7 +21,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "github:academia-de-codigo/noire-server"
+        "url": "https://github.com/academia-de-codigo/noire-server.git"
     },
     "author": "Academia de Código",
     "license": "MIT",
