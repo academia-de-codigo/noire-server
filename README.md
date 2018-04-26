@@ -69,7 +69,7 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 
 ### Adjust the configuration files to suit your environment
 
-Edit all `lib/config/*` files
+Edit all `lib/config*` files
 
 ### Setup environment variables
 
