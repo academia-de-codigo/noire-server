@@ -74,14 +74,14 @@ describe('Plugin: repository', () => {
         // setup
         const options = { models: ['user', 'role'] };
         const decorateSpy = Sinon.spy();
-        const fakeServer = { logger: () => Logger.fake, decorate: decorateSpy };
+        const fakeRequest = { logger: () => Logger.fake, decorate: decorateSpy };
 
         // exercise
-        await Repository.plugin.register(fakeServer, options);
+        await Repository.plugin.register(fakeRequest, options);
 
         // validate
         expect(decorateSpy.calledOnce).to.be.true();
-        expect(decorateSpy.getCall(0).args[0]).to.equals('server');
+        expect(decorateSpy.getCall(0).args[0]).to.equals('request');
         expect(decorateSpy.getCall(0).args[1]).to.equals('models');
         expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
         expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(
