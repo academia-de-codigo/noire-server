@@ -11,13 +11,16 @@ const Mailer = require('utils/mailer');
 const Auth = require('plugins/auth');
 const UserModel = require('models/user');
 const ContactModel = require('models/contact');
+const Config = require('config');
 
 const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Service: contacts', () => {
+    let knex;
+
     beforeEach(async () => {
         /*jshint -W064 */
-        const knex = Knex(KnexConfig.testing); // eslint-disable-line
+        knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
         await knex.migrate.latest();
@@ -62,6 +65,7 @@ describe('Service: contacts', () => {
         expect(repoSpy.calledOnce).to.be.true();
         expect(repoSpy.args[0][0].email).to.equal(fakeEmail);
         expect(repoSpy.args[0][0].confirmed).to.be.false();
+        expect(repoSpy.args[0][0].signup_requests).to.be.equal(0);
     });
 
     it('does not sign up a user with another users email', async () => {
@@ -94,6 +98,25 @@ describe('Service: contacts', () => {
         expect(repoSpy.calledOnce).to.be.false();
     });
 
+    it('does not sign up a user when maximum requests have been exceeded', async flags => {
+        let signupRequestConfig;
+
+        //cleanup
+        flags.onCleanup = function() {
+            Config.mail.maximumSignupRequests = signupRequestConfig;
+        };
+
+        //setup
+        const email = 'spammer@gmail.com';
+        const testSignupRequests = 20;
+        const errorMessage = 'Maximum signup requests exceeded';
+        signupRequestConfig = Config.mail.maximumSignupRequests;
+        Config.mail.maximumSignupRequests = testSignupRequests;
+
+        //exercise and validate
+        await expect(ContactsService.signup(email)).rejects(Error, errorMessage);
+    });
+
     it('handles token generation failures', async flags => {
         // cleanup
         flags.onCleanup = function() {
@@ -122,6 +145,50 @@ describe('Service: contacts', () => {
 
         // exercise and validate
         await expect(ContactsService.signup('newmail@gmail.com')).rejects(Error, fakeError);
+    });
+
+    it('updates user sign up request counter', async flags => {
+        let signupRequestConfig;
+
+        //cleanup
+        flags.onCleanup = function() {
+            Config.mail.maximumSignupRequests = signupRequestConfig;
+            Auth.getToken.restore();
+            Mailer.sendMail.restore();
+            Repository.contact.update.restore();
+        };
+
+        //setup
+        const email = 'contact@gmail.com';
+        const testSignupRequests = 5;
+        signupRequestConfig = Config.mail.maximumSignupRequests;
+        Config.mail.maximumSignupRequests = testSignupRequests;
+
+        const repoSpy = Sinon.spy(Repository.contact, 'update');
+        Sinon.stub(Auth, 'getToken').resolves();
+        Sinon.stub(Mailer, 'sendMail').resolves();
+
+        //exercise
+        await ContactsService.signup(email);
+
+        //validate
+        expect(repoSpy.args[0][0].signup_requests).to.be.equal(1);
+    });
+
+    it('handles failures updating contact', async flags => {
+        //cleanup
+        flags.onCleanup = function() {
+            Auth.getToken.restore();
+            Mailer.sendMail.restore();
+        };
+
+        //setup
+        const email = 'fake email';
+        Sinon.stub(Auth, 'getToken').resolves();
+        Sinon.stub(Mailer, 'sendMail').resolves();
+
+        //exercise and validate
+        await expect(ContactsService.signup(email)).rejects(Error);
     });
 
     it('registers a new user', async flags => {
@@ -207,5 +274,32 @@ describe('Service: contacts', () => {
         await expect(
             ContactsService.register(3, { username: 'admin', email: 'contact@gmail.com' })
         ).rejects(Error, 'User already exists');
+    });
+
+    it('updates user contact after registering', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Auth.crypt.restore();
+        };
+
+        // setup
+        const fakePassHash = 'crypted-password';
+        Sinon.stub(Auth, 'crypt').resolves(fakePassHash);
+        const fakeUser = {
+            name: 'new contact',
+            username: 'contact',
+            email: 'spammer@gmail.com',
+            password: 'somepass'
+        };
+
+        // exercise
+        await ContactsService.register(4, fakeUser);
+
+        // validate
+        const [result] = await knex('contacts')
+            .where('email', fakeUser.email)
+            .select('confirmed');
+
+        expect(!!result.confirmed).to.be.true();
     });
 });
