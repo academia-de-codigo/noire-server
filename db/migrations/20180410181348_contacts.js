@@ -4,6 +4,7 @@ exports.up = function(knex, Promise) {
         table.string('email');
         table.boolean('confirmed');
         table.timestamps();
+        table.integer('signup_requests').unsigned();
     });
 };
 
