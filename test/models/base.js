@@ -69,4 +69,132 @@ describe('Model: base', function() {
         expect(baseModel.updated_at).not.to.exist();
         expect(baseModel.created_at).not.to.exist();
     });
+
+    it('should not parse database json if there is no jsonSchema', () => {
+        //setup
+        const fakeJson = { id: 1 };
+
+        //exercise
+        const parsedJson = baseModel.$parseDatabaseJson(fakeJson);
+
+        //verify
+        expect(parsedJson).to.be.equal(fakeJson);
+    });
+
+    it('should not parse database json if jsonSchema has no properties', () => {
+        let baseModelSchema = BaseModel.jsonSchema;
+
+        //setup
+        const fakeSchema = {
+            type: 'object'
+        };
+
+        const fakeJson = { id: 1 };
+        BaseModel.jsonSchema = fakeSchema;
+
+        //exercise
+        const parsedJson = baseModel.$parseDatabaseJson(fakeJson);
+
+        //verify
+        expect(parsedJson).to.be.equal(fakeJson);
+
+        //cleanup
+        BaseModel.jsonSchema = baseModelSchema;
+    });
+
+    it('should not parse database json if jsonSchema properties have no type', () => {
+        let baseModelSchema = BaseModel.jsonSchema;
+
+        //setup
+        const fakeSchema = {
+            type: 'object',
+            properties: { exists: { default: 0 } }
+        };
+
+        const fakeJson = { exists: 1 };
+        BaseModel.jsonSchema = fakeSchema;
+
+        //exercise
+        const parsedJson = baseModel.$parseDatabaseJson(fakeJson);
+
+        //verify
+        expect(parsedJson).to.be.equal(fakeJson);
+
+        //cleanup
+        BaseModel.jsonSchema = baseModelSchema;
+    });
+
+    it('should convert database json boolean type properties to boolean values', () => {
+        let baseModelSchema = BaseModel.jsonSchema;
+        //setup
+        const fakeSchema = {
+            type: 'object',
+            properties: { exists: { type: 'boolean' } }
+        };
+
+        const fakeExistant = { exists: 1 };
+        const fakeNonExistant = { exists: 0 };
+        BaseModel.jsonSchema = fakeSchema;
+
+        //exercise
+        const parsedExistantEntity = baseModel.$parseDatabaseJson(fakeExistant);
+        const parsedNonExistantEntity = baseModel.$parseDatabaseJson(fakeNonExistant);
+
+        //verify
+        expect(parsedExistantEntity.exists).to.be.true();
+        expect(parsedNonExistantEntity.exists).to.be.false();
+
+        //cleanup
+        BaseModel.jsonSchema = baseModelSchema;
+    });
+
+    it('should not change json boolean type properties if already boolean values', () => {
+        let baseModelSchema = BaseModel.jsonSchema;
+        //setup
+        const fakeSchema = {
+            type: 'object',
+            properties: { exists: { type: 'boolean' } }
+        };
+
+        const fakeExistant = { exists: true };
+        const fakeNonExistant = { exists: false };
+        BaseModel.jsonSchema = fakeSchema;
+
+        //exercise
+        const parsedExistantEntity = baseModel.$parseDatabaseJson(fakeExistant);
+        const parsedNonExistantEntity = baseModel.$parseDatabaseJson(fakeNonExistant);
+
+        //verify
+        expect(parsedExistantEntity).to.be.equal(fakeExistant);
+        expect(parsedNonExistantEntity).to.be.equal(fakeNonExistant);
+
+        //cleanup
+        BaseModel.jsonSchema = baseModelSchema;
+    });
+
+    it('should not convert database json integer type properties to boolean values', () => {
+        let baseModelSchema = BaseModel.jsonSchema;
+        //setup
+        const fakeSchema = {
+            type: 'object',
+            properties: { id: { type: 'integer' }, name: { type: 'string' } }
+        };
+
+        const fakeEntityZero = { id: 0, name: '0' };
+        const fakeEntityOne = { id: 1, name: '1' };
+        BaseModel.jsonSchema = fakeSchema;
+
+        //exercise
+        const parsedEntityZero = baseModel.$parseDatabaseJson(fakeEntityZero);
+        const parsedEntityOne = baseModel.$parseDatabaseJson(fakeEntityOne);
+
+        //verify
+        expect(parsedEntityZero.id).to.be.equal(0);
+        expect(parsedEntityZero.name).to.be.equal('0');
+        expect(parsedEntityOne.id).to.be.equal(1);
+        expect(parsedEntityOne.name).to.be.equal('1');
+
+        //cleanup
+        BaseModel.jsonSchema = baseModelSchema;
+    });
 });
