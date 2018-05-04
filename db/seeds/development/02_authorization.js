@@ -1,14 +1,18 @@
 exports.seed = function(knex, Promise) {
     return Promise.all([
-        knex('resources').insert({
-            id: 1,
-            name: 'user'
-        }),
-        knex('resources').insert({
-            id: 2,
-            name: 'role'
-        })
-    ])
+            knex('resources').insert({
+                id: 1,
+                name: 'user'
+            }),
+            knex('resources').insert({
+                id: 2,
+                name: 'role'
+            }),
+            knex('resources').insert({
+                id: 3,
+                name: 'contact'
+            })
+        ])
         .then(() => {
             return Promise.all([
                 knex('permissions').insert({
@@ -50,6 +54,16 @@ exports.seed = function(knex, Promise) {
                     id: 8,
                     action: 'delete',
                     resource_id: 2
+                }),
+                knex('permissions').insert({
+                    id: 9,
+                    action: 'read',
+                    resource_id: 3
+                }),
+                knex('permissions').insert({
+                    id: 10,
+                    action: 'delete',
+                    resource_id: 3
                 })
             ]);
         })
@@ -86,6 +100,14 @@ exports.seed = function(knex, Promise) {
                 knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 8
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 9
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 10
                 }),
                 knex('roles_permissions').insert({
                     role_id: 2,
