@@ -11,6 +11,7 @@ const Mailer = require('utils/mailer');
 const Auth = require('plugins/auth');
 const UserModel = require('models/user');
 const ContactModel = require('models/contact');
+const NSError = require('errors/nserror');
 const Config = require('config');
 
 const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
@@ -34,6 +35,194 @@ describe('Service: contacts', () => {
             plugin: Repository,
             options: { models: ['user', 'contact'] }
         });
+    });
+
+    it('counts contacts', async () => {
+        // exercise
+        const result = await ContactsService.count();
+
+        // validate
+        expect(result).equals(4);
+    });
+
+    it('counts contacts with a search criteria', async () => {
+        // setup
+        const criteria = { search: 't' }; // finds any contact with an email containing t
+
+        // exercise
+        const result = await ContactsService.count(criteria);
+
+        // validate
+        expect(result).equals(2);
+    });
+
+    it('lists contacts', async () => {
+        // exercise
+        const results = await ContactsService.list();
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        results.forEach(contact => {
+            expect(contact).to.be.an.instanceof(ContactModel);
+            expect(contact.id).to.exists();
+            expect(contact.email).to.be.a.string();
+            expect(contact.confirmed).to.be.a.boolean();
+            expect(contact.signup_requests).to.be.a.number();
+            expect(contact.signup_requests).to.be.at.least(0);
+        });
+    });
+
+    it('lists contacts with a search clause', async () => {
+        // setup
+        const criteria = { search: 'test' };
+
+        // exercise
+        const results = await ContactsService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results[0]).to.be.an.instanceof(ContactModel);
+        expect(results[0].id).to.equals(2);
+        expect(results[0].email).to.be.a.string();
+        expect(results[0].confirmed).to.be.a.boolean();
+        expect(results[0].signup_requests).to.be.a.number();
+        expect(results[0].signup_requests).to.be.at.least(0);
+    });
+
+    it('lists contacts with a limit clause', async () => {
+        // setup
+        const criteria = { limit: 2 };
+
+        // exercise
+        const results = await ContactsService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(2);
+        expect(results[0].id).to.equals(1);
+        expect(results[1].id).to.equals(2);
+        results.forEach(contact => {
+            expect(contact).to.be.instanceof(ContactModel);
+            expect(contact.id).to.exists();
+            expect(contact.email).to.be.a.string();
+            expect(contact.confirmed).to.be.a.boolean();
+            expect(contact.signup_requests).to.be.a.number();
+            expect(contact.signup_requests).to.be.at.least(0);
+        });
+    });
+
+    it('lists contacts with an offset', async () => {
+        // setup
+        const criteria = { page: 4, limit: 1 };
+
+        // exercise
+        const results = await ContactsService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        results.forEach(contact => {
+            expect(contact).to.be.instanceof(ContactModel);
+            expect(contact.id > 3).to.be.true();
+            expect(contact.email).to.be.a.string();
+            expect(contact.confirmed).to.be.a.boolean();
+            expect(contact.signup_requests).to.be.a.number();
+            expect(contact.signup_requests).to.be.at.least(0);
+        });
+    });
+
+    it('lists contacts ordered by column', async () => {
+        // setup
+        const criteria = { sort: 'email' };
+
+        // exercise
+        const results = await ContactsService.list(criteria);
+
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.roles).to.not.exist();
+        results.forEach(contact => {
+            expect(contact).to.be.instanceof(ContactModel);
+            expect(contact).to.exists();
+            expect(contact.email).to.be.a.string();
+            expect(contact.confirmed).to.be.a.boolean();
+            expect(contact.signup_requests).to.be.a.number();
+            expect(contact.signup_requests).to.be.at.least(0);
+        });
+    });
+
+    it('lists users order by id descending', async () => {
+        // setup
+        const criteria = { sort: '-id' };
+
+        // exercise
+        const results = await ContactsService.list(criteria);
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        expect(results.roles).to.not.exists();
+        results.forEach((contact, index) => {
+            expect(contact).to.be.instanceof(ContactModel);
+            expect(contact).to.exists();
+            expect(contact.email).to.be.a.string();
+            expect(contact.confirmed).to.be.a.boolean();
+            expect(contact.signup_requests).to.be.a.number();
+            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.id).to.equals(results.length - index);
+        });
+    });
+
+    it('gets valid contact by id', async () => {
+        // setup
+        const id = 1;
+        const contact = { id: 1, email: 'admin@gmail.com', confirmed: true, signup_requests: 0 };
+
+        // exercise
+        const result = await ContactsService.findById(id);
+
+        // validate
+        expect(result).to.be.an.object();
+        expect(result).to.be.instanceof(ContactModel);
+        expect(result.id).to.equals(contact.id);
+        expect(result.email).to.equals(contact.email);
+        expect(result.confirmed).to.equals(contact.confirmed);
+        expect(result.signup_requests).to.equals(contact.signup_requests);
+    });
+
+    it('handles getting a non existing contact', async () => {
+        await expect(ContactsService.findById(9999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
+    });
+
+    it('deletes an existing contact', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            txSpy.restore();
+        };
+
+        // setup
+        const txSpy = Sinon.spy(Repository, 'tx');
+
+        // exercise
+        const result = await ContactsService.delete(2);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(ContactModel);
+        expect(result).to.not.exist();
+    });
+
+    it('handles deleting a non existing contact', async () => {
+        await expect(ContactsService.delete(9999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('signs up a new user', async flags => {

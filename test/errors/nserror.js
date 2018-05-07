@@ -87,7 +87,7 @@ describe('Errors', () => {
         expect(NSError.RESOURCE_STATE().output.statusCode).to.equals(409);
     });
 
-    it('wrap server erors with 500 boom', () => {
+    it('wrap server errors with 500 boom', () => {
         expect(NSError.AUTH_ERROR().output.statusCode).to.equals(500);
         expect(NSError.AUTH_CRYPT_ERROR().output.statusCode).to.equals(500);
         expect(NSError.RESOURCE_FETCH().output.statusCode).to.equals(500);
