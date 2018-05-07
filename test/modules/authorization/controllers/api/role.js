@@ -64,7 +64,7 @@ describe('API Controller: role', () => {
         expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(roles);
+        expect(response.result).to.equal(roles);
     });
 
     it('lists available roles with criteria', async flags => {
@@ -98,18 +98,21 @@ describe('API Controller: role', () => {
         expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(roles);
+        expect(response.result).to.equal(roles);
     });
 
     it('handles server errors while listing roles', async flags => {
         // cleanup
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // setup
         const listStub = Sinon.stub(RoleService, 'list');
+        const countStub = Sinon.stub(RoleService, 'count');
         listStub.rejects(NSError.RESOURCE_FETCH());
+        countStub.resolves();
         server.route({ method: 'GET', path: '/role', handler: RoleCtrl.list });
 
         // exercise
@@ -120,9 +123,10 @@ describe('API Controller: role', () => {
 
         // validate
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(500);
         expect(response.statusMessage).to.equals('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('gets a role', async flags => {
@@ -146,7 +150,7 @@ describe('API Controller: role', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(roles[1]);
+        expect(response.result).to.equal(roles[1]);
     });
 
     it('handles get of a non existing role', async flags => {
@@ -170,9 +174,7 @@ describe('API Controller: role', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(404);
         expect(response.statusMessage).to.equals('Not Found');
-        expect(JSON.parse(response.payload).message).to.equals(
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        expect(response.result.message).to.equals(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles server errors while getting a role', async flags => {
@@ -196,7 +198,7 @@ describe('API Controller: role', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('creates a new role', async flags => {
@@ -223,9 +225,9 @@ describe('API Controller: role', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(201);
         expect(response.statusMessage).to.equal('Created');
-        expect(JSON.parse(response.payload).id).to.equals(fakeId);
-        expect(JSON.parse(response.payload).name).to.equals(entity.name);
-        expect(JSON.parse(response.payload).description).to.equals(entity.description);
+        expect(response.result.id).to.equals(fakeId);
+        expect(response.result.name).to.equals(entity.name);
+        expect(response.result.description).to.equals(entity.description);
         expect(response.headers.location).to.equals('/role/' + fakeId);
     });
 
@@ -250,17 +252,19 @@ describe('API Controller: role', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server errors while creating a role', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
         // setup
         const addStub = Sinon.stub(RoleService, 'add');
         addStub.rejects(NSError.RESOURCE_INSERT());
         server.route({ method: 'POST', path: '/role', handler: RoleCtrl.create });
-        flags.onCleanup = function() {
-            addStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -272,7 +276,7 @@ describe('API Controller: role', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('deletes an existing role', async flags => {
@@ -319,7 +323,7 @@ describe('API Controller: role', () => {
         expect(deleteStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles server errors while deleting a role', async flags => {
@@ -343,7 +347,7 @@ describe('API Controller: role', () => {
         expect(deleteStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('updates a role', async flags => {
@@ -370,10 +374,10 @@ describe('API Controller: role', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload).password).to.not.exists();
-        expect(JSON.parse(response.payload).id).to.equals(fakeId);
-        expect(JSON.parse(response.payload).name).to.equals(entity.name);
-        expect(JSON.parse(response.payload).description).to.equals(entity.description);
+        expect(response.result.password).to.not.exists();
+        expect(response.result.id).to.equals(fakeId);
+        expect(response.result.name).to.equals(entity.name);
+        expect(response.result.description).to.equals(entity.description);
     });
 
     it('handles updating a role that does not exit', async flags => {
@@ -397,7 +401,7 @@ describe('API Controller: role', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not update a role if name is taken', async flags => {
@@ -421,7 +425,7 @@ describe('API Controller: role', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server errors while updating a role', async flags => {
@@ -445,7 +449,7 @@ describe('API Controller: role', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('adds user to an existing role', async flags => {
@@ -471,7 +475,7 @@ describe('API Controller: role', () => {
         expect(addUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equals(fakeMappings);
+        expect(response.result).to.equals(fakeMappings);
     });
 
     it('handles adding a user that does not exists or to a non existing role', async flags => {
@@ -496,7 +500,7 @@ describe('API Controller: role', () => {
         expect(addUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles adding a user to a role that already contains it', async flags => {
@@ -521,7 +525,7 @@ describe('API Controller: role', () => {
         expect(addUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server error while adding a user to a role', async flags => {
@@ -546,7 +550,7 @@ describe('API Controller: role', () => {
         expect(addUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('removes a user from an existing role', async flags => {
@@ -571,7 +575,7 @@ describe('API Controller: role', () => {
         expect(removeUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equals([1]);
+        expect(response.result).to.equals([1]);
     });
 
     it('handles removing a non existing user or from non existing role', async flags => {
@@ -596,7 +600,7 @@ describe('API Controller: role', () => {
         expect(removeUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles server error while removing user from role', async flags => {
@@ -621,7 +625,7 @@ describe('API Controller: role', () => {
         expect(removeUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('adds permission to an existing role', async flags => {
@@ -651,7 +655,7 @@ describe('API Controller: role', () => {
         expect(addPermissionStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equals(fakeMappings);
+        expect(response.result).to.equals(fakeMappings);
     });
 
     it('handles adding a permission to a non existing role', async flags => {
@@ -680,7 +684,7 @@ describe('API Controller: role', () => {
         expect(addPermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles adding a permission to a role that already contains it', async flags => {
@@ -709,7 +713,7 @@ describe('API Controller: role', () => {
         expect(addPermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server error while adding a permission to a role', async flags => {
@@ -738,7 +742,7 @@ describe('API Controller: role', () => {
         expect(addPermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('removes a permission from an existing role', async flags => {
@@ -767,7 +771,7 @@ describe('API Controller: role', () => {
         expect(removePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equals([1]);
+        expect(response.result).to.equals([1]);
     });
 
     it('handles removing a non existing permission or from non existing role', async flags => {
@@ -796,7 +800,7 @@ describe('API Controller: role', () => {
         expect(removePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles server error while removing permission from role', async flags => {
@@ -825,6 +829,6 @@ describe('API Controller: role', () => {
         expect(removePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 });

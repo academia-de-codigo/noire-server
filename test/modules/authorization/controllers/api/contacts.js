@@ -143,11 +143,14 @@ describe('API Controller: contacts', () => {
         // cleanup
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
 
         // setup
         const listStub = Sinon.stub(ContactsService, 'list');
+        const countStub = Sinon.stub(ContactsService, 'count');
         listStub.rejects(NSError.RESOURCE_FETCH());
+        countStub.resolves();
         server.route({ method: 'GET', path: '/contact', handler: ContactsCtrl.list });
 
         // exercise
@@ -157,6 +160,7 @@ describe('API Controller: contacts', () => {
         });
 
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
         expect(response.result.message).to.equal('An internal server error occurred');

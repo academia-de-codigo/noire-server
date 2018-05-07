@@ -85,7 +85,7 @@ describe('Controller: Authorization', () => {
         expect(authorizationStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(403);
         expect(response.statusMessage).to.equals('Forbidden');
-        expect(JSON.parse(response.payload).message).to.equals('insufficient privileges');
+        expect(response.result.message).to.equals('insufficient privileges');
     });
 
     it('handles errors while authorizing', async () => {
@@ -106,6 +106,6 @@ describe('Controller: Authorization', () => {
         expect(authorizationStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(500);
         expect(response.statusMessage).to.equals('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equals('An internal server error occurred');
+        expect(response.result.message).to.equals('An internal server error occurred');
     });
 });

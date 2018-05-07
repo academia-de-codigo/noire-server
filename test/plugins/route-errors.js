@@ -75,7 +75,7 @@ describe('Plugin: route-errors', () => {
         // validate
         expect(response.statusCode).to.equal(400);
         expect(response.statusMessage).to.equal('Bad Request');
-        expect(JSON.parse(response.payload).message).to.equal('Malformed Data Entered');
+        expect(response.result.message).to.equal('Malformed Data Entered');
     });
 
     it('should redirect on insufficient scope', async () => {
@@ -137,11 +137,14 @@ describe('Plugin: route-errors', () => {
     });
 
     it('should not redirect on failed authentication', async flags => {
-        // setup
-        Auth.authenticate = false;
+        // cleanup
         flags.onCleanup = function() {
             Auth.authenticate = true;
         };
+
+        // setup
+        Auth.authenticate = false;
+
         await server.register(Auth);
         const fakeRoute = {
             path: '/',

@@ -75,9 +75,7 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(401);
         expect(response.statusMessage).to.equal('Unauthorized');
-        expect(JSON.parse(response.payload).message).to.equal(
-            NSError.AUTH_INVALID_USERNAME().message
-        );
+        expect(response.result.message).to.equal(NSError.AUTH_INVALID_USERNAME().message);
     });
 
     it('rejects login with invalid password', async flags => {
@@ -104,9 +102,7 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(401);
         expect(response.statusMessage).to.equal('Unauthorized');
-        expect(JSON.parse(response.payload).message).to.equal(
-            NSError.AUTH_INVALID_PASSWORD().message
-        );
+        expect(response.result.message).to.equal(NSError.AUTH_INVALID_PASSWORD().message);
     });
 
     it('handles internal server errors', async flags => {
@@ -132,7 +128,7 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('login user with valid credentials', async flags => {
@@ -203,8 +199,8 @@ describe('API Controller: login', () => {
         // validate
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload).success).to.be.true();
-        expect(JSON.parse(response.payload).message).to.equals('logged out');
+        expect(response.result.success).to.be.true();
+        expect(response.result.message).to.equals('logged out');
     });
 
     it('removes token from cookie if statefull logout', async () => {
@@ -271,8 +267,8 @@ describe('API Controller: login', () => {
         expect(UserService.sendPasswordResetEmail.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload).success).to.be.true();
-        expect(JSON.parse(response.payload).message).to.equals('password reset');
+        expect(response.result.success).to.be.true();
+        expect(response.result.message).to.equals('password reset');
     });
 
     it('handles sending password reset email errors', async flags => {
@@ -295,7 +291,7 @@ describe('API Controller: login', () => {
         expect(UserService.sendPasswordResetEmail.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('updates the user password', async flags => {
@@ -335,8 +331,8 @@ describe('API Controller: login', () => {
         expect(UserService.update.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload).success).to.be.true();
-        expect(JSON.parse(response.payload).message).to.equals('password update');
+        expect(response.result.success).to.be.true();
+        expect(response.result.message).to.equals('password update');
     });
 
     it('does not update the user password when token verification fails', async flags => {
@@ -358,7 +354,7 @@ describe('API Controller: login', () => {
         expect(Auth.decodeToken.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(403);
         expect(response.statusMessage).to.equal('Forbidden');
-        expect(JSON.parse(response.payload).message).to.equal('Authentication Failure');
+        expect(response.result.message).to.equal('Authentication Failure');
     });
 
     it('does not update the user password when user is not found', async flags => {
@@ -383,7 +379,7 @@ describe('API Controller: login', () => {
         expect(UserService.findById.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(403);
         expect(response.statusMessage).to.equal('Forbidden');
-        expect(JSON.parse(response.payload).message).to.equal('Authentication Failure');
+        expect(response.result.message).to.equal('Authentication Failure');
     });
 
     it('does not update the user password when user is not active', async flags => {
@@ -409,7 +405,7 @@ describe('API Controller: login', () => {
         expect(UserService.findById.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(403);
         expect(response.statusMessage).to.equal('Forbidden');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
+        expect(response.result.message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
     });
 
     it('does not update the user password if email is incorrect', async flags => {
@@ -439,7 +435,7 @@ describe('API Controller: login', () => {
         expect(UserService.findById.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(403);
         expect(response.statusMessage).to.equal('Forbidden');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
+        expect(response.result.message).to.equal(NSError.AUTH_UNAUTHORIZED().message);
     });
 
     it('handles update password errors', async flags => {
@@ -472,6 +468,6 @@ describe('API Controller: login', () => {
         expect(UserService.update.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 });

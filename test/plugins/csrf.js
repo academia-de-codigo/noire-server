@@ -53,8 +53,8 @@ describe('Plugin: csrf', () => {
         // validate
         expect(response.statusCode).to.equals(200);
         expect(response.payload).to.be.a.string();
-        expect(JSON.parse(response.payload)).to.be.an.object();
-        expect(JSON.parse(response.payload).crumb).to.be.a.string();
+        expect(response.result).to.be.an.object();
+        expect(response.result.crumb).to.be.a.string();
     });
 
     it('handles missing crumb headers on post request', async () => {

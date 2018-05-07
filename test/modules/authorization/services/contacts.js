@@ -290,19 +290,19 @@ describe('Service: contacts', () => {
     it('does not sign up a user when maximum requests have been exceeded', async flags => {
         let signupRequestConfig;
 
-        //cleanup
+        // cleanup
         flags.onCleanup = function() {
             Config.mail.maximumSignupRequests = signupRequestConfig;
         };
 
-        //setup
+        // setup
         const email = 'spammer@gmail.com';
         const testSignupRequests = 20;
         const errorMessage = 'Maximum signup requests exceeded';
         signupRequestConfig = Config.mail.maximumSignupRequests;
         Config.mail.maximumSignupRequests = testSignupRequests;
 
-        //exercise and validate
+        // exercise and validate
         await expect(ContactsService.signup(email)).rejects(Error, errorMessage);
     });
 
@@ -339,7 +339,7 @@ describe('Service: contacts', () => {
     it('updates user sign up request counter', async flags => {
         let signupRequestConfig;
 
-        //cleanup
+        // cleanup
         flags.onCleanup = function() {
             Config.mail.maximumSignupRequests = signupRequestConfig;
             Auth.getToken.restore();
@@ -347,7 +347,7 @@ describe('Service: contacts', () => {
             Repository.contact.update.restore();
         };
 
-        //setup
+        // setup
         const email = 'contact@gmail.com';
         const testSignupRequests = 5;
         signupRequestConfig = Config.mail.maximumSignupRequests;
@@ -357,26 +357,26 @@ describe('Service: contacts', () => {
         Sinon.stub(Auth, 'getToken').resolves();
         Sinon.stub(Mailer, 'sendMail').resolves();
 
-        //exercise
+        // exercise
         await ContactsService.signup(email);
 
-        //validate
+        // validate
         expect(repoSpy.args[0][0].signup_requests).to.be.equal(1);
     });
 
     it('handles failures updating contact', async flags => {
-        //cleanup
+        // cleanup
         flags.onCleanup = function() {
             Auth.getToken.restore();
             Mailer.sendMail.restore();
         };
 
-        //setup
+        // setup
         const email = 'fake email';
         Sinon.stub(Auth, 'getToken').resolves();
         Sinon.stub(Mailer, 'sendMail').resolves();
 
-        //exercise and validate
+        // exercise and validate
         await expect(ContactsService.signup(email)).rejects(Error);
     });
 
@@ -444,7 +444,7 @@ describe('Service: contacts', () => {
         const fakeError = 'some error';
         Sinon.stub(Auth, 'crypt').rejects(Error(fakeError));
 
-        // exercisae and validate
+        // exercise and validate
         await expect(
             ContactsService.register(3, { username: 'contact', email: 'contact@gmail.com' })
         ).rejects(Error, fakeError);

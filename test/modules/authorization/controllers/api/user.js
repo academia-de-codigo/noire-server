@@ -30,6 +30,12 @@ describe('API Controller: user', () => {
     });
 
     it('lists available users', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            listStub.restore();
+            countStub.restore();
+        };
+
         // setup
         const listStub = Sinon.stub(UserService, 'list');
         const countStub = Sinon.stub(UserService, 'count');
@@ -40,10 +46,6 @@ describe('API Controller: user', () => {
         countStub.resolves(users.length);
         server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
         server.decorate('toolkit', 'paginate', toolkitStub);
-        flags.onCleanup = function() {
-            listStub.restore();
-            countStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -57,10 +59,16 @@ describe('API Controller: user', () => {
         expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(users);
+        expect(response.result).to.equal(users);
     });
 
     it('lists available users with criteria', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            listStub.restore();
+            countStub.restore();
+        };
+
         // setup
         const fakeCriteria = { limit: '100' };
         const listStub = Sinon.stub(UserService, 'list');
@@ -72,10 +80,6 @@ describe('API Controller: user', () => {
         countStub.withArgs(fakeCriteria).resolves(users.length);
         server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
         server.decorate('toolkit', 'paginate', toolkitStub);
-        flags.onCleanup = function() {
-            listStub.restore();
-            countStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -89,17 +93,22 @@ describe('API Controller: user', () => {
         expect(toolkitStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(users);
+        expect(response.result).to.equal(users);
     });
 
     it('handles server errors while listing users', async flags => {
-        // setup
-        const listStub = Sinon.stub(UserService, 'list');
-        listStub.rejects(NSError.RESOURCE_FETCH());
-        server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
+        // cleanup
         flags.onCleanup = function() {
             listStub.restore();
+            countStub.restore();
         };
+
+        // setup
+        const listStub = Sinon.stub(UserService, 'list');
+        const countStub = Sinon.stub(UserService, 'count');
+        listStub.rejects(NSError.RESOURCE_FETCH());
+        countStub.resolves();
+        server.route({ method: 'GET', path: '/user', handler: UserCtrl.list });
 
         // exercise
         const response = await server.inject({
@@ -108,19 +117,22 @@ describe('API Controller: user', () => {
         });
 
         expect(listStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('gets a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByIdStub.restore();
+        };
+
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.withArgs(1).resolves(users[1]);
         server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
-        flags.onCleanup = function() {
-            findByIdStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -132,17 +144,19 @@ describe('API Controller: user', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload)).to.equal(users[1]);
+        expect(response.result).to.equal(users[1]);
     });
 
     it('handles get of a non existing user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByIdStub.restore();
+        };
+
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_NOT_FOUND());
         server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
-        flags.onCleanup = function() {
-            findByIdStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -154,19 +168,19 @@ describe('API Controller: user', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(404);
         expect(response.statusMessage).to.equals('Not Found');
-        expect(JSON.parse(response.payload).message).to.equals(
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        expect(response.result.message).to.equals(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('handles server errors when getting a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByIdStub.restore();
+        };
+
         // setup
         const findByIdStub = Sinon.stub(UserService, 'findById');
         findByIdStub.rejects(NSError.RESOURCE_FETCH());
         server.route({ method: 'GET', path: '/user/{id}', handler: UserCtrl.get });
-        flags.onCleanup = function() {
-            findByIdStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -177,10 +191,15 @@ describe('API Controller: user', () => {
         expect(findByIdStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('creates a new user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
         // setup
         const fakeId = 1;
         const entity = {
@@ -192,9 +211,6 @@ describe('API Controller: user', () => {
         const addStub = Sinon.stub(UserService, 'add');
         addStub.withArgs(entity).resolves(Hoek.merge({ id: fakeId }, entity));
         server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
-        flags.onCleanup = function() {
-            addStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -207,22 +223,24 @@ describe('API Controller: user', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(201);
         expect(response.statusMessage).to.equal('Created');
-        expect(JSON.parse(response.payload).password).to.not.exists();
-        expect(JSON.parse(response.payload).id).to.equals(fakeId);
-        expect(JSON.parse(response.payload).username).to.equals(entity.username);
-        expect(JSON.parse(response.payload).email).to.equals(entity.email);
-        expect(JSON.parse(response.payload).name).to.equals(entity.name);
+        expect(response.result.password).to.not.exists();
+        expect(response.result.id).to.equals(fakeId);
+        expect(response.result.username).to.equals(entity.username);
+        expect(response.result.email).to.equals(entity.email);
+        expect(response.result.name).to.equals(entity.name);
         expect(response.headers.location).to.equals('/user/' + fakeId);
     });
 
     it('does not create a user that already exists', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
         // setup
         const addStub = Sinon.stub(UserService, 'add');
         addStub.rejects(NSError.RESOURCE_DUPLICATE());
         server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
-        flags.onCleanup = function() {
-            addStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -234,17 +252,19 @@ describe('API Controller: user', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server errors while creating a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            addStub.restore();
+        };
+
         // setup
         const addStub = Sinon.stub(UserService, 'add');
         addStub.rejects(NSError.RESOURCE_INSERT());
         server.route({ method: 'POST', path: '/user', handler: UserCtrl.create });
-        flags.onCleanup = function() {
-            addStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -256,17 +276,19 @@ describe('API Controller: user', () => {
         expect(addStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('deletes an existing user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            deleteStub.restore();
+        };
+
         // setup
         const deleteStub = Sinon.stub(UserService, 'delete');
         deleteStub.withArgs(1).resolves();
         server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
-        flags.onCleanup = function() {
-            deleteStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -281,13 +303,15 @@ describe('API Controller: user', () => {
     });
 
     it('handles deleting a user that does not exist', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            deleteStub.restore();
+        };
+
         // setup
         const deleteStub = Sinon.stub(UserService, 'delete');
         deleteStub.rejects(NSError.RESOURCE_NOT_FOUND());
         server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
-        flags.onCleanup = function() {
-            deleteStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -299,17 +323,19 @@ describe('API Controller: user', () => {
         expect(deleteStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not delete a user that is active', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            deleteStub.restore();
+        };
+
         // setup
         const deleteStub = Sinon.stub(UserService, 'delete');
         deleteStub.rejects(NSError.RESOURCE_STATE());
         server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
-        flags.onCleanup = function() {
-            deleteStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -321,17 +347,19 @@ describe('API Controller: user', () => {
         expect(deleteStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_STATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_STATE().message);
     });
 
     it('handles server errors while deleting a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            deleteStub.restore();
+        };
+
         // setup
         const deleteStub = Sinon.stub(UserService, 'delete');
         deleteStub.rejects(NSError.RESOURCE_DELETE());
         server.route({ method: 'DELETE', path: '/user/{id}', handler: UserCtrl.delete });
-        flags.onCleanup = function() {
-            deleteStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -343,19 +371,21 @@ describe('API Controller: user', () => {
         expect(deleteStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 
     it('updates a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
         // setup
         const fakeId = 1;
         const entity = { username: 'test2', name: 'test2', password: 'test2' };
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.withArgs(fakeId, entity).resolves(Hoek.merge({ id: fakeId }, entity));
         server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
-        flags.onCleanup = function() {
-            updateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -368,21 +398,23 @@ describe('API Controller: user', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(JSON.parse(response.payload).password).to.not.exists();
-        expect(JSON.parse(response.payload).id).to.equals(fakeId);
-        expect(JSON.parse(response.payload).username).to.equals(entity.username);
-        expect(JSON.parse(response.payload).email).to.equals(entity.email);
-        expect(JSON.parse(response.payload).name).to.equals(entity.name);
+        expect(response.result.password).to.not.exists();
+        expect(response.result.id).to.equals(fakeId);
+        expect(response.result.username).to.equals(entity.username);
+        expect(response.result.email).to.equals(entity.email);
+        expect(response.result.name).to.equals(entity.name);
     });
 
     it('handles updating a user that does not exit', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_NOT_FOUND());
         server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
-        flags.onCleanup = function() {
-            updateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -393,17 +425,19 @@ describe('API Controller: user', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not update a user if username or email is taken', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_DUPLICATE());
         server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
-        flags.onCleanup = function() {
-            updateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -415,17 +449,19 @@ describe('API Controller: user', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
-        expect(JSON.parse(response.payload).message).to.equal(NSError.RESOURCE_DUPLICATE().message);
+        expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
     });
 
     it('handles server errors while updating a user', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            updateStub.restore();
+        };
+
         // setup
         const updateStub = Sinon.stub(UserService, 'update');
         updateStub.rejects(NSError.RESOURCE_UPDATE());
         server.route({ method: 'PUT', path: '/user/{id}', handler: UserCtrl.update });
-        flags.onCleanup = function() {
-            updateStub.restore();
-        };
 
         // exercise
         const response = await server.inject({
@@ -436,6 +472,6 @@ describe('API Controller: user', () => {
         expect(updateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
-        expect(JSON.parse(response.payload).message).to.equal('An internal server error occurred');
+        expect(response.result.message).to.equal('An internal server error occurred');
     });
 });

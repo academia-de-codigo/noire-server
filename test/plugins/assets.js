@@ -67,12 +67,15 @@ describe('Plugin: assets', () => {
     });
 
     it('handles inert plugin registration failures', async flags => {
-        // setup
-        const PLUGIN_ERROR = 'plugin error';
-        const inertRegister = Inert.plugin.register;
+        // cleanup
         flags.onCleanup = function() {
             Inert.plugin.register = inertRegister;
         };
+
+        // setup
+        const PLUGIN_ERROR = 'plugin error';
+        const inertRegister = Inert.plugin.register;
+
         Inert.plugin.register = async function() {
             throw new Error(PLUGIN_ERROR);
         };
