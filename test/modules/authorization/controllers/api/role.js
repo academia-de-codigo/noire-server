@@ -641,7 +641,7 @@ describe('API Controller: role', () => {
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.addPermissions
+            handler: RoleCtrl.addPermission
         });
 
         // exercise
@@ -670,7 +670,7 @@ describe('API Controller: role', () => {
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.addPermissions
+            handler: RoleCtrl.addPermission
         });
 
         // exercise
@@ -699,7 +699,7 @@ describe('API Controller: role', () => {
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.addPermissions
+            handler: RoleCtrl.addPermission
         });
 
         // exercise
@@ -728,7 +728,7 @@ describe('API Controller: role', () => {
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.addPermissions
+            handler: RoleCtrl.addPermission
         });
 
         // exercise
