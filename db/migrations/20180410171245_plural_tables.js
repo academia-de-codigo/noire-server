@@ -16,6 +16,6 @@ exports.down = function(knex, Promise) {
         knex.schema.renameTable('users_roles', 'user_role'),
         knex.schema.renameTable('resources', 'resource'),
         knex.schema.renameTable('permissions', 'permission'),
-        knex.schema.renameTable('role_permissions', 'roles_permission')
+        knex.schema.renameTable('roles_permissions', 'role_permission')
     ]);
 };

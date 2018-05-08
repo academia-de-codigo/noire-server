@@ -25,8 +25,8 @@ exports.up = function(knex, Promise) {
 
 exports.down = function(knex, Promise) {
     return Promise.all([
+        knex.schema.dropTableIfExists('user_role'),
         knex.schema.dropTableIfExists('user'),
-        knex.schema.dropTableIfExists('role'),
-        knex.schema.dropTableIfExists('user_role')
+        knex.schema.dropTableIfExists('role')
     ]);
 };
