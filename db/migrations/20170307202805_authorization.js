@@ -32,9 +32,10 @@ exports.up = function(knex, Promise) {
     ]);
 };
 
-exports.down = function(knex, Promise) {
+exports.down = async function(knex, Promise) {
+    await knex.schema.dropTableIfExists('role_permission');
+
     return Promise.all([
-        knex.schema.dropTableIfExists('role_permission'),
         knex.schema.dropTableIfExists('permission'),
         knex.schema.dropTableIfExists('resource')
     ]);

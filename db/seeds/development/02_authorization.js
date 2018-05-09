@@ -1,18 +1,18 @@
 exports.seed = function(knex, Promise) {
     return Promise.all([
-            knex('resources').insert({
-                id: 1,
-                name: 'user'
-            }),
-            knex('resources').insert({
-                id: 2,
-                name: 'role'
-            }),
-            knex('resources').insert({
-                id: 3,
-                name: 'contact'
-            })
-        ])
+        knex('resources').insert({
+            id: 1,
+            name: 'user'
+        }),
+        knex('resources').insert({
+            id: 2,
+            name: 'role'
+        }),
+        knex('resources').insert({
+            id: 3,
+            name: 'contact'
+        })
+    ])
         .then(() => {
             return Promise.all([
                 knex('permissions').insert({
