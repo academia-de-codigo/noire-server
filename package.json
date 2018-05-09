@@ -3,19 +3,20 @@
     "version": "0.5.0",
     "description": "Noire Server",
     "main": "lib/index.js",
-    "keywords": ["hapi", "boilerplate"],
+    "keywords": [
+        "hapi",
+        "boilerplate"
+    ],
     "scripts": {
         "start": "NODE_PATH=$NODE_PATH:lib:. node lib/index.js",
         "watch": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true nodemon --watch lib lib/index.js",
         "test": "NODE_PATH=$NODE_PATH:lib:. lab",
-        "codecov":
-            "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
+        "codecov": "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
         "reset": "NODE_PATH=$NODE_PATH:lib:. node lib/utils/reset.js",
         "secret": "NODE_PATH=$NODE_PATH:lib:. node lib/utils/auth.js secret",
         "token": "NODE_PATH=$NODE_PATH:lib:. node lib/utils/auth.js token",
         "semantic": "gulp --gulpfile client/semantic/gulpfile.js build",
-        "webpack":
-            "NODE_PATH=$NODE_PATH:lib:. webpack --hide-modules true --config webpack/webpack.dev.js",
+        "webpack": "NODE_PATH=$NODE_PATH:lib:. webpack --hide-modules true --config webpack/webpack.dev.js",
         "webpack:prod": "NODE_PATH=$NODE_PATH:lib:. webpack --config webpack/webpack.prod.js",
         "build": "npm run clean; npm run semantic; npm run webpack:prod",
         "clean": "rm -rf client/dist/; rm -rf client/semantic/dist"
@@ -33,6 +34,7 @@
     "dependencies": {
         "bcrypt": "^2.0.1",
         "boom": "^7.2.0",
+        "chalk": "^2.4.1",
         "crumb": "^7.0.0",
         "dotenv": "^5.0.1",
         "exiting": "^4.0.0",
