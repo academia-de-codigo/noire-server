@@ -256,6 +256,11 @@ describe('Service: role', function() {
         );
     });
 
+    it('does not delete a role with associations to users', async () => {
+        // exercise and validate
+        await expect(RoleService.delete(2)).to.reject(Error, NSError.RESOURCE_RELATION().message);
+    });
+
     it('updates an existing role', async () => {
         // setup
         const id = 4;
@@ -362,26 +367,17 @@ describe('Service: role', function() {
 
     it('handles adding user to non existing role', async () => {
         // exercise and validate
-        await expect(RoleService.addUsers(9999, 2)).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.addUsers(9999, 2)).to.reject(Error, 'Invalid role id');
     });
 
     it('handles adding non existing user to role', async () => {
         // exercise and validate
-        await expect(RoleService.addUsers(4, 999)).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.addUsers(4, 999)).to.reject(Error, 'Invalid user id');
     });
 
     it('does not add any user to role if at least one of the users does not exist', async () => {
         // exercise and validate
-        await expect(RoleService.addUsers(4, [1, 2, 3, 9999])).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.addUsers(4, [1, 2, 3, 9999])).to.reject(Error, 'Invalid user id');
     });
 
     it('does not add any user to role if at least one of the users already contains the role', async () => {
@@ -415,42 +411,27 @@ describe('Service: role', function() {
 
     it('handles removing user from non existing role', async () => {
         // exercise and validate
-        await expect(RoleService.removeUsers(5, 1)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removeUsers(5, 1)).reject(Error, 'Invalid role id');
     });
 
     it('handles removing non existing user from role', async () => {
         // exercise and validate
-        await expect(RoleService.removeUsers(3, 9999)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removeUsers(3, 9999)).reject(Error, 'Invalid user id');
     });
 
     it('does not remove any user from role if at least one user does not exist', async () => {
         // exercise and validate
-        await expect(RoleService.removeUsers(1, [99, 2, 3])).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removeUsers(1, [99, 2, 3])).reject(Error, 'Invalid user id');
     });
 
     it('handles removing non related user from role', async () => {
         // exercise and validate
-        await expect(RoleService.removeUsers(4, 1)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removeUsers(4, 1)).reject(Error, 'User not in role');
     });
 
     it('does not remove any user from role if at least one is unrelated', async () => {
         // exercise and validate
-        await expect(RoleService.removeUsers(2, [1, 2, 3])).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removeUsers(2, [1, 2, 3])).reject(Error, 'User not in role');
     });
 
     it('adds a new permission', async () => {
@@ -502,9 +483,7 @@ describe('Service: role', function() {
 
     it('does not add a permission to a non existing role', async () => {
         // exercise and validate
-        await expect(RoleService.addPermissions(999, 'create', 'role')).reject(
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.addPermissions(999, 'create', 'role')).reject('Invalid role id');
     });
 
     it('does not add a permission with invalid action', async () => {
@@ -518,7 +497,7 @@ describe('Service: role', function() {
         // exercise and validate
         await expect(RoleService.addPermissions(1, 'create', 'invalid')).reject(
             Error,
-            NSError.RESOURCE_NOT_FOUND().message
+            'Invalid resource id'
         );
     });
 
@@ -548,25 +527,19 @@ describe('Service: role', function() {
 
     it('does not remove permission from non existing role', async () => {
         // exercise and validate
-        await expect(RoleService.removePermissions(5, 1)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removePermissions(5, 1)).reject(Error, 'Invalid role id');
     });
 
     it('does not remove non existing permission from role', async () => {
         // exercise and validate
-        await expect(RoleService.removePermissions(1, 99)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removePermissions(1, 99)).reject(Error, 'Invalid permission id');
     });
 
     it('does not remove any permission from role if at least one permission does not exist', async () => {
         // exercise and validate
         await expect(RoleService.removePermissions(1, [1, 2, 3, 99])).reject(
             Error,
-            NSError.RESOURCE_NOT_FOUND().message
+            'Invalid permission id'
         );
     });
 
