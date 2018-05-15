@@ -120,6 +120,10 @@ exports.seed = function(knex, Promise) {
                     knex('roles_permissions').insert({
                         role_id: 2,
                         permission_id: 6
+                    }),
+                    knex('roles_permissions').insert({
+                        role_id: 4,
+                        permission_id: 6
                     })
                 ]);
             })

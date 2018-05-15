@@ -579,9 +579,10 @@ describe('Service: user', () => {
     });
 
     it('does not update a user with same email as existing user', async () => {
-        await expect(
-            UserService.update(2, { username: 'test', email: 'admin@gmail.com' })
-        ).to.reject(Error, NSError.RESOURCE_DUPLICATE().message);
+        await expect(UserService.update(2, { email: 'admin@gmail.com' })).to.reject(
+            Error,
+            NSError.RESOURCE_DUPLICATE().message
+        );
     });
 
     it('deletes an existing user', async () => {
