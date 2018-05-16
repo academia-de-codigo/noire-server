@@ -472,7 +472,7 @@ describe('Service: user', () => {
     it('updates an existing user without updating the username', async () => {
         // setup
         const id = 2;
-        const user = { name: 'test2', email: 'test2@gmail.com', active: true };
+        const user = { email: 'test2@gmail.com', active: true };
 
         // exercise
         const result = await UserService.update(id, user);
@@ -483,8 +483,6 @@ describe('Service: user', () => {
         expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.be.an.instanceof(UserModel);
         expect(result.id).to.equals(id);
-        expect(result.username).to.equals('test');
-        expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.exists();
         expect(result.active).to.satisfy(

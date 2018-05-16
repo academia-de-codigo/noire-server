@@ -230,14 +230,14 @@ describe('Service: contacts', () => {
         flags.onCleanup = function() {
             Mailer.sendMail.restore();
             Auth.getToken.restore();
-            Repository.contact.add.restore();
+            Repository.Contact.add.restore();
         };
 
         // setup
         const fakeToken = 'fake-token';
         const fakeEmail = 'newmail@mail.com';
 
-        const repoSpy = Sinon.spy(Repository.contact, 'add');
+        const repoSpy = Sinon.spy(Repository.Contact, 'add');
         Sinon.stub(Auth, 'getToken').resolves(fakeToken);
         Sinon.stub(Mailer, 'sendMail').callsFake(mail => {
             expect(mail.to).to.equal(fakeEmail);
@@ -270,12 +270,12 @@ describe('Service: contacts', () => {
         flags.onCleanup = function() {
             Auth.getToken.restore();
             Mailer.sendMail.restore();
-            Repository.contact.add.restore();
+            Repository.Contact.add.restore();
         };
 
         // setup
         const email = 'contact@gmail.com';
-        const repoSpy = Sinon.spy(Repository.contact, 'add');
+        const repoSpy = Sinon.spy(Repository.Contact, 'add');
         Sinon.stub(Auth, 'getToken').resolves();
         Sinon.stub(Mailer, 'sendMail').resolves();
 
@@ -344,7 +344,7 @@ describe('Service: contacts', () => {
             Config.mail.maximumSignupRequests = signupRequestConfig;
             Auth.getToken.restore();
             Mailer.sendMail.restore();
-            Repository.contact.update.restore();
+            Repository.Contact.update.restore();
         };
 
         // setup
@@ -353,7 +353,7 @@ describe('Service: contacts', () => {
         signupRequestConfig = Config.mail.maximumSignupRequests;
         Config.mail.maximumSignupRequests = testSignupRequests;
 
-        const repoSpy = Sinon.spy(Repository.contact, 'update');
+        const repoSpy = Sinon.spy(Repository.Contact, 'update');
         Sinon.stub(Auth, 'getToken').resolves();
         Sinon.stub(Mailer, 'sendMail').resolves();
 
