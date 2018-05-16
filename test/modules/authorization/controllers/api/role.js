@@ -575,7 +575,32 @@ describe('API Controller: role', () => {
         expect(removeUsersStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(response.result).to.equals(null);
+        expect(response.result).to.not.exist();
+    });
+
+    it('removes multiple users from an existing role', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            removeUsersStub.restore();
+        };
+
+        // setup
+        const removeUsersStub = Sinon.stub(RoleService, 'removeUsers');
+        removeUsersStub.withArgs(3, [2, 3]).resolves([1, 1]);
+        server.route({ method: 'DELETE', path: '/role/{id}/users', handler: RoleCtrl.removeUsers });
+
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/3/users',
+            payload: { id: [2, 3] }
+        });
+
+        // validate
+        expect(removeUsersStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.result).to.not.exist();
     });
 
     it('handles removing a non existing user or from non existing role', async flags => {
@@ -771,7 +796,35 @@ describe('API Controller: role', () => {
         expect(removePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
-        expect(response.result).to.equals(null);
+        expect(response.result).to.not.exist();
+    });
+
+    it('removes multiple permissions from an existing role', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            removePermissionsStub.restore();
+        };
+
+        // setup
+        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
+        removePermissionsStub.withArgs(2, [2, 3]).resolves([[1, 1]]);
+        server.route({
+            method: 'DELETE',
+            path: '/role/{id}/permissions',
+            handler: RoleCtrl.removePermissions
+        });
+
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1/permissions',
+            payload: { id: [2, 6] }
+        });
+
+        // validate
+        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.result).to.not.exist();
     });
 
     it('handles removing an existing permission from non existing role', async flags => {

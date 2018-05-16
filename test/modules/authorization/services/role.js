@@ -545,17 +545,14 @@ describe('Service: role', function() {
 
     it('does not remove non related permission from role', async () => {
         // exercise and validate
-        await expect(RoleService.removePermissions(2, 4)).reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(RoleService.removePermissions(2, 4)).reject(Error, 'Permission not in role');
     });
 
     it('does not remove any permission from role if at least one is unrelated', async () => {
         // exercise and validate
         await expect(RoleService.removePermissions(2, [2, 3, 4])).reject(
             Error,
-            NSError.RESOURCE_NOT_FOUND().message
+            'Permission not in role'
         );
     });
 });
