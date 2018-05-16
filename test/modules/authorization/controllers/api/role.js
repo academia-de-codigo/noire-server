@@ -326,6 +326,30 @@ describe('API Controller: role', () => {
         expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 
+    it('handles deleting a role that has associated users', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            deleteStub.restore();
+        };
+
+        // setup
+        const deleteStub = Sinon.stub(RoleService, 'delete');
+        deleteStub.rejects(NSError.RESOURCE_RELATION());
+        server.route({ method: 'DELETE', path: '/role/{id}', handler: RoleCtrl.delete });
+
+        // exercise
+        const response = await server.inject({
+            method: 'DELETE',
+            url: '/role/1'
+        });
+
+        // validate
+        expect(deleteStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(409);
+        expect(response.statusMessage).to.equal('Conflict');
+        expect(response.result.message).to.equal(NSError.RESOURCE_RELATION().message);
+    });
+
     it('handles server errors while deleting a role', async flags => {
         // cleanup
         flags.onCleanup = function() {
