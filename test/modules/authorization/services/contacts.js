@@ -403,9 +403,9 @@ describe('Service: contacts', () => {
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
-        expect(txSpy.args[0].length).to.equals(3);
-        expect(txSpy.args[0][0]).to.equals(UserModel);
-        expect(txSpy.args[0][1]).to.equals(ContactModel);
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0].indexOf(UserModel)).to.not.be.equals(-1);
+        expect(txSpy.args[0][0].indexOf(ContactModel)).to.not.be.equals(-1);
         expect(result).instanceof(Objection.Model);
         expect(result.name).to.equal(fakeUser.name);
         expect(result.username).to.equal(fakeUser.username);

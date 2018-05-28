@@ -56,8 +56,6 @@ describe('Plugin: repository', () => {
 
         // validate
         expect(repository).to.be.an.instanceof(Repository.ModelRepository);
-        expect(Repository['User']).to.be.an.instanceof(Repository.ModelRepository);
-        expect(repository).to.equals(Repository['User']);
         expect(repository.model).to.equals(UserModel);
     });
 
@@ -70,7 +68,7 @@ describe('Plugin: repository', () => {
         expect(() => Repository.create('invalid')).to.throw();
     });
 
-    it('decorates server with repositories', async () => {
+    it('decorates request with repositories', async () => {
         // setup
         const options = { models: ['user', 'role'] };
         const decorateSpy = Sinon.spy();
@@ -82,16 +80,16 @@ describe('Plugin: repository', () => {
         // validate
         expect(decorateSpy.calledOnce).to.be.true();
         expect(decorateSpy.getCall(0).args[0]).to.equals('request');
-        expect(decorateSpy.getCall(0).args[1]).to.equals('models');
+        expect(decorateSpy.getCall(0).args[1]).to.equals('model');
         expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
-        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
             Repository.ModelRepository
         );
-        expect(decorateSpy.getCall(0).args[2]['user'].model).to.equals(UserModel);
-        expect(decorateSpy.getCall(0).args[2]['user']).to.be.an.instanceof(
+        expect(decorateSpy.getCall(0).args[2]['User'].model).to.equals(UserModel);
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
             Repository.ModelRepository
         );
-        expect(decorateSpy.getCall(0).args[2]['role'].model).to.equals(RoleModel);
+        expect(decorateSpy.getCall(0).args[2]['Role'].model).to.equals(RoleModel);
     });
 
     it('returns a specific record', async () => {
@@ -398,7 +396,7 @@ describe('Plugin: repository', () => {
         await expect(userRepository.query()).to.reject(Error, error);
     });
 
-    it('obtains transaction repositories from models', async () => {
+    it('binds repositories to a new transaction', async () => {
         // setup
         const options = { models: ['user', 'role'] };
         const server = Hapi.server();
@@ -408,16 +406,44 @@ describe('Plugin: repository', () => {
         txStub
             .withArgs(UserModel, RoleModel, Sinon.match.func)
             .callsFake((userModel, roleModel, cb) => {
-                cb(userModel, roleModel);
-            })
-            .resolves();
+                return cb(userModel, roleModel);
+            });
 
         // exercise
-        Repository.tx(UserModel, RoleModel, (userTxRepo, roleTxRepo) => {
+        const done = await Repository.tx([UserModel, RoleModel], (userTxRepo, roleTxRepo) => {
             // validate
             expect(userTxRepo.model).to.equals(Repository['User'].model);
-            expect(roleTxRepo.model).to.equals(Repository['role'].model);
+            expect(roleTxRepo.model).to.equals(Repository['Role'].model);
+
+            return true;
         });
+
+        // validate
+        expect(done).to.equals(true);
+    });
+
+    it('binds repositories to an existing transaction', async () => {
+        // setup
+        const options = { models: ['user', 'role'] };
+        const server = Hapi.server();
+        server.register(Logger);
+        await server.register({ plugin: Repository, options });
+        const fakeTx = { commit: () => {} };
+
+        // exercise
+        const done = await Repository.tx(
+            [UserModel, RoleModel],
+            (userTxRepo, roleTxRepo) => {
+                // validate
+                expect(userTxRepo.model.knex()).to.equal(fakeTx);
+                expect(roleTxRepo.model.knex()).to.equal(fakeTx);
+                return true;
+            },
+            fakeTx
+        );
+
+        // validate
+        expect(done).to.equals(true);
     });
 
     it('handles errors obtaining transaction repositories from models', async () => {
@@ -431,6 +457,50 @@ describe('Plugin: repository', () => {
         txStub.throws(new Error(error));
 
         // exercise
-        await expect(Repository.tx(UserModel, RoleModel, () => {})).to.reject(Error, error);
+        await expect(Repository.tx([UserModel, RoleModel], () => {})).to.reject(Error, error);
+    });
+
+    it('opens a new transaction for work', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Objection.transaction.start.restore();
+        };
+
+        // setup
+        const fakeResult = 'work done';
+        const fakeCommit = Sinon.stub().resolves();
+        const fakeTx = { commit: fakeCommit };
+        const fakeWork = Sinon.stub()
+            .withArgs(fakeTx)
+            .resolves(fakeResult);
+        Sinon.stub(Objection.transaction, 'start').returns(fakeTx);
+
+        // exercise
+        const result = await Repository.doTx(fakeWork);
+
+        // verify
+        expect(fakeWork.calledOnce).to.be.true();
+        expect(fakeCommit.calledOnce).to.be.true();
+        expect(result).to.equals(fakeResult);
+    });
+
+    it('performs rollback if work works', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            Objection.transaction.start.restore();
+        };
+
+        // setup
+        const fakeError = 'error doing work';
+        const fakeRollback = Sinon.stub().resolves();
+        const fakeTx = { rollback: fakeRollback };
+        const fakeWork = Sinon.stub()
+            .withArgs(fakeTx)
+            .rejects(Error(fakeError));
+        Sinon.stub(Objection.transaction, 'start').returns(fakeTx);
+
+        // exercise and verify
+        await expect(Repository.doTx(fakeWork)).to.rejects(Error, fakeError);
+        expect(fakeRollback.calledOnce).to.equal(true);
     });
 });
