@@ -48,7 +48,7 @@
         "html-to-text": "^4.0.0",
         "inert": "^5.1.0",
         "joi": "^13.3.0",
-        "jsonwebtoken": "^8.2.1",
+        "jsonwebtoken": "^8.2.2",
         "knex": "^0.14.6",
         "lout": "^11.0.1",
         "nodemailer": "^4.6.4",
