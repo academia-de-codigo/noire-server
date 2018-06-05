@@ -28,8 +28,8 @@ describe('Model: base', function() {
         baseModel.$beforeInsert();
 
         // verify
-        expect(baseModel.created_at).to.exist();
-        expect(Date.parse(baseModel.created_at)).to.be.a.number();
+        expect(baseModel.createdAt).to.exist();
+        expect(Date.parse(baseModel.createdAt)).to.be.a.number();
     });
 
     it('should set updated timestamp before record update', () => {
@@ -37,8 +37,8 @@ describe('Model: base', function() {
         baseModel.$beforeUpdate();
 
         // verify
-        expect(baseModel.updated_at).to.exist();
-        expect(Date.parse(baseModel.updated_at)).to.be.a.number();
+        expect(baseModel.updatedAt).to.exist();
+        expect(Date.parse(baseModel.updatedAt)).to.be.a.number();
     });
 
     it('should remove created timestamp after creating new record', () => {
@@ -47,7 +47,7 @@ describe('Model: base', function() {
         baseModel.$afterInsert();
 
         // verify
-        expect(baseModel.created_at).not.to.exist();
+        expect(baseModel.createdAt).not.to.exist();
     });
 
     it('should remove updated timestamp after record update', () => {
@@ -56,7 +56,7 @@ describe('Model: base', function() {
         baseModel.$afterUpdate();
 
         // verify
-        expect(baseModel.updated_at).not.to.exist();
+        expect(baseModel.updatedAt).not.to.exist();
     });
 
     it('should remove all timestamps after record get', () => {
@@ -66,8 +66,8 @@ describe('Model: base', function() {
         baseModel.$afterGet();
 
         // verify
-        expect(baseModel.updated_at).not.to.exist();
-        expect(baseModel.created_at).not.to.exist();
+        expect(baseModel.updatedAt).not.to.exist();
+        expect(baseModel.createdAt).not.to.exist();
     });
 
     it('should not parse database json if there is no jsonSchema', () => {

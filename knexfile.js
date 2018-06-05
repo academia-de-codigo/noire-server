@@ -1,4 +1,5 @@
 const Path = require('path');
+const knexSnakeCaseMappers = require('objection').knexSnakeCaseMappers;
 
 module.exports = {
     testing: {
@@ -10,7 +11,8 @@ module.exports = {
         seeds: {
             directory: __dirname + '/db/seeds/testing'
         },
-        useNullAsDefault: true
+        useNullAsDefault: true,
+        ...knexSnakeCaseMappers()
     },
 
     development: {
@@ -36,7 +38,8 @@ module.exports = {
             pool: false,
             client: false,
             bindings: true
-        }
+        },
+        ...knexSnakeCaseMappers()
     },
 
     staging: {
@@ -64,7 +67,8 @@ module.exports = {
             pool: false,
             client: false,
             bindings: true
-        }
+        },
+        ...knexSnakeCaseMappers()
     },
 
     production: {
@@ -85,6 +89,7 @@ module.exports = {
         seeds: {
             directory: './db/seeds/prod'
         },
-        acquireConnectionTimeout: 5000
+        acquireConnectionTimeout: 5000,
+        ...knexSnakeCaseMappers()
     }
 };

@@ -339,8 +339,8 @@ describe('Service: role', function() {
         expect(result).to.be.an.array();
         expect(result.length).to.equals(1);
         expect(result[0]).instanceof(Objection.Model);
-        expect(result[0].role_id).to.equals(roleId);
-        expect(result[0].user_id).to.equals(userIds);
+        expect(result[0].roleId).to.equals(roleId);
+        expect(result[0].userId).to.equals(userIds);
     });
 
     it('adds multiple users to role', async () => {
@@ -360,9 +360,9 @@ describe('Service: role', function() {
         expect(result.length).to.equals(userIds.length);
         result.forEach(model => {
             expect(model).instanceof(Objection.Model);
-            expect(model.role_id).to.equals(roleId);
+            expect(model.roleId).to.equals(roleId);
         });
-        expect(result.map(model => model.user_id)).to.equals(userIds);
+        expect(result.map(model => model.userId)).to.equals(userIds);
     });
 
     it('handles adding user to non existing role', async () => {
@@ -450,8 +450,8 @@ describe('Service: role', function() {
         expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equal(-1);
         expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.be.equal(-1);
         expect(result).instanceof(Objection.Model);
-        expect(result.role_id).to.equals(roleId);
-        expect(result.permission_id).to.equals(permission.id);
+        expect(result.roleId).to.equals(roleId);
+        expect(result.permissionId).to.equals(permission.id);
     });
 
     it('does not add a permission that already belongs to a role', async () => {
@@ -477,8 +477,8 @@ describe('Service: role', function() {
         expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equals(-1);
         expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.be.equals(-1);
         expect(result).instanceof(Objection.Model);
-        expect(result.role_id).to.equals(1);
-        expect(result.permission_id).to.equals(9);
+        expect(result.roleId).to.equals(1);
+        expect(result.permissionId).to.equals(9);
     });
 
     it('does not add a permission to a non existing role', async () => {

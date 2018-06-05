@@ -68,8 +68,8 @@ describe('Service: contacts', () => {
             expect(contact.id).to.exists();
             expect(contact.email).to.be.a.string();
             expect(contact.confirmed).to.be.a.boolean();
-            expect(contact.signup_requests).to.be.a.number();
-            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.signupRequests).to.be.a.number();
+            expect(contact.signupRequests).to.be.at.least(0);
         });
     });
 
@@ -87,8 +87,8 @@ describe('Service: contacts', () => {
         expect(results[0].id).to.equals(2);
         expect(results[0].email).to.be.a.string();
         expect(results[0].confirmed).to.be.a.boolean();
-        expect(results[0].signup_requests).to.be.a.number();
-        expect(results[0].signup_requests).to.be.at.least(0);
+        expect(results[0].signupRequests).to.be.a.number();
+        expect(results[0].signupRequests).to.be.at.least(0);
     });
 
     it('lists contacts with a limit clause', async () => {
@@ -108,8 +108,8 @@ describe('Service: contacts', () => {
             expect(contact.id).to.exists();
             expect(contact.email).to.be.a.string();
             expect(contact.confirmed).to.be.a.boolean();
-            expect(contact.signup_requests).to.be.a.number();
-            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.signupRequests).to.be.a.number();
+            expect(contact.signupRequests).to.be.at.least(0);
         });
     });
 
@@ -128,8 +128,8 @@ describe('Service: contacts', () => {
             expect(contact.id > 3).to.be.true();
             expect(contact.email).to.be.a.string();
             expect(contact.confirmed).to.be.a.boolean();
-            expect(contact.signup_requests).to.be.a.number();
-            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.signupRequests).to.be.a.number();
+            expect(contact.signupRequests).to.be.at.least(0);
         });
     });
 
@@ -148,8 +148,8 @@ describe('Service: contacts', () => {
             expect(contact).to.exists();
             expect(contact.email).to.be.a.string();
             expect(contact.confirmed).to.be.a.boolean();
-            expect(contact.signup_requests).to.be.a.number();
-            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.signupRequests).to.be.a.number();
+            expect(contact.signupRequests).to.be.at.least(0);
         });
     });
 
@@ -169,8 +169,8 @@ describe('Service: contacts', () => {
             expect(contact).to.exists();
             expect(contact.email).to.be.a.string();
             expect(contact.confirmed).to.be.a.boolean();
-            expect(contact.signup_requests).to.be.a.number();
-            expect(contact.signup_requests).to.be.at.least(0);
+            expect(contact.signupRequests).to.be.a.number();
+            expect(contact.signupRequests).to.be.at.least(0);
             expect(contact.id).to.equals(results.length - index);
         });
     });
@@ -178,7 +178,7 @@ describe('Service: contacts', () => {
     it('gets valid contact by id', async () => {
         // setup
         const id = 1;
-        const contact = { id: 1, email: 'admin@gmail.com', confirmed: true, signup_requests: 0 };
+        const contact = { id: 1, email: 'admin@gmail.com', confirmed: true, signupRequests: 0 };
 
         // exercise
         const result = await ContactsService.findById(id);
@@ -189,7 +189,7 @@ describe('Service: contacts', () => {
         expect(result.id).to.equals(contact.id);
         expect(result.email).to.equals(contact.email);
         expect(result.confirmed).to.equals(contact.confirmed);
-        expect(result.signup_requests).to.equals(contact.signup_requests);
+        expect(result.signupRequests).to.equals(contact.signupRequests);
     });
 
     it('handles getting a non existing contact', async () => {
@@ -254,7 +254,7 @@ describe('Service: contacts', () => {
         expect(repoSpy.calledOnce).to.be.true();
         expect(repoSpy.args[0][0].email).to.equal(fakeEmail);
         expect(repoSpy.args[0][0].confirmed).to.be.false();
-        expect(repoSpy.args[0][0].signup_requests).to.be.equal(0);
+        expect(repoSpy.args[0][0].signupRequests).to.be.equal(0);
     });
 
     it('does not sign up a user with another users email', async () => {
@@ -361,7 +361,7 @@ describe('Service: contacts', () => {
         await ContactsService.signup(email);
 
         // validate
-        expect(repoSpy.args[0][0].signup_requests).to.be.equal(1);
+        expect(repoSpy.args[0][0].signupRequests).to.be.equal(1);
     });
 
     it('handles failures updating contact', async flags => {

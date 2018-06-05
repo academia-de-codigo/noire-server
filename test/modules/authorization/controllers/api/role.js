@@ -483,7 +483,7 @@ describe('API Controller: role', () => {
         };
 
         // setup
-        const fakeMappings = { role_id: 0, user_id: 1 };
+        const fakeMappings = { roleId: 0, userId: 1 };
         const addUsersStub = Sinon.stub(RoleService, 'addUsers');
         addUsersStub.withArgs(0, 1).resolves(fakeMappings);
         server.route({ method: 'PUT', path: '/role/{id}/users', handler: RoleCtrl.addUsers });
@@ -684,7 +684,7 @@ describe('API Controller: role', () => {
         };
 
         // setup
-        const fakeMappings = { role_id: 1, permission_id: 1 };
+        const fakeMappings = { roleId: 1, permissionId: 1 };
         const addPermissionStub = Sinon.stub(RoleService, 'addPermissions');
         addPermissionStub.withArgs(1, 'read', 'user').resolves(fakeMappings);
         server.route({
