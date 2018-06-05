@@ -1,6 +1,6 @@
 {
     "name": "noire-server",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Noire Server",
     "main": "lib/index.js",
     "keywords": [
@@ -75,7 +75,7 @@
         "html-webpack-plugin": "^3.2.0",
         "imports-loader": "^0.8.0",
         "jquery": "^3.3.1",
-        "lab": "^15.4.4",
+        "lab": "^15.4.5",
         "mini-css-extract-plugin": "^0.4.0",
         "mock-require": "^3.0.2",
         "nodemon": "^1.17.4",
@@ -89,7 +89,7 @@
         "style-loader": "^0.21.0",
         "uglifyjs-webpack-plugin": "^1.2.5",
         "url-loader": "^1.0.1",
-        "webpack": "4.8.1",
+        "webpack": "4.8.3",
         "webpack-merge": "^4.1.2"
     }
 }
