@@ -331,7 +331,7 @@ describe('Service: user', () => {
         // exercise and validate
         await expect(UserService.authenticate('guest', 'guest')).to.reject(
             Error,
-            NSError.AUTH_INVALID_USERNAME().message
+            NSError.AUTH_INVALID_CREDENTIALS().message
         );
     });
 
@@ -339,7 +339,7 @@ describe('Service: user', () => {
         // exercise and validate
         await expect(UserService.authenticate('invalid', 'admin')).to.reject(
             Error,
-            NSError.AUTH_INVALID_USERNAME().message
+            NSError.AUTH_INVALID_CREDENTIALS().message
         );
     });
 
@@ -347,7 +347,7 @@ describe('Service: user', () => {
         // exercise and validate
         await expect(UserService.authenticate('admin', 'invalid')).to.reject(
             Error,
-            NSError.AUTH_INVALID_USERNAME().message
+            NSError.AUTH_INVALID_CREDENTIALS().message
         );
     });
 

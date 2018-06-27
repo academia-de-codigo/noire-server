@@ -14,7 +14,7 @@ const { before, describe, expect, it } = (exports.lab = Lab.script());
 describe('Plugin: auth', () => {
     // created using node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
     const secret =
-        'qVLBNjLYpud1fFcrBT2ogRWgdIEeoqPsTLOVmwC0mWWJdmvKTHpVKu6LJ7vkO6UR6H7ZelCw/ESAuqwi2jiYf8+n3+jiwmwDL17hIHnFNlQeJ+ad9FgWYMA0QRYMqkz6AHQSYCRIhUsdPBcC0G2FNZ9qxIEDwpIh87Phwlj7JvskIxsOeoOdKFcGFENtRgDhO2hZtxGHlrQIbot2PFJJp/oLGELA39myjX86Swqer/3HCcj1pjS5PU4CkZRzIch1MVYSoRVIYl9jxryEJKCG5ftgVnGXeHBTpbSMc9gndpALeL3ypAKnVUxHsQSfyFpRBLXRad7XABB9bz/2jfedrQ==';
+        'qhjM26DEqH1Bid2OPrQpV65FT+8E6pHfpdfDbbh4Dr1UH8LPoNy5UiE9fzGtyZnG8sxDdBWjNI6cpLdtBSCTC481PLExsKeSA+TgkyHGIl3r7BQVyqyybhLgTuEO5zKE2gcF3CaA00LQ7i2ibiBjlOct+eckMZ9wjf77gxP66bhpmgfIvITqBtWZ4Fu0wk9SkNoK1a2ZO2IkbHeftI9+tzbYmvHDc8gS0jkaYDNbfYfLABjo9QqPgL+YdzToynXIfEbX3VEiXC/bKQvmCMtBH18iWvFGKEkT7s36FT1DY7wi73sQI8wzeS6ueNdtEg/BoYkObiu+0gYRb08pGej3kA==';
 
     const tokenOptions = {
         audience: Auth.token.AUTH
@@ -147,6 +147,54 @@ describe('Plugin: auth', () => {
             expect(err.name).to.equals('JsonWebTokenError');
             expect(err.message).to.equals('invalid signature');
             expect(decoded).to.not.exist();
+        });
+    });
+
+    it('adds a loggedInAt claim', async () => {
+        // setup
+        const fakeId = 9999;
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+
+        // exercise
+        const jwt = await Auth.getToken({ id: fakeId });
+        JWT.verify(jwt, secret, (error, decoded) => {
+            expect(error).to.not.exist();
+            expect(decoded.id).to.equal(fakeId);
+            expect(decoded.iat).to.be.number();
+            expect(decoded.loggedInAt).to.be.number();
+            expect(decoded.loggedInAt).to.equal(decoded.iat);
+        });
+    });
+
+    it('does not add a loggedInAt claim if already present', async () => {
+        // setup
+        const fakeId = 9999;
+        const loggedInAt = 1000;
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+
+        // exercise
+        const jwt = await Auth.getToken({ id: fakeId, loggedInAt });
+        JWT.verify(jwt, secret, (error, decoded) => {
+            expect(error).to.not.exist();
+            expect(decoded.id).to.equal(fakeId);
+            expect(decoded.iat).to.be.number();
+            expect(decoded.loggedInAt).to.be.number();
+            expect(decoded.loggedInAt).to.equal(loggedInAt);
+        });
+    });
+
+    it('does not add a loggedInAt claim if token type is not auth', async () => {
+        // setup
+        const fakeId = 9999;
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+
+        // exercise
+        const jwt = await Auth.getToken({ id: fakeId }, undefined, 'not auth');
+        JWT.verify(jwt, secret, (error, decoded) => {
+            expect(error).to.not.exist();
+            expect(decoded.id).to.equal(fakeId);
+            expect(decoded.iat).to.be.number();
+            expect(decoded.loggedInAt).to.not.exist();
         });
     });
 
@@ -308,6 +356,44 @@ describe('Plugin: auth', () => {
         expect(response.result.message).to.equals('Insufficient scope');
     });
 
+    it('does not authenticate with an invalid token version', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            UserService.findById.restore();
+        };
+
+        // setup
+        const fakeRoute = { path: '/', method: 'GET', handler: () => {} };
+        const fakeUser = { id: 9999, roles: [{ name: 'user' }] };
+        const server = Hapi.server();
+        // token generated with id 9999 and token version 300
+        const fakeToken =
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk5OTkiLCJ2ZXJzaW9uIjozMDAsImlhdCI6MTUzMDA5Mzg4MywibG9nZ2VkSW5BdCI6MTUzMDA5Mzg4MywiZXhwIjoxNTMwMDk3NDgzLCJhdWQiOlsibm9pcmU6YXV0aCJdfQ.9vzlByKZa7oT6aeJjwU2bK-B-S0wS29Y9uJBq0x6NC8';
+
+        server.register(Logger);
+        await server.register(Auth);
+        server.route(fakeRoute);
+
+        Sinon.stub(UserService, 'findById')
+            .withArgs(fakeUser.id)
+            .resolves(fakeUser);
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: fakeRoute.path,
+            headers: {
+                authorization: fakeToken
+            }
+        });
+
+        // validate
+        expect(UserService.findById.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(401);
+        expect(response.result.error).to.equals('Unauthorized');
+        expect(response.result.message).to.equals('Invalid credentials');
+    });
+
     it('authenticates on valid credentials', async flags => {
         // cleanup
         flags.onCleanup = function() {
@@ -397,5 +483,41 @@ describe('Plugin: auth', () => {
         await expect(Auth.decodeToken(token)).to.reject(
             `jwt audience invalid. expected: ${Auth.token.AUTH}`
         );
+    });
+
+    it('handles renewing a token', async () => {
+        // setup
+        const now = Math.floor(Date.now() / 1000);
+        const payload = { id: 1, loggedInAt: now };
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const token = JWT.sign(payload, secret, {
+            audience: Auth.token.AUTH
+        });
+
+        // exercise and verify
+        const jwt = await Auth.renewToken(token);
+
+        // verify
+        JWT.verify(jwt, secret, (error, decoded) => {
+            expect(error).to.not.exist();
+            expect(decoded.id).to.equal(payload.id);
+            expect(decoded.iat).to.be.number();
+            expect(decoded.exp).to.be.number();
+            expect(decoded.loggedInAt).to.exist();
+            expect(decoded.loggedInAt).to.be.number();
+            expect(decoded.loggedInAt).to.equal(payload.loggedInAt);
+        });
+    });
+
+    it('handles renewing an invalid token', async () => {
+        // setup
+        const payload = { id: 1, loggedInAt: 20 };
+        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const token = JWT.sign(payload, secret, {
+            audience: Auth.token.AUTH
+        });
+
+        // exercise and verify
+        await expect(Auth.renewToken(token)).to.reject(Error, 'non renewable token');
     });
 });

@@ -73,8 +73,8 @@ describe('Errors', () => {
     });
 
     it('wraps auth errors with 401 boom', () => {
-        expect(NSError.AUTH_INVALID_USERNAME().output.statusCode).to.equals(401);
-        expect(NSError.AUTH_INVALID_PASSWORD().output.statusCode).to.equals(401);
+        expect(NSError.AUTH_INVALID_CREDENTIALS().output.statusCode).to.equals(401);
+        expect(NSError.AUTH_INVALID_TOKEN().output.statusCode).to.equals(401);
     });
 
     it('wrap not found errors with 404 boom', () => {
@@ -140,13 +140,13 @@ describe('Errors', () => {
 
     it('matched error type of object generated boom errors', () => {
         // setup
-        let error1 = NSError.AUTH_INVALID_PASSWORD();
+        let error1 = NSError.AUTH_INVALID_CREDENTIALS();
         let error2 = NSError.RESOURCE_NOT_FOUND();
 
         // verify
-        expect(NSError.AUTH_INVALID_PASSWORD.match(error1)).to.be.true();
+        expect(NSError.AUTH_INVALID_CREDENTIALS.match(error1)).to.be.true();
         expect(NSError.RESOURCE_NOT_FOUND.match(error2)).to.be.true();
-        expect(NSError.AUTH_INVALID_PASSWORD.match(error2)).to.be.false();
+        expect(NSError.AUTH_INVALID_CREDENTIALS.match(error2)).to.be.false();
         expect(NSError.RESOURCE_NOT_FOUND.match(error1)).to.be.false();
     });
 

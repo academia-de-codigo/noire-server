@@ -7,14 +7,14 @@ const LoginCtrl = require('modules/authorization/controllers/api/login');
 const Auth = require('plugins/auth');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
+const Config = require('config');
 
 const { beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('API Controller: login', () => {
     // created using npm run token
     const token =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNDc5MDQzNjE2fQ.IUXsKd8zaA1Npsh3P-WST5IGa-w0TsVMKh28ONkWqr8';
-
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwidmVyc2lvbiI6MSwiaWF0IjoxNTI5OTQ4MjgyLCJleHAiOjE1Mjk5NTE4ODIsImF1ZCI6WyJub2lyZTphdXRoIl19.9QZNHh9rn0KFMxmxu8g-3sC4_G0Ompgy28c_DgicljQ';
     let server;
 
     beforeEach(async () => {
@@ -62,7 +62,7 @@ describe('API Controller: login', () => {
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub
             .withArgs(credentials.username, credentials.password)
-            .rejects(NSError.AUTH_INVALID_USERNAME());
+            .rejects(NSError.AUTH_INVALID_CREDENTIALS());
 
         // exercise
         const response = await server.inject({
@@ -75,7 +75,7 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(401);
         expect(response.statusMessage).to.equal('Unauthorized');
-        expect(response.result.message).to.equal(NSError.AUTH_INVALID_USERNAME().message);
+        expect(response.result.message).to.equal(NSError.AUTH_INVALID_CREDENTIALS().message);
     });
 
     it('rejects login with invalid password', async flags => {
@@ -89,7 +89,7 @@ describe('API Controller: login', () => {
         const authenticateStub = Sinon.stub(UserService, 'authenticate');
         authenticateStub
             .withArgs(credentials.username, credentials.password)
-            .rejects(NSError.AUTH_INVALID_PASSWORD());
+            .rejects(NSError.AUTH_INVALID_CREDENTIALS());
 
         // exercise
         const response = await server.inject({
@@ -102,7 +102,7 @@ describe('API Controller: login', () => {
         expect(authenticateStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(401);
         expect(response.statusMessage).to.equal('Unauthorized');
-        expect(response.result.message).to.equal(NSError.AUTH_INVALID_PASSWORD().message);
+        expect(response.result.message).to.equal(NSError.AUTH_INVALID_CREDENTIALS().message);
     });
 
     it('handles internal server errors', async flags => {
@@ -232,7 +232,7 @@ describe('API Controller: login', () => {
             method: 'GET',
             url: '/renew',
             headers: {
-                authorization: `Basic ${token}`
+                authorization: `${token}`
             }
         });
 
@@ -243,6 +243,9 @@ describe('API Controller: login', () => {
         expect(response.headers['server-authorization']).not.to.equals(token);
         expect(JWT.decode(response.headers['server-authorization']).id).to.equals(
             JWT.decode(token).id
+        );
+        expect(JWT.decode(response.headers['server-authorization']).version).to.equal(
+            Config.auth.version
         );
         expect(JWT.decode(response.headers['server-authorization']).exp).to.be.a.number();
     });

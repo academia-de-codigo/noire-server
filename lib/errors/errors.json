@@ -1,10 +1,10 @@
 {
-    "AUTH_INVALID_USERNAME": {
+    "AUTH_INVALID_CREDENTIALS": {
         "message": "invalid user credentials",
         "statusCode": 401
     },
-    "AUTH_INVALID_PASSWORD": {
-        "message": "invalid user credentials",
+    "AUTH_INVALID_TOKEN": {
+        "message": "invalid token",
         "statusCode": 401
     },
     "AUTH_UNAUTHORIZED": {
