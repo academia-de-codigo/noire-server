@@ -365,10 +365,8 @@ describe('Plugin: auth', () => {
         // setup
         const fakeRoute = { path: '/', method: 'GET', handler: () => {} };
         const fakeUser = { id: 9999, roles: [{ name: 'user' }] };
+        const fakeTokenVersion = 8888;
         const server = Hapi.server();
-        // token generated with id 9999 and token version 300
-        const fakeToken =
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk5OTkiLCJ2ZXJzaW9uIjozMDAsImlhdCI6MTUzMDA5Mzg4MywibG9nZ2VkSW5BdCI6MTUzMDA5Mzg4MywiZXhwIjoxNTMwMDk3NDgzLCJhdWQiOlsibm9pcmU6YXV0aCJdfQ.9vzlByKZa7oT6aeJjwU2bK-B-S0wS29Y9uJBq0x6NC8';
 
         server.register(Logger);
         await server.register(Auth);
@@ -383,7 +381,7 @@ describe('Plugin: auth', () => {
             method: 'GET',
             url: fakeRoute.path,
             headers: {
-                authorization: fakeToken
+                authorization: await Auth.getToken({ id: fakeUser.id, version: fakeTokenVersion })
             }
         });
 
