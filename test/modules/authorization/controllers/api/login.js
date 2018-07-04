@@ -226,13 +226,37 @@ describe('API Controller: login', () => {
         expect(response.headers['set-cookie'][0].startsWith('token=;')).to.be.true();
     });
 
-    it('renews authentication token', async () => {
+    it('renews authentication token without type', async () => {
         // exercise
         const response = await server.inject({
             method: 'GET',
             url: '/renew',
             headers: {
                 authorization: `${token}`
+            }
+        });
+
+        // validate
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.headers['server-authorization']).to.exist();
+        expect(response.headers['server-authorization']).not.to.equals(token);
+        expect(JWT.decode(response.headers['server-authorization']).id).to.equals(
+            JWT.decode(token).id
+        );
+        expect(JWT.decode(response.headers['server-authorization']).version).to.equal(
+            Config.auth.version
+        );
+        expect(JWT.decode(response.headers['server-authorization']).exp).to.be.a.number();
+    });
+
+    it('renews authentication token with type', async () => {
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/renew',
+            headers: {
+                authorization: `Bearer ${token}`
             }
         });
 
