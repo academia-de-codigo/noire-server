@@ -33,5 +33,6 @@
         "message": "resource is not in a valid state for this action",
         "statusCode": 409
     },
-    "MAILER_ERROR": "mailer error"
+    "MAILER_ERROR": "mailer error",
+    "CONFIG_ERROR": "config validation error"
 }
