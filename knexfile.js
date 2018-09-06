@@ -20,10 +20,6 @@ module.exports = {
         connection: {
             filename: Path.resolve(__dirname, 'db/dev.sqlite3')
         },
-        pool: {
-            min: 1,
-            max: 2
-        },
         migrations: {
             directory: './db/migrations'
         },
