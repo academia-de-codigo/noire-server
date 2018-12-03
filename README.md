@@ -5,8 +5,6 @@
 [![Dependencies Status](https://david-dm.org/academia-de-codigo/noire-server/status.svg)](https://david-dm.org/academia-de-codigo/noire-server)
 [![DevDependencies Status](https://david-dm.org/academia-de-codigo/noire-server/dev-status.svg)](https://david-dm.org/academia-de-codigo/noire-server?type=dev)
 
-[![NSP Status](https://nodesecurity.io/orgs/academia-de-codigo/projects/b8063e26-4c37-403f-aa49-e3f8fdacbb3a/badge)](https://nodesecurity.io/orgs/academia-de-codigo/projects/b8063e26-4c37-403f-aa49-e3f8fdacbb3a)
-
 Maintainer: [Rui Ferrão](https://github.com/ferrao)
 
 # Noire Server
