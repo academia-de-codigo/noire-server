@@ -1,7 +1,7 @@
 const path = require('path');
 const merge = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const htmlMinifier = require('html-minifier');
 const common = require('./webpack.common.js');
@@ -48,11 +48,11 @@ module.exports = merge(common, {
     mode: 'production',
     optimization: {
         minimizer: [
-            new UglifyJsPlugin({
+            new TerserPlugin({
                 cache: true,
                 parallel: true,
                 sourceMap: false,
-                uglifyOptions: {
+                terserOptions: {
                     compress: {
                         ie8: false,
                         unused: true,
