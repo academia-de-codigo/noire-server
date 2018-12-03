@@ -50,7 +50,7 @@
         "inert": "^5.1.2",
         "joi": "^14.3.0",
         "jsonwebtoken": "^8.4.0",
-        "knex": "^0.16.0",
+        "knex": "^0.15.2",
         "lout": "^11.1.0",
         "nodemailer": "^4.7.0",
         "objection": "^1.4.0",
