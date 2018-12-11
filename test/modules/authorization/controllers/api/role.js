@@ -27,6 +27,17 @@ describe('API Controller: role', () => {
         }
     ];
 
+    const permissions = [
+        {
+            name: 'bootcamp',
+            permissions: [{ id: 1, action: 'create' }, { id: 2, action: 'delete' }]
+        },
+        {
+            name: 'documents',
+            permissions: [{ id: 1, action: 'create' }, { id: 2, action: 'delete' }]
+        }
+    ];
+
     let server;
 
     beforeEach(() => {
@@ -124,6 +135,55 @@ describe('API Controller: role', () => {
         // validate
         expect(listStub.calledOnce).to.be.true();
         expect(countStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equals(500);
+        expect(response.statusMessage).to.equals('Internal Server Error');
+        expect(response.result.message).to.equal('An internal server error occurred');
+    });
+
+    it('lists available permissions', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            listStub.restore();
+        };
+
+        // setup
+        const listStub = Sinon.stub(RoleService, 'listPermissions').resolves(permissions);
+
+        server.route({ method: 'GET', path: '/permission', handler: RoleCtrl.listPermissions });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/permission'
+        });
+
+        // validate
+        expect(listStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.result).to.equal(permissions);
+    });
+
+    it('handles server errors while listing permissions', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            listStub.restore();
+        };
+
+        // setup
+        const listStub = Sinon.stub(RoleService, 'listPermissions').rejects(
+            NSError.RESOURCE_FETCH()
+        );
+        server.route({ method: 'GET', path: '/permissions', handler: RoleCtrl.listPermissions });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/permissions'
+        });
+
+        // validate
+        expect(listStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(500);
         expect(response.statusMessage).to.equals('Internal Server Error');
         expect(response.result.message).to.equal('An internal server error occurred');

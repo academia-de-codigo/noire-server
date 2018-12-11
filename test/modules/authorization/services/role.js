@@ -167,6 +167,25 @@ describe('Service: role', function() {
         });
     });
 
+    it('lists permissions', async () => {
+        // exercise
+        const results = await RoleService.listPermissions();
+
+        // validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(4);
+        results.forEach(resource => {
+            expect(resource).to.be.instanceof(ResourceModel);
+            expect(resource.name).to.be.a.string();
+            expect(resource.permissions).to.be.an.array();
+            resource.permissions.forEach(permission => {
+                expect(permission).to.be.instanceof(PermissionModel);
+                expect(permission.id).to.be.a.number();
+                expect(permission.action).to.be.a.string();
+            });
+        });
+    });
+
     it('gets valid role by id', async () => {
         // setup
         const id = 1;
