@@ -47,7 +47,8 @@ exports.seed = function(knex, Promise) {
                     knex('permissions').insert({
                         id: 9,
                         action: 'read',
-                        resource_id: 4
+                        resource_id: 4,
+                        description: 'Should not change'
                     })
                 ]);
             }),
@@ -57,7 +58,8 @@ exports.seed = function(knex, Promise) {
                 return Promise.all([
                     knex('resources').insert({
                         id: 1,
-                        name: 'user'
+                        name: 'user',
+                        description: 'A user'
                     }),
                     knex('resources').insert({
                         id: 2,
@@ -65,7 +67,8 @@ exports.seed = function(knex, Promise) {
                     }),
                     knex('resources').insert({
                         id: 3,
-                        name: 'test'
+                        name: 'test',
+                        description: 'test description'
                     }),
                     knex('resources').insert({
                         id: 4,

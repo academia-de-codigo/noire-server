@@ -34,5 +34,9 @@
         "statusCode": 409
     },
     "MAILER_ERROR": "mailer error",
-    "CONFIG_ERROR": "config validation error"
+    "CONFIG_ERROR": "config validation error",
+    "VALIDATION_ERROR": {
+        "message": "invalid data",
+        "statusCode": 400
+    }
 }

@@ -7,6 +7,7 @@ const KnexConfig = require('knexfile');
 const ResourceService = require('modules/authorization/services/resource');
 const Repository = require('plugins/repository');
 const ResourceModel = require('models/resource');
+const PermissionModel = require('models/permission');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
 
@@ -66,8 +67,16 @@ describe('Service: resource', () => {
         expect(results.length).to.equals(4);
         results.forEach(resource => {
             expect(resource).to.be.instanceof(ResourceModel);
-            expect(resource.id).to.exists();
             expect(resource.name).to.be.a.string();
+            expect(resource.permissions).to.be.an.array();
+            resource.permissions.forEach(permission => {
+                expect(permission).to.be.instanceof(PermissionModel);
+                expect(permission.id).to.be.a.number();
+                expect(permission.action).to.be.a.string();
+                expect(permission.description).to.satisfy(
+                    value => value === null || typeof value === 'string'
+                );
+            });
         });
     });
 
@@ -82,6 +91,7 @@ describe('Service: resource', () => {
         expect(results[0]).to.be.instanceof(ResourceModel);
         expect(results[0].id === 1).to.be.true();
         expect(results[0].name).to.be.a.string();
+        expect(results[0].description).to.be.a.string();
     });
 
     it('lists resources with limit', async () => {
@@ -99,6 +109,9 @@ describe('Service: resource', () => {
             expect(resource.id).to.exists();
             expect(resource.id < 3).to.be.true();
             expect(resource.name).to.be.a.string();
+            expect(resource.description).to.satisfy(
+                value => value === null || typeof value === 'string'
+            );
         });
     });
 
@@ -116,6 +129,9 @@ describe('Service: resource', () => {
             expect(resource).to.be.instanceof(ResourceModel);
             expect(resource.id > 3).to.be.true();
             expect(resource.name).to.be.a.string();
+            expect(resource.description).to.satisfy(
+                value => value === null || typeof value === 'string'
+            );
         });
     });
 
@@ -133,6 +149,9 @@ describe('Service: resource', () => {
             expect(resource).to.be.instanceof(ResourceModel);
             expect(resource.id).to.exist();
             expect(resource.name).to.be.a.string();
+            expect(resource.description).to.satisfy(
+                value => value === null || typeof value === 'string'
+            );
         });
     });
 
@@ -149,13 +168,16 @@ describe('Service: resource', () => {
             expect(resource).to.be.instanceof(ResourceModel);
             expect(resource.id).to.exist();
             expect(resource.name).to.be.a.string();
+            expect(resource.description).to.satisfy(
+                value => value === null || typeof value === 'string'
+            );
         });
     });
 
     it('gets valid resource by id', async () => {
         // setup
         const id = 1;
-        const resource = { name: 'user' };
+        const resource = { name: 'user', description: 'A user' };
 
         // exercise
         const result = await ResourceService.findById(id);
@@ -165,6 +187,7 @@ describe('Service: resource', () => {
         expect(result).to.be.instanceof(ResourceModel);
         expect(result.id).to.equals(id);
         expect(result.name).to.equals(resource.name);
+        expect(result.description).to.equal(resource.description);
     });
 
     it('handles getting invalid resource by id', async () => {
@@ -181,9 +204,12 @@ describe('Service: resource', () => {
 
         // exercise
         const result = await ResourceService.findByName('user');
+
+        // validate
         expect(result).to.be.instanceof(ResourceModel);
         expect(result.id).to.equals(resource.id);
         expect(result.name).to.equals(resource.name);
+        expect(result.description).to.equal('A user');
     });
 
     it('handles getting invalid resource by name', async () => {
@@ -196,7 +222,7 @@ describe('Service: resource', () => {
 
     it('adds a new resource', async () => {
         // setup
-        const resource = { id: 10, name: 'newresource' };
+        const resource = { id: 13, name: 'newresource', description: 'new' };
 
         // exercise
         const result = await ResourceService.add(resource);
@@ -208,6 +234,7 @@ describe('Service: resource', () => {
         expect(result).to.be.an.instanceof(ResourceModel);
         expect(result.id).to.equals(resource.id);
         expect(result.name).to.equals(resource.name);
+        expect(result.description).to.equal(resource.description);
     });
 
     it('does not add an existing resource', async () => {
@@ -258,6 +285,25 @@ describe('Service: resource', () => {
         expect(result).to.be.an.instanceof(ResourceModel);
         expect(result.id).to.equals(id);
         expect(result.name).to.equals(resource.name);
+        expect(result.description).to.equal('test description');
+    });
+
+    it('updates an existing resource description', async () => {
+        // setup
+        const id = 3;
+        const resource = { description: 'new' };
+
+        // exercise
+        const result = await ResourceService.update(id, resource);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0]).to.equals(ResourceModel);
+        expect(result).to.be.an.instanceof(ResourceModel);
+        expect(result.id).to.equals(id);
+        expect(result.name).to.equals('test');
+        expect(result.description).to.equal(resource.description);
     });
 
     it('handles updating a non existing resource', async () => {

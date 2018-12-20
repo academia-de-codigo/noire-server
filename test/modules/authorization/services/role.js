@@ -17,10 +17,11 @@ const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.scrip
 
 describe('Service: role', function() {
     let txSpy;
+    let knex;
 
     beforeEach(async () => {
         /*jshint -W064 */
-        const knex = Knex(KnexConfig.testing); // eslint-disable-line
+        knex = Knex(KnexConfig.testing); // eslint-disable-line
         /*jshint -W064 */
 
         await knex.migrate.latest();
@@ -188,8 +189,8 @@ describe('Service: role', function() {
 
     it('gets valid role by id', async () => {
         // setup
-        const id = 1;
-        const role = { name: 'admin', description: 'administrator' };
+        const id = 2;
+        const role = { name: 'user', description: 'registered' };
 
         // exercise
         const result = await RoleService.findById(id);
@@ -197,9 +198,21 @@ describe('Service: role', function() {
         // validate
         expect(result).to.be.an.object();
         expect(result).to.be.instanceof(RoleModel);
-        expect(result.id).to.equals(1);
+        expect(result.id).to.equals(2);
         expect(result.name).to.equals(role.name);
         expect(result.description).to.equals(role.description);
+        expect(result.permissions).to.exists();
+        expect(result.permissions).to.be.an.array();
+        expect(result.permissions.length).to.equal(3);
+        result.permissions.forEach(permission => {
+            expect(permission).to.be.an.instanceof(PermissionModel);
+            expect(permission.id).to.be.a.number();
+            expect(permission.action).to.be.a.string();
+            expect(permission.resource).to.be.an.instanceof(ResourceModel);
+            expect(permission.description).to.satisfy(
+                value => value === null || typeof value === 'string'
+            );
+        });
     });
 
     it('handles getting invalid role by id', async () => {
@@ -457,25 +470,33 @@ describe('Service: role', function() {
         // setup
         const roleId = 1;
         const resource = 'test';
-        const permission = { id: 10, action: 'create' };
+        const permission = { id: 10, action: 'create', description: 'create test' };
 
         // exercise
-        const result = await RoleService.addPermissions(roleId, permission.action, resource);
+        const result = await RoleService.addPermission(
+            roleId,
+            permission.action,
+            resource,
+            permission.description
+        );
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
-        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.be.equal(-1);
-        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equal(-1);
-        expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.be.equal(-1);
+        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.equal(-1);
         expect(result).instanceof(Objection.Model);
         expect(result.roleId).to.equals(roleId);
         expect(result.permissionId).to.equals(permission.id);
+
+        const [persistedPermission] = await knex('permissions').where({ id: permission.id });
+        expect(persistedPermission.description).to.equal(permission.description);
     });
 
     it('does not add a permission that already belongs to a role', async () => {
         // exercise and validate
-        await expect(RoleService.addPermissions(1, 'create', 'role')).reject(
+        await expect(RoleService.addPermission(1, 'create', 'role')).reject(
             NSError.RESOURCE_DUPLICATE().message
         );
     });
@@ -485,93 +506,99 @@ describe('Service: role', function() {
         const roleId = 1;
         const resource = 'noroles';
         const permission = { action: 'read' };
+        const permissionId = 9;
 
         // exercise
-        const result = await RoleService.addPermissions(roleId, permission.action, resource);
+        const result = await RoleService.addPermission(roleId, permission.action, resource);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
-        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.be.equals(-1);
-        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equals(-1);
-        expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.be.equals(-1);
+        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.equal(-1);
         expect(result).instanceof(Objection.Model);
         expect(result.roleId).to.equals(1);
         expect(result.permissionId).to.equals(9);
+
+        const [persistedPermission] = await knex('permissions').where({ id: permissionId });
+        expect(persistedPermission.description).to.equal('Should not change');
     });
 
     it('does not add a permission to a non existing role', async () => {
         // exercise and validate
-        await expect(RoleService.addPermissions(999, 'create', 'role')).reject('Invalid role id');
+        await expect(RoleService.addPermission(999, 'create', 'role')).reject('Invalid role id');
     });
 
     it('does not add a permission with invalid action', async () => {
         // exercise and validate
-        await expect(() => RoleService.addPermissions(1, 'invalid', 'role')).throws(
+        await expect(() => RoleService.addPermission(1, 'invalid', 'role')).throws(
             NSError.RESOURCE_NOT_FOUND().message
         );
     });
 
     it('does not add a permission with invalid resource', async () => {
         // exercise and validate
-        await expect(RoleService.addPermissions(1, 'create', 'invalid')).reject(
+        await expect(RoleService.addPermission(1, 'create', 'invalid')).reject(
             Error,
             'Invalid resource id'
         );
     });
 
-    it('removes a permission from role', async () => {
-        // exercise
-        const result = await RoleService.removePermissions(1, 1);
+    it('does not add a new permission without description', async () => {
+        // setup
+        const roleId = 1;
+        const resource = 'test';
+        const permission = { id: 27, action: 'create' };
 
-        // validate
-        expect(txSpy.calledOnce).to.be.true();
-        expect(txSpy.args[0].length).to.equals(2);
-        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.be.equal(-1);
-        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equal(-1);
-        expect(result).to.equals([1]);
-    });
-
-    it('removes multiple permissions from role', async () => {
-        // exercise
-        const result = await RoleService.removePermissions(2, [2, 3, 6]);
-
-        // validate
-        expect(txSpy.calledOnce).to.be.true();
-        expect(txSpy.args[0].length).to.equals(2);
-        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.be.equal(-1);
-        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.be.equals(-1);
-        expect(result.length).to.equals(3);
-    });
-
-    it('does not remove permission from non existing role', async () => {
-        // exercise and validate
-        await expect(RoleService.removePermissions(5, 1)).reject(Error, 'Invalid role id');
-    });
-
-    it('does not remove non existing permission from role', async () => {
-        // exercise and validate
-        await expect(RoleService.removePermissions(1, 99)).reject(Error, 'Invalid permission id');
-    });
-
-    it('does not remove any permission from role if at least one permission does not exist', async () => {
-        // exercise and validate
-        await expect(RoleService.removePermissions(1, [1, 2, 3, 99])).reject(
+        // exercise and verify
+        await expect(RoleService.addPermission(roleId, permission.action, resource)).to.reject(
             Error,
-            'Invalid permission id'
+            'Missing description'
+        );
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.equal(-1);
+    });
+
+    it('updates role permissions', async () => {
+        // exercise
+        const permissionIds = [1, 5, 6];
+        const result = await RoleService.updatePermissions(2, permissionIds);
+
+        // validate
+        expect(txSpy.calledOnce).to.be.true();
+        expect(txSpy.args[0].length).to.equals(2);
+        expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
+        expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
+        expect(result).to.be.an.instanceof(RoleModel);
+        expect(result.permissions).to.be.an.array();
+        expect(result.permissions.length).to.equal(3);
+        result.permissions.forEach((permission, index) => {
+            expect(permission).to.be.instanceof(PermissionModel);
+            expect(permissionIds[index]).equals(permission.id);
+            expect(permission.action).to.be.a.string();
+            expect(permission.resourceId).to.be.a.number();
+        });
+    });
+
+    it('does not update invalid role with permissions', async () => {
+        // exercise
+        await expect(RoleService.updatePermissions(999, [1, 5, 6])).reject(
+            Error,
+            'Invalid role id'
         );
     });
 
-    it('does not remove non related permission from role', async () => {
-        // exercise and validate
-        await expect(RoleService.removePermissions(2, 4)).reject(Error, 'Permission not in role');
-    });
-
-    it('does not remove any permission from role if at least one is unrelated', async () => {
-        // exercise and validate
-        await expect(RoleService.removePermissions(2, [2, 3, 4])).reject(
+    it('does not update role with invalid permissions', async () => {
+        // exercise
+        await expect(RoleService.updatePermissions(2, [1, 9999])).reject(
             Error,
-            'Permission not in role'
+            'Invalid permission id'
         );
     });
 });

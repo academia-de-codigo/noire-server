@@ -44,11 +44,6 @@ exports.seed = function(knex, Promise) {
                     id: 3,
                     name: 'guest',
                     description: 'guest user'
-                }),
-                knex('roles').insert({
-                    id: 4,
-                    name: 'nousers',
-                    description: 'testing'
                 })
             ]);
         })
