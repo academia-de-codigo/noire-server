@@ -745,7 +745,7 @@ describe('API Controller: role', () => {
 
         // setup
         const fakeMappings = { roleId: 1, permissionId: 1 };
-        const addPermissionStub = Sinon.stub(RoleService, 'addPermissions');
+        const addPermissionStub = Sinon.stub(RoleService, 'addPermission');
         addPermissionStub.withArgs(1, 'read', 'user').resolves(fakeMappings);
         server.route({
             method: 'PUT',
@@ -770,12 +770,12 @@ describe('API Controller: role', () => {
     it('handles adding a permission to a non existing role', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            addPermissionsStub.restore();
+            addPermissionStub.restore();
         };
 
         // setup
-        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
-        addPermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        const addPermissionStub = Sinon.stub(RoleService, 'addPermission');
+        addPermissionStub.rejects(NSError.RESOURCE_NOT_FOUND());
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
@@ -790,7 +790,7 @@ describe('API Controller: role', () => {
         });
 
         // validate
-        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(addPermissionStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
         expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
@@ -799,12 +799,12 @@ describe('API Controller: role', () => {
     it('handles adding a permission to a role that already contains it', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            addPermissionsStub.restore();
+            addPermissionStub.restore();
         };
 
         // setup
-        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
-        addPermissionsStub.rejects(NSError.RESOURCE_DUPLICATE());
+        const addPermissionStub = Sinon.stub(RoleService, 'addPermission');
+        addPermissionStub.rejects(NSError.RESOURCE_DUPLICATE());
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
@@ -819,7 +819,7 @@ describe('API Controller: role', () => {
         });
 
         // validate
-        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(addPermissionStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(409);
         expect(response.statusMessage).to.equal('Conflict');
         expect(response.result.message).to.equal(NSError.RESOURCE_DUPLICATE().message);
@@ -828,12 +828,12 @@ describe('API Controller: role', () => {
     it('handles server error while adding a permission to a role', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            addPermissionsStub.restore();
+            addPermissionStub.restore();
         };
 
         // setup
-        const addPermissionsStub = Sinon.stub(RoleService, 'addPermissions');
-        addPermissionsStub.rejects(NSError.RESOURCE_UPDATE());
+        const addPermissionStub = Sinon.stub(RoleService, 'addPermission');
+        addPermissionStub.rejects(NSError.RESOURCE_UPDATE());
         server.route({
             method: 'PUT',
             path: '/role/{id}/permissions',
@@ -848,153 +848,126 @@ describe('API Controller: role', () => {
         });
 
         // validate
-        expect(addPermissionsStub.calledOnce).to.be.true();
+        expect(addPermissionStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
         expect(response.result.message).to.equal('An internal server error occurred');
     });
 
-    it('removes a permission from an existing role', async flags => {
+    it('updates permissions for an existing role', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            removePermissionsStub.restore();
+            updatePermissionsStub.restore();
         };
 
         // setup
-        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.withArgs(1, 1).resolves([1]);
+        const updatePermissionsStub = Sinon.stub(RoleService, 'updatePermissions');
+        const fakeResult = 'fake result';
+        updatePermissionsStub.withArgs(1, [1, 2, 3]).resolves(fakeResult);
         server.route({
-            method: 'DELETE',
+            method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.removePermissions
+            handler: RoleCtrl.updatePermissions
         });
 
         // exercise
         const response = await server.inject({
-            method: 'DELETE',
+            method: 'PUT',
             url: '/role/1/permissions',
-            payload: { id: 1 }
+            payload: { id: [1, 2, 3] }
         });
 
         // validate
-        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(updatePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equals(200);
         expect(response.statusMessage).to.equal('OK');
         expect(response.result).to.not.exist();
     });
 
-    it('removes multiple permissions from an existing role', async flags => {
+    it('handles updating permissions for non existing role', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            removePermissionsStub.restore();
-        };
-
-        // setup
-        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.withArgs(2, [2, 3]).resolves([[1, 1]]);
-        server.route({
-            method: 'DELETE',
-            path: '/role/{id}/permissions',
-            handler: RoleCtrl.removePermissions
-        });
-
-        const response = await server.inject({
-            method: 'DELETE',
-            url: '/role/1/permissions',
-            payload: { id: [2, 6] }
-        });
-
-        // validate
-        expect(removePermissionsStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equals(200);
-        expect(response.statusMessage).to.equal('OK');
-        expect(response.result).to.not.exist();
-    });
-
-    it('handles removing an existing permission from non existing role', async flags => {
-        // cleanup
-        flags.onCleanup = function() {
-            removePermissionsStub.restore();
+            updatePermissionsStub.restore();
         };
 
         // setup
         const errorMessage = 'Invalid role id';
-        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND(errorMessage));
+        const updatePermissionsStub = Sinon.stub(RoleService, 'updatePermissions');
+        updatePermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND(errorMessage));
         server.route({
-            method: 'DELETE',
+            method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.removePermissions
+            handler: RoleCtrl.updatePermissions
         });
 
         // exercise
         const response = await server.inject({
-            method: 'DELETE',
+            method: 'PUT',
             url: '/role/999/permissions',
-            payload: { id: 1 }
+            payload: { id: [1, 2, 3] }
         });
 
         // validate
-        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(updatePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
         expect(response.result.message).to.equal(errorMessage);
     });
 
-    it('handles removing a non existing permission from an existing role', async flags => {
+    it('handles updating role with non existing permission', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            removePermissionsStub.restore();
+            updatePermissionsStub.restore();
         };
 
         // setup
         const errorMessage = 'Invalid permission id';
-        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND(errorMessage));
+        const updatePermissionsStub = Sinon.stub(RoleService, 'updatePermissions');
+        updatePermissionsStub.rejects(NSError.RESOURCE_NOT_FOUND(errorMessage));
         server.route({
-            method: 'DELETE',
+            method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.removePermissions
+            handler: RoleCtrl.updatePermissions
         });
 
         // exercise
         const response = await server.inject({
-            method: 'DELETE',
+            method: 'PUT',
             url: '/role/1/permissions',
-            payload: { id: 999 }
+            payload: { id: [1, 2, 999] }
         });
 
         // validate
-        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(updatePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(404);
         expect(response.statusMessage).to.equal('Not Found');
         expect(response.result.message).to.equal('Invalid permission id');
     });
 
-    it('handles server error while removing permission from role', async flags => {
+    it('handles server error while updating role permissions', async flags => {
         // cleanup
         flags.onCleanup = function() {
-            removePermissionsStub.restore();
+            updatePermissionsStub.restore();
         };
 
         // setup
-        const removePermissionsStub = Sinon.stub(RoleService, 'removePermissions');
-        removePermissionsStub.rejects(NSError.RESOURCE_DELETE());
+        const updatePermissionsStub = Sinon.stub(RoleService, 'updatePermissions');
+        updatePermissionsStub.rejects(NSError.RESOURCE_DELETE());
         server.route({
-            method: 'DELETE',
+            method: 'PUT',
             path: '/role/{id}/permissions',
-            handler: RoleCtrl.removePermissions
+            handler: RoleCtrl.updatePermissions
         });
 
         // exercise
         const response = await server.inject({
-            method: 'DELETE',
+            method: 'PUT',
             url: '/role/1/permissions',
-            payload: { id: 1 }
+            payload: { id: [1, 2, 3] }
         });
 
         // validate
-        expect(removePermissionsStub.calledOnce).to.be.true();
+        expect(updatePermissionsStub.calledOnce).to.be.true();
         expect(response.statusCode).to.equal(500);
         expect(response.statusMessage).to.equal('Internal Server Error');
         expect(response.result.message).to.equal('An internal server error occurred');

@@ -4,6 +4,8 @@ const Sinon = require('sinon');
 const Knex = require('knex');
 const Objection = require('objection');
 const KnexConfig = require('knexfile');
+const URL = require('url');
+const QS = require('qs');
 const UserService = require('modules/authorization/services/user');
 const Repository = require('plugins/repository');
 const UserModel = require('models/user');
@@ -12,6 +14,7 @@ const Auth = require('plugins/auth');
 const Mailer = require('utils/mailer');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
+const Config = require('config');
 
 const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
@@ -615,6 +618,7 @@ describe('Service: user', () => {
         };
 
         // setup
+        const fakeHost = 'localhost';
         const fakeToken = 'fake-token';
         const email = 'admin@gmail.com';
         Sinon.stub(Auth, 'getToken').returns(fakeToken);
@@ -626,21 +630,33 @@ describe('Service: user', () => {
         });
 
         // exercise
-        await UserService.sendPasswordResetEmail(email);
+        await UserService.sendPasswordResetEmail(fakeHost, email);
 
         // validate
         expect(Mailer.sendMail.calledOnce).to.be.true();
+        expect(Mailer.sendMail.args[0][0].from).to.equals(Config.mail.address.passwordReset);
+        expect(Mailer.sendMail.args[0][0].to).to.equals(email);
+        expect(Mailer.sendMail.args[0][0].template).to.equals('password-reset');
+        expect(Mailer.sendMail.args[0][0].context).to.be.an.object();
+        expect(Mailer.sendMail.args[0][0].context.url).to.be.a.string();
+        expect(Mailer.sendMail.args[0][0].context.url).to.startWith(fakeHost);
+        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(
+            Config.mail.url.passwordReset
+        );
+        expect(QS.parse(URL.parse(Mailer.sendMail.args[0][0].context.url).query)).to.include({
+            token: fakeToken
+        });
     });
 
     it('handles send password reset email for non existing user', async () => {
         // exercise
-        await expect(UserService.sendPasswordResetEmail('invalid@email')).to.reject(
+        await expect(UserService.sendPasswordResetEmail('localhost', 'invalid@email')).to.reject(
             Error,
             'Email address not found'
         );
 
         try {
-            await UserService.sendPasswordResetEmail('invalid@email');
+            await UserService.sendPasswordResetEmail('localhost', 'invalid@email');
         } catch (error) {
             expect(error.isBoom).to.be.true();
             expect(error.output.statusCode).to.equals(404);

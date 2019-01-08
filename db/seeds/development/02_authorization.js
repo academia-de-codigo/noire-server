@@ -2,15 +2,18 @@ exports.seed = function(knex, Promise) {
     return Promise.all([
         knex('resources').insert({
             id: 1,
-            name: 'user'
+            name: 'user',
+            description: 'System Users'
         }),
         knex('resources').insert({
             id: 2,
-            name: 'role'
+            name: 'role',
+            description: 'System Roles'
         }),
         knex('resources').insert({
             id: 3,
-            name: 'contact'
+            name: 'contact',
+            description: 'Contacts Management'
         })
     ])
         .then(() => {
@@ -18,52 +21,80 @@ exports.seed = function(knex, Promise) {
                 knex('permissions').insert({
                     id: 1,
                     action: 'create',
-                    resource_id: 1
+                    resource_id: 1,
+                    description: 'Create a new user'
                 }),
                 knex('permissions').insert({
                     id: 2,
                     action: 'read',
-                    resource_id: 1
+                    resource_id: 1,
+                    description: 'Fetch a user'
                 }),
                 knex('permissions').insert({
                     id: 3,
                     action: 'update',
-                    resource_id: 1
+                    resource_id: 1,
+                    description: 'Update an existing user'
                 }),
                 knex('permissions').insert({
                     id: 4,
                     action: 'delete',
-                    resource_id: 1
+                    resource_id: 1,
+                    description: 'Delete a user'
                 }),
                 knex('permissions').insert({
                     id: 5,
-                    action: 'create',
-                    resource_id: 2
+                    action: 'list',
+                    resource_id: 1,
+                    description: 'List users'
                 }),
                 knex('permissions').insert({
                     id: 6,
-                    action: 'read',
-                    resource_id: 2
+                    action: 'create',
+                    resource_id: 2,
+                    description: 'Create a new role'
                 }),
                 knex('permissions').insert({
                     id: 7,
-                    action: 'update',
-                    resource_id: 2
+                    action: 'read',
+                    resource_id: 2,
+                    description: 'Fetch a role'
                 }),
                 knex('permissions').insert({
                     id: 8,
-                    action: 'delete',
-                    resource_id: 2
+                    action: 'update',
+                    resource_id: 2,
+                    description: 'Update an existing role, add users and permissions'
                 }),
                 knex('permissions').insert({
                     id: 9,
-                    action: 'read',
-                    resource_id: 3
+                    action: 'delete',
+                    resource_id: 2,
+                    description: 'Delete a role, remove users and permissions'
                 }),
                 knex('permissions').insert({
                     id: 10,
+                    action: 'list',
+                    resource_id: 2,
+                    description: 'List roles'
+                }),
+                knex('permissions').insert({
+                    id: 11,
+                    action: 'read',
+                    resource_id: 3,
+                    description: 'Fetch a contact'
+                }),
+                knex('permissions').insert({
+                    id: 12,
                     action: 'delete',
-                    resource_id: 3
+                    resource_id: 3,
+                    description: 'Delete a contact'
+                }),
+                knex('permissions').insert({
+                    id: 13,
+                    action: 'list',
+                    resource_id: 3,
+                    description: 'List contacts'
                 })
             ]);
         })
@@ -115,7 +146,7 @@ exports.seed = function(knex, Promise) {
                 }),
                 knex('roles_permissions').insert({
                     role_id: 2,
-                    permission_id: 6
+                    permission_id: 7
                 })
             ]);
         });

@@ -1,13 +1,23 @@
+const Actions = require('enums/actions');
+
 exports.up = function(knex, Promise) {
     return Promise.all([
         knex.schema.createTable('resource', function(table) {
             table.increments().primary();
             table.string('name');
+            table.string('description', 2048);
             table.timestamps();
         }),
         knex.schema.createTable('permission', function(table) {
             table.increments().primary();
-            table.enu('action', ['create', 'read', 'update', 'delete']);
+            table.enu('action', [
+                Actions.CREATE,
+                Actions.READ,
+                Actions.UPDATE,
+                Actions.DELETE,
+                Actions.LIST
+            ]);
+            table.string('description', 2048);
             table
                 .integer('resource_id')
                 .unsigned()
