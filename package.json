@@ -83,6 +83,7 @@
         "optimize-css-assets-webpack-plugin": "^5.0.1",
         "prettier": "^1.15.3",
         "prettier-eslint": "^8.8.2",
+        "prettier-eslint-cli": "^4.7.1",
         "qs": "^6.6.0",
         "semantic-ui": "^2.4.2",
         "simple-progress-webpack-plugin": "^1.1.2",
