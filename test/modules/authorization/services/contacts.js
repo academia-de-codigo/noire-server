@@ -6,6 +6,8 @@ const Logger = require('test/fixtures/logger-plugin');
 const Objection = require('objection');
 const KnexConfig = require('knexfile');
 const Repository = require('plugins/repository');
+const URL = require('url');
+const QS = require('qs');
 const ContactsService = require('modules/authorization/services/contacts');
 const Mailer = require('utils/mailer');
 const Auth = require('plugins/auth');
@@ -234,6 +236,7 @@ describe('Service: contacts', () => {
         };
 
         // setup
+        const fakeHost = 'localhost';
         const fakeToken = 'fake-token';
         const fakeEmail = 'newmail@mail.com';
 
@@ -247,10 +250,22 @@ describe('Service: contacts', () => {
         });
 
         // exercise
-        await ContactsService.signup(fakeEmail);
+        await ContactsService.signup(fakeHost, fakeEmail);
 
         // validate
         expect(Mailer.sendMail.calledOnce).to.be.true();
+        expect(Mailer.sendMail.args[0][0].from).to.equals(Config.mail.address.signup);
+        expect(Mailer.sendMail.args[0][0].to).to.equals(fakeEmail);
+        expect(Mailer.sendMail.args[0][0].template).to.equals('user-signup');
+        expect(Mailer.sendMail.args[0][0].context).to.be.an.object();
+        expect(Mailer.sendMail.args[0][0].context.url).to.be.a.string();
+        expect(Mailer.sendMail.args[0][0].context.url).to.startWith(fakeHost);
+        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(
+            Config.mail.url.signup
+        );
+        expect(QS.parse(URL.parse(Mailer.sendMail.args[0][0].context.url).query)).to.include({
+            token: fakeToken
+        });
         expect(repoSpy.calledOnce).to.be.true();
         expect(repoSpy.args[0][0].email).to.equal(fakeEmail);
         expect(repoSpy.args[0][0].confirmed).to.be.false();
@@ -259,7 +274,7 @@ describe('Service: contacts', () => {
 
     it('does not sign up a user with another users email', async () => {
         // exercise and validate
-        await expect(ContactsService.signup('admin@gmail.com')).reject(
+        await expect(ContactsService.signup('localhost', 'admin@gmail.com')).reject(
             Error,
             'Email address already exists'
         );
@@ -280,7 +295,7 @@ describe('Service: contacts', () => {
         Sinon.stub(Mailer, 'sendMail').resolves();
 
         // exercise
-        await ContactsService.signup(email);
+        await ContactsService.signup('localhost', email);
 
         // validate
         expect(Mailer.sendMail.calledOnce).to.be.true();
@@ -303,7 +318,7 @@ describe('Service: contacts', () => {
         Config.mail.maximumSignupRequests = testSignupRequests;
 
         // exercise and validate
-        await expect(ContactsService.signup(email)).rejects(Error, errorMessage);
+        await expect(ContactsService.signup('localhost', email)).rejects(Error, errorMessage);
     });
 
     it('handles token generation failures', async flags => {
@@ -317,7 +332,10 @@ describe('Service: contacts', () => {
         Sinon.stub(Auth, 'getToken').throws(Error(fakeError));
 
         // exercise and validate
-        await expect(ContactsService.signup('newmail@gmail.com')).rejects(Error, fakeError);
+        await expect(ContactsService.signup('localhost', 'newmail@gmail.com')).rejects(
+            Error,
+            fakeError
+        );
     });
 
     it('handles failures sending email', async flags => {
@@ -333,7 +351,10 @@ describe('Service: contacts', () => {
         Sinon.stub(Mailer, 'sendMail').throws(Error(fakeError));
 
         // exercise and validate
-        await expect(ContactsService.signup('newmail@gmail.com')).rejects(Error, fakeError);
+        await expect(ContactsService.signup('localhost', 'newmail@gmail.com')).rejects(
+            Error,
+            fakeError
+        );
     });
 
     it('updates user sign up request counter', async flags => {
@@ -358,7 +379,7 @@ describe('Service: contacts', () => {
         Sinon.stub(Mailer, 'sendMail').resolves();
 
         // exercise
-        await ContactsService.signup(email);
+        await ContactsService.signup('localhost', email);
 
         // validate
         expect(repoSpy.args[0][0].signupRequests).to.be.equal(1);
@@ -377,7 +398,7 @@ describe('Service: contacts', () => {
         Sinon.stub(Mailer, 'sendMail').resolves();
 
         // exercise and validate
-        await expect(ContactsService.signup(email)).rejects(Error);
+        await expect(ContactsService.signup('localhost', email)).rejects(Error);
     });
 
     it('registers a new user', async flags => {
