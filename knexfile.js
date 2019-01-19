@@ -41,10 +41,10 @@ module.exports = {
     staging: {
         client: 'postgresql',
         connection: {
-            host: '127.0.0.1',
-            database: 'noire',
-            user: 'noire',
-            password: 'noire'
+            host: process.env.DB_HOST,
+            database: process.env.DB_NAME,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASS
         },
         pool: {
             min: 2,
