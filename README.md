@@ -74,6 +74,8 @@ Edit all `lib/config*` files
 *   `NODE_ENV` should be set to either `development`, `staging` or `production`. If not set at all, defaults to `development`
 *   `JWT_SECRET` should contain a secret which will be used to sign authentication tokens. A safe randomly generated secret can be obtained by running `npm run secret`.
 *   SMTP credentials should be configured using the `SMTP_USER` and `SMTP_PASS` environment variables
+*   Staging and Production environment need the `DB_HOSTT`, `DB_NAME`, `DB_USER` and `DB_PASS` environment variables for
+    configuration the database connection
 *   All environment variables can be setup inside a `.env` file which should not be commited and is sourced when the server starts. A sample `example.env` file is provided.
 
 ### Reset the database to it's original state
@@ -102,7 +104,7 @@ Edit all `lib/config*` files
 
 #### Development Environment
 
-Noire is developed using Visual Studio Code and the following plugins:
+Noire is developed using Vim and Visual Studio Code. With VSCode the following plugins are used:
 
 *   Babel ES6/ES7
 *   Document This
@@ -115,7 +117,7 @@ Noire is developed using Visual Studio Code and the following plugins:
 *   Path Autocomplete
 *   Prettier
 
-For proper code formatting and module intellisense, the following VSCode settings are recommended:
+For proper code formatting and module intellisense under VSCode, the following settings are recommended:
 
 ```json
 "settings": {
