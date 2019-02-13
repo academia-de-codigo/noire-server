@@ -2,19 +2,19 @@ language: node_js
 -env:
     - CXX=g++-4.8
 node_js:
-    - "8"
+    - "10"
 branches:
     only:
         - master
 addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-4.8
 script:
-  - npm test
+    - npm test
 before_script:
-  - npm run build
+    - npm run build
 after_success:
-  - npm run codecov
+    - npm run codecov
