@@ -57,6 +57,17 @@ describe('Service: user', () => {
         expect(result).to.equals(4);
     });
 
+    it('counts users with a limit criteria', async () => {
+        // setup
+        const criteria = { limit: 1 };
+
+        // exercise
+        const result = await UserService.count(criteria);
+
+        // validate
+        expect(result).to.equals(4);
+    });
+
     it('counts users with a search criteria', async () => {
         // setup
         const criteria = { search: 't u' }; //finds guest and test users
@@ -75,8 +86,8 @@ describe('Service: user', () => {
         // validate
         expect(results).to.be.an.array();
         expect(results.length).to.equals(4);
-        expect(results.roles).to.not.exists();
         results.forEach(user => {
+            expect(user.roles).to.not.exists();
             expect(user).to.be.instanceof(UserModel);
             expect(user.id).to.exists();
             expect(user.username).to.be.a.string();
@@ -95,7 +106,7 @@ describe('Service: user', () => {
         // validate
         expect(results).to.be.an.array();
         expect(results.length).to.equals(1);
-        expect(results.roles).to.not.exists();
+        expect(results[0].roles).to.not.exists();
         expect(results[0]).to.be.instanceof(UserModel);
         expect(results[0].id === 2).to.be.true();
         expect(results[0].username).to.be.a.string();
@@ -119,6 +130,7 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exist();
+            expect(user.roles).to.not.exist();
         });
     });
 
@@ -138,6 +150,7 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exist();
+            expect(user.roles).to.not.exist();
         });
     });
 
@@ -151,12 +164,16 @@ describe('Service: user', () => {
         expect(results).to.be.an.array();
         expect(results.length).to.equals(4);
         expect(results.roles).to.not.exist();
-        results.forEach(user => {
+        results.forEach((user, index) => {
             expect(user).to.be.instanceof(UserModel);
             expect(user.id).to.exists();
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exists();
+            expect(user.roles).to.not.exist();
+            if (index > 0) {
+                expect(user.username > results[index - 1].username).to.be.true();
+            }
         });
     });
 
@@ -177,7 +194,9 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exists();
-            expect(user.id).to.equals(results.length - index);
+            if (index > 0) {
+                expect(user.id < results[index - 1].id).to.be.true();
+            }
         });
     });
 
@@ -200,10 +219,7 @@ describe('Service: user', () => {
 
     it('handles getting invalid user by id', async () => {
         // exercise and validate
-        await expect(UserService.findById(999)).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('populates role associations when getting user by id', async () => {
@@ -253,10 +269,7 @@ describe('Service: user', () => {
 
     it('handles getting invalid user by username', async () => {
         // exercise and validate
-        await expect(UserService.findByUserName('invalid')).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('gets valid user by name', async () => {
@@ -305,10 +318,7 @@ describe('Service: user', () => {
 
     it('handles geting invalid user by email', async () => {
         // exercise and validate
-        await expect(UserService.findByEmail('invalid')).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('authenticates user with valid credentials', async flags => {
@@ -566,10 +576,7 @@ describe('Service: user', () => {
     });
 
     it('handles updating a non existing user', async () => {
-        await expect(UserService.update(900, {})).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not update a user with same username as existing user', async () => {
@@ -599,10 +606,7 @@ describe('Service: user', () => {
 
     it('handles deleting a non existing user', async () => {
         // exercise and validate
-        await expect(UserService.delete(9999)).to.reject(
-            Error,
-            NSError.RESOURCE_NOT_FOUND().message
-        );
+        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
     });
 
     it('does not delete an active user', async () => {
@@ -640,9 +644,7 @@ describe('Service: user', () => {
         expect(Mailer.sendMail.args[0][0].context).to.be.an.object();
         expect(Mailer.sendMail.args[0][0].context.url).to.be.a.string();
         expect(Mailer.sendMail.args[0][0].context.url).to.startWith(fakeHost);
-        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(
-            Config.mail.url.passwordReset
-        );
+        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(Config.mail.url.passwordReset);
         expect(QS.parse(URL.parse(Mailer.sendMail.args[0][0].context.url).query)).to.include({
             token: fakeToken
         });

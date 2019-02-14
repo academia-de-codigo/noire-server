@@ -82,13 +82,9 @@ describe('Plugin: repository', () => {
         expect(decorateSpy.getCall(0).args[0]).to.equals('request');
         expect(decorateSpy.getCall(0).args[1]).to.equals('model');
         expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
-        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
-            Repository.ModelRepository
-        );
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(Repository.ModelRepository);
         expect(decorateSpy.getCall(0).args[2]['User'].model).to.equals(UserModel);
-        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
-            Repository.ModelRepository
-        );
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(Repository.ModelRepository);
         expect(decorateSpy.getCall(0).args[2]['Role'].model).to.equals(RoleModel);
     });
 
@@ -342,7 +338,7 @@ describe('Plugin: repository', () => {
         const asStub = Sinon.stub()
             .withArgs(Sinon.match.string)
             .returns();
-        const fromStub = Sinon.stub();
+        const fromStub = Sinon.stub().returns({ first: firstStub });
         const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
         const searchStub = Sinon.stub()
             .withArgs(fakeCriteria.search)
@@ -361,6 +357,73 @@ describe('Plugin: repository', () => {
         expect(fromStub.calledOnce).to.be.true();
         expect(asStub.calledOnce).to.be.true();
         expect(queryStub.calledTwice).to.be.true();
+        expect(userCount).to.equals(fakeUserCount);
+    });
+
+    it('counts the number of records with subquery', async () => {
+        // setup
+        const fakeUserCount = 5;
+
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['User'];
+
+        const firstStub = Sinon.stub().resolves(fakeUserCount);
+        const asStub = Sinon.stub()
+            .withArgs(Sinon.match.string)
+            .returns();
+        const fromStub = Sinon.stub().returns({ first: firstStub });
+        const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
+        queryStub = Sinon.stub(Model, 'query')
+            .onCall(0)
+            .returns({ count: countStub });
+        const fakeQuery = { as: asStub };
+
+        // exercise
+        const userCount = await userRepository.count({}, fakeQuery);
+
+        // exercise and validate
+        expect(firstStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(fromStub.calledOnce).to.be.true();
+        expect(asStub.calledOnce).to.be.true();
+        expect(queryStub.calledOnce).to.be.true();
+        expect(userCount).to.equals(fakeUserCount);
+    });
+
+    it('counts the number of records with subquery and search criteria', async () => {
+        // setup
+        const fakeUserCount = 5;
+        const fakeCriteria = { search: 'fakesearch' };
+        const options = { models: ['user'] };
+        await server.register({ plugin: Repository, options });
+        const userRepository = Repository['User'];
+
+        const firstStub = Sinon.stub().resolves(fakeUserCount);
+        const asStub = Sinon.stub()
+            .withArgs(Sinon.match.string)
+            .returns();
+        const fromStub = Sinon.stub().returns({ first: firstStub });
+        const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
+        const searchStub = Sinon.stub()
+            .withArgs(fakeCriteria.search)
+            .returns({ as: asStub });
+        queryStub = Sinon.stub(Model, 'query')
+            .onCall(0)
+            .returns({ count: countStub });
+        queryStub.onCall(1).returns({ search: searchStub });
+
+        const fakeQuery = { as: asStub, search: searchStub };
+
+        // exercise
+        const userCount = await userRepository.count(fakeCriteria, fakeQuery);
+
+        // exercise and validate
+        expect(firstStub.calledOnce).to.be.true();
+        expect(countStub.calledOnce).to.be.true();
+        expect(fromStub.calledOnce).to.be.true();
+        expect(asStub.calledOnce).to.be.true();
+        expect(queryStub.calledOnce).to.be.true();
         expect(userCount).to.equals(fakeUserCount);
     });
 
@@ -403,11 +466,9 @@ describe('Plugin: repository', () => {
         server.register(Logger);
         await server.register({ plugin: Repository, options });
         txStub = Sinon.stub(Objection, 'transaction');
-        txStub
-            .withArgs(UserModel, RoleModel, Sinon.match.func)
-            .callsFake((userModel, roleModel, cb) => {
-                return cb(userModel, roleModel);
-            });
+        txStub.withArgs(UserModel, RoleModel, Sinon.match.func).callsFake((userModel, roleModel, cb) => {
+            return cb(userModel, roleModel);
+        });
 
         // exercise
         const done = await Repository.tx([UserModel, RoleModel], (userTxRepo, roleTxRepo) => {
