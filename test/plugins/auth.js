@@ -110,7 +110,7 @@ describe('Plugin: auth', () => {
         // validate
         JWT.verify(
             jwt,
-            new Buffer(process.env.JWT_SECRET, 'base64'),
+            Buffer.from(process.env.JWT_SECRET, 'base64'),
             tokenOptions,
             (err, decoded) => {
                 expect(err).not.to.exist();
@@ -129,7 +129,7 @@ describe('Plugin: auth', () => {
         const jwt = await Auth.getToken({ id: fakeId }, false);
 
         // validate
-        JWT.verify(jwt, new Buffer(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
+        JWT.verify(jwt, Buffer.from(process.env.JWT_SECRET, 'base64'), (err, decoded) => {
             expect(err).not.to.exist();
             expect(decoded.id).to.equals(fakeId);
             expect(decoded.exp).to.not.exist();
@@ -153,7 +153,7 @@ describe('Plugin: auth', () => {
     it('adds a loggedInAt claim', async () => {
         // setup
         const fakeId = 9999;
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
 
         // exercise
         const jwt = await Auth.getToken({ id: fakeId });
@@ -170,7 +170,7 @@ describe('Plugin: auth', () => {
         // setup
         const fakeId = 9999;
         const loggedInAt = 1000;
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
 
         // exercise
         const jwt = await Auth.getToken({ id: fakeId, loggedInAt });
@@ -186,7 +186,7 @@ describe('Plugin: auth', () => {
     it('does not add a loggedInAt claim if token type is not auth', async () => {
         // setup
         const fakeId = 9999;
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
 
         // exercise
         const jwt = await Auth.getToken({ id: fakeId }, undefined, 'not auth');
@@ -243,7 +243,7 @@ describe('Plugin: auth', () => {
                 exp: Math.floor(Date.now() / 1000),
                 iat: Date.now() / 1000 - 1
             },
-            new Buffer(process.env.JWT_SECRET, 'base64')
+            Buffer.from(process.env.JWT_SECRET, 'base64')
         );
 
         const fakeRoute = { path: '/', method: 'GET', handler: () => {} };
@@ -266,7 +266,7 @@ describe('Plugin: auth', () => {
 
     it('does not authenticate if invalid audience', async () => {
         // setup
-        const invalidToken = JWT.sign({ id: 0 }, new Buffer(process.env.JWT_SECRET, 'base64'), {
+        const invalidToken = JWT.sign({ id: 0 }, Buffer.from(process.env.JWT_SECRET, 'base64'), {
             audience: 'invalid'
         });
 
@@ -443,7 +443,7 @@ describe('Plugin: auth', () => {
     it('decodes a valid token', async () => {
         // setup
         const payload = { id: 10 };
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
         const token = JWT.sign(payload, secret, {
             audience: Auth.token.SIGNUP
         });
@@ -463,7 +463,7 @@ describe('Plugin: auth', () => {
 
     it('does not decode an expired token', async () => {
         // setup
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
         const token = JWT.sign({ exp: Math.floor(Date.now() / 1000) - 30 }, secret, {
             audience: Auth.token.AUTH
         });
@@ -474,7 +474,7 @@ describe('Plugin: auth', () => {
 
     it('does not decode a token with an invalid audience', async () => {
         // setup
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
         const token = JWT.sign({}, secret, { audience: 'invalid' });
 
         // exercise and verify
@@ -487,7 +487,7 @@ describe('Plugin: auth', () => {
         // setup
         const now = Math.floor(Date.now() / 1000);
         const payload = { id: 1, loggedInAt: now };
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
         const token = JWT.sign(payload, secret, {
             audience: Auth.token.AUTH
         });
@@ -510,7 +510,7 @@ describe('Plugin: auth', () => {
     it('handles renewing an invalid token', async () => {
         // setup
         const payload = { id: 1, loggedInAt: 20 };
-        const secret = new Buffer(process.env.JWT_SECRET, 'base64');
+        const secret = Buffer.from(process.env.JWT_SECRET, 'base64');
         const token = JWT.sign(payload, secret, {
             audience: Auth.token.AUTH
         });
