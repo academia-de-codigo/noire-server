@@ -358,8 +358,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(deleteStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equal(200);
-        expect(response.statusMessage).to.equal('OK');
+        expect(response.statusCode).to.equal(204);
+        expect(response.statusMessage).to.equal('No Content');
     });
 
     it('handles deleting a role that does not exist', async flags => {
@@ -657,8 +657,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(removeUsersStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equals(200);
-        expect(response.statusMessage).to.equal('OK');
+        expect(response.statusCode).to.equals(204);
+        expect(response.statusMessage).to.equal('No Content');
         expect(response.result).to.not.exist();
     });
 
@@ -682,8 +682,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(removeUsersStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equals(200);
-        expect(response.statusMessage).to.equal('OK');
+        expect(response.statusCode).to.equals(204);
+        expect(response.statusMessage).to.equal('No Content');
         expect(response.result).to.not.exist();
     });
 
@@ -879,8 +879,8 @@ describe('API Controller: role', () => {
 
         // validate
         expect(updatePermissionsStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equals(200);
-        expect(response.statusMessage).to.equal('OK');
+        expect(response.statusCode).to.equals(204);
+        expect(response.statusMessage).to.equal('No Content');
         expect(response.result).to.not.exist();
     });
 
