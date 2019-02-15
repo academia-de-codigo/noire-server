@@ -15,7 +15,7 @@
         "strict": [2, "global"],
         "linebreak-style": ["error", "unix"],
         "semi": [2, "always"],
-        "quotes": [2, "single", "avoid-escape"],
+        "quotes": [2, "single"],
         "eqeqeq": [2, "smart"],
         "brace-style": [2, "1tbs"],
         "space-before-function-paren": [
