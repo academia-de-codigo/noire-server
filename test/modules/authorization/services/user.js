@@ -57,6 +57,17 @@ describe('Service: user', () => {
         expect(result).to.equals(4);
     });
 
+    it('counts users with a search criteria', async () => {
+        // setup
+        const criteria = { search: 't u' }; //finds guest and test users
+
+        // exercise
+        const result = await UserService.count(criteria);
+
+        // validate
+        expect(result).to.equals(2);
+    });
+
     it('counts users with a limit criteria', async () => {
         // setup
         const criteria = { limit: 1 };
@@ -68,15 +79,37 @@ describe('Service: user', () => {
         expect(result).to.equals(4);
     });
 
-    it('counts users with a search criteria', async () => {
+    it('counts active users', async () => {
         // setup
-        const criteria = { search: 't u' }; //finds guest and test users
+        const criteria = { active: 'true' };
 
         // exercise
         const result = await UserService.count(criteria);
 
         // validate
-        expect(result).to.equals(2);
+        expect(result).to.equals(3);
+    });
+
+    it('counts active users with a search criteria', async () => {
+        // setup
+        const criteria = { active: 'true', search: 'User' };
+
+        // exercise
+        const result = await UserService.count(criteria);
+
+        // validate
+        expect(result).to.equals(3);
+    });
+
+    it('counts active users with search criteria and limit criteria', async () => {
+        // setup
+        const criteria = { active: 'true', limit: 2, search: 'User' };
+
+        // exercise
+        const result = await UserService.count(criteria);
+
+        // validate
+        expect(result).to.equals(3);
     });
 
     it('lists users', async () => {
@@ -200,6 +233,105 @@ describe('Service: user', () => {
         });
     });
 
+    it('lists only active users', async () => {
+        //setup
+        const criteria = { active: true };
+
+        //exercise
+        const results = await UserService.list(criteria);
+
+        //validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equal(3);
+
+        results.forEach(user => {
+            expect(user.roles).to.not.exists();
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exist();
+            expect(user.active).to.satisfy(
+                value =>
+                    // accommodate boolean in both sqlite and postgres
+                    value === true || value === 1
+            );
+        });
+    });
+
+    it('lists active users with a search criteria', async () => {
+        //setup
+        const criteria = { active: true, search: 'User' };
+
+        //exercise
+        const results = await UserService.list(criteria);
+
+        //validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equal(3);
+
+        results.forEach(user => {
+            expect(user.roles).to.not.exists();
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exist();
+            expect(user.active).to.satisfy(
+                value =>
+                    // accommodate boolean in both sqlite and postgres
+                    value === true || value === 1
+            );
+        });
+    });
+
+    it('lists active users with search criteria and limit criteria', async () => {
+        //setup
+        const criteria = { active: true, search: 'User', limit: 2 };
+
+        //exercise
+        const results = await UserService.list(criteria);
+
+        //validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equal(2);
+
+        results.forEach(user => {
+            expect(user.roles).to.not.exists();
+            expect(user).to.be.instanceof(UserModel);
+            expect(user.id).to.exists();
+            expect(user.username).to.be.a.string();
+            expect(user.email).to.be.a.string();
+            expect(user.password).to.not.exist();
+            expect(user.active).to.satisfy(
+                value =>
+                    // accommodate boolean in both sqlite and postgres
+                    value === true || value === 1
+            );
+        });
+    });
+
+    it('lists active users with offset', async () => {
+        //setup
+        const criteria = { active: true, page: 3, limit: 1 };
+
+        //exercise
+        const results = await UserService.list(criteria);
+
+        //validate
+        expect(results).to.be.an.array();
+        expect(results.length).to.equal(1);
+
+        expect(results).to.be.an.array();
+        expect(results.length).to.equals(1);
+        expect(results[0]).to.be.instanceof(UserModel);
+        expect(results[0].id === 4).to.be.true();
+        expect(results[0].username).to.be.a.string();
+        expect(results[0].email).to.be.a.string();
+        expect(results[0].password).to.not.exist();
+        expect(results[0].roles).to.not.exist();
+    });
+
     it('gets valid user by id', async () => {
         // setup
         const id = 1;
@@ -219,7 +351,10 @@ describe('Service: user', () => {
 
     it('handles getting invalid user by id', async () => {
         // exercise and validate
-        await expect(UserService.findById(999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findById(999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('populates role associations when getting user by id', async () => {
@@ -269,7 +404,10 @@ describe('Service: user', () => {
 
     it('handles getting invalid user by username', async () => {
         // exercise and validate
-        await expect(UserService.findByUserName('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findByUserName('invalid')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('gets valid user by name', async () => {
@@ -318,7 +456,10 @@ describe('Service: user', () => {
 
     it('handles geting invalid user by email', async () => {
         // exercise and validate
-        await expect(UserService.findByEmail('invalid')).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.findByEmail('invalid')).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('authenticates user with valid credentials', async flags => {
@@ -576,7 +717,10 @@ describe('Service: user', () => {
     });
 
     it('handles updating a non existing user', async () => {
-        await expect(UserService.update(900, {})).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.update(900, {})).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not update a user with same username as existing user', async () => {
@@ -606,7 +750,10 @@ describe('Service: user', () => {
 
     it('handles deleting a non existing user', async () => {
         // exercise and validate
-        await expect(UserService.delete(9999)).to.reject(Error, NSError.RESOURCE_NOT_FOUND().message);
+        await expect(UserService.delete(9999)).to.reject(
+            Error,
+            NSError.RESOURCE_NOT_FOUND().message
+        );
     });
 
     it('does not delete an active user', async () => {
@@ -644,7 +791,9 @@ describe('Service: user', () => {
         expect(Mailer.sendMail.args[0][0].context).to.be.an.object();
         expect(Mailer.sendMail.args[0][0].context.url).to.be.a.string();
         expect(Mailer.sendMail.args[0][0].context.url).to.startWith(fakeHost);
-        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(Config.mail.url.passwordReset);
+        expect(URL.parse(Mailer.sendMail.args[0][0].context.url).pathname).to.endWith(
+            Config.mail.url.passwordReset
+        );
         expect(QS.parse(URL.parse(Mailer.sendMail.args[0][0].context.url).query)).to.include({
             token: fakeToken
         });
