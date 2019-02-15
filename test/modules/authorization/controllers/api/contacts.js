@@ -257,8 +257,8 @@ describe('API Controller: contacts', () => {
 
         // validate
         expect(deleteStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equals(200);
-        expect(response.statusMessage).to.equals('OK');
+        expect(response.statusCode).to.equals(204);
+        expect(response.statusMessage).to.equals('No Content');
     });
 
     it('handles deleting a contact that does not exist', async flags => {

@@ -298,8 +298,8 @@ describe('API Controller: user', () => {
 
         // validate
         expect(deleteStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equal(200);
-        expect(response.statusMessage).to.equal('OK');
+        expect(response.statusCode).to.equal(204);
+        expect(response.statusMessage).to.equal('No Content');
     });
 
     it('handles deleting a user that does not exist', async flags => {
