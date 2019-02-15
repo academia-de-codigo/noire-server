@@ -82,9 +82,13 @@ describe('Plugin: repository', () => {
         expect(decorateSpy.getCall(0).args[0]).to.equals('request');
         expect(decorateSpy.getCall(0).args[1]).to.equals('model');
         expect(decorateSpy.getCall(0).args[2]).to.be.an.object();
-        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
+            Repository.ModelRepository
+        );
         expect(decorateSpy.getCall(0).args[2]['User'].model).to.equals(UserModel);
-        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(Repository.ModelRepository);
+        expect(decorateSpy.getCall(0).args[2]['User']).to.be.an.instanceof(
+            Repository.ModelRepository
+        );
         expect(decorateSpy.getCall(0).args[2]['Role'].model).to.equals(RoleModel);
     });
 
@@ -156,7 +160,8 @@ describe('Plugin: repository', () => {
             limit: 2,
             page: 2,
             sort: 'field1,-field2,+field3',
-            search: 'fakesearch'
+            search: 'fakesearch',
+            relations: 'fakerelation'
         };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
@@ -168,7 +173,9 @@ describe('Plugin: repository', () => {
         const modifyStub = Sinon.stub();
         limitStub.withArgs(fakeCriteria.limit).returns({ offset: offsetStub });
         offsetStub.withArgs(Sinon.match.number).returns({ search: searchStub });
-        searchStub.withArgs(fakeCriteria.search).returns({ modify: modifyStub });
+        searchStub
+            .withArgs(fakeCriteria.search, fakeCriteria.relations)
+            .returns({ modify: modifyStub });
         orderByStub.withArgs('field1', 'asc').returns();
         orderByStub.withArgs('field2', 'desc').returns();
         orderByStub.withArgs('field3', 'asc').returns();
@@ -329,7 +336,7 @@ describe('Plugin: repository', () => {
     it('counts the number of records with search criteria', async () => {
         // setup
         const fakeUserCount = 5;
-        const fakeCriteria = { search: 'fakesearch' };
+        const fakeCriteria = { search: 'fakesearch', relations: 'relation' };
         const options = { models: ['user'] };
         await server.register({ plugin: Repository, options });
         const userRepository = Repository['User'];
@@ -341,7 +348,7 @@ describe('Plugin: repository', () => {
         const fromStub = Sinon.stub().returns({ first: firstStub });
         const countStub = Sinon.stub().returns({ from: fromStub, first: firstStub });
         const searchStub = Sinon.stub()
-            .withArgs(fakeCriteria.search)
+            .withArgs(fakeCriteria.search, fakeCriteria.relations)
             .returns({ as: asStub });
         queryStub = Sinon.stub(Model, 'query')
             .onCall(0)
@@ -466,9 +473,11 @@ describe('Plugin: repository', () => {
         server.register(Logger);
         await server.register({ plugin: Repository, options });
         txStub = Sinon.stub(Objection, 'transaction');
-        txStub.withArgs(UserModel, RoleModel, Sinon.match.func).callsFake((userModel, roleModel, cb) => {
-            return cb(userModel, roleModel);
-        });
+        txStub
+            .withArgs(UserModel, RoleModel, Sinon.match.func)
+            .callsFake((userModel, roleModel, cb) => {
+                return cb(userModel, roleModel);
+            });
 
         // exercise
         const done = await Repository.tx([UserModel, RoleModel], (userTxRepo, roleTxRepo) => {
