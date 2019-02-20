@@ -4,17 +4,17 @@ const NodeMailer = require('nodemailer');
 const Logger = require('test/fixtures/logger-plugin');
 const Mock = require('mock-require');
 const Handlebars = require('handlebars');
-const Config = require('config');
 const NSError = require('errors/nserror');
 
 const { after, afterEach, before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Utils: mailer', () => {
     let mailConfig, smtpConfig, buildConfig;
-    let Mailer;
+    let Config, Mailer;
     let nodeMailerStub;
 
     before(() => {
+        Config = require('config');
         mailConfig = Config.mail;
         smtpConfig = Config.smtp;
         buildConfig = Config.build;

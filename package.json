@@ -10,7 +10,7 @@
     "scripts": {
         "start": "NODE_PATH=$NODE_PATH:lib:. node lib/index.js",
         "watch": "NODE_PATH=$NODE_PATH:lib:. DEBUG=true nodemon --watch lib lib/index.js",
-        "test": "NODE_PATH=$NODE_PATH:lib:. lab",
+        "test": "NODE_PATH=$NODE_PATH:lib:. lab --environment testing",
         "test:grep": "NODE_PATH=$NODE_PATH:lib:. lab --environment testing --grep",
         "codecov": "mkdir .coverage 2>/dev/null; NODE_PATH=$NODE_PATH:lib:. lab -r lcov > .coverage/lcov.info && codecov",
         "reset": "NODE_PATH=$NODE_PATH:lib:. node lib/utils/reset.js",
