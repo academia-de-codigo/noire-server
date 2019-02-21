@@ -17,7 +17,7 @@ exports.seed = function(knex, Promise) {
         }),
         knex('resources').insert({
             id: 4,
-            name: 'permissions',
+            name: 'permission',
             description: 'System Permissions'
         })
     ])
@@ -69,13 +69,13 @@ exports.seed = function(knex, Promise) {
                     id: 8,
                     action: 'update',
                     resource_id: 2,
-                    description: 'Update an existing role, add users and permissions'
+                    description: 'Update an existing role, add users and permission'
                 }),
                 knex('permissions').insert({
                     id: 9,
                     action: 'delete',
                     resource_id: 2,
-                    description: 'Delete a role, remove users and permissions'
+                    description: 'Delete a role, remove users and permission'
                 }),
                 knex('permissions').insert({
                     id: 10,
@@ -104,31 +104,31 @@ exports.seed = function(knex, Promise) {
                 knex('permissions').insert({
                     id: 14,
                     action: 'read',
-                    resource_id: 3,
+                    resource_id: 4,
                     description: 'Fetch a permission'
                 }),
                 knex('permissions').insert({
                     id: 15,
                     action: 'list',
-                    resource_id: 3,
-                    description: 'Lists permissions'
+                    resource_id: 4,
+                    description: 'Lists permission'
                 }),
                 knex('permissions').insert({
                     id: 16,
                     action: 'update',
-                    resource_id: 3,
-                    description: 'Update an existing permissions'
+                    resource_id: 4,
+                    description: 'Update an existing permission'
                 }),
                 knex('permissions').insert({
                     id: 17,
                     action: 'create',
-                    resource_id: 3,
-                    description: 'Create a new permissions'
+                    resource_id: 4,
+                    description: 'Create a new permission'
                 }),
                 knex('permissions').insert({
                     id: 18,
                     action: 'delete',
-                    resource_id: 3,
+                    resource_id: 4,
                     description: 'Delete a permission'
                 })
             ]);
