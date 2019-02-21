@@ -69,13 +69,13 @@ exports.seed = function(knex, Promise) {
                     id: 8,
                     action: 'update',
                     resource_id: 2,
-                    description: 'Update an existing role, add users and permission'
+                    description: 'Update an existing role, add users and permissions'
                 }),
                 knex('permissions').insert({
                     id: 9,
                     action: 'delete',
                     resource_id: 2,
-                    description: 'Delete a role, remove users and permission'
+                    description: 'Delete a role, remove users and permissions'
                 }),
                 knex('permissions').insert({
                     id: 10,
