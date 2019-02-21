@@ -23,109 +23,109 @@ exports.seed = function(knex, Promise) {
     ])
         .then(() => {
             return Promise.all([
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 1,
                     action: 'create',
                     resource_id: 1,
                     description: 'Create a new user'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 2,
                     action: 'read',
                     resource_id: 1,
                     description: 'Fetch a user'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 3,
                     action: 'update',
                     resource_id: 1,
                     description: 'Update an existing user'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 4,
                     action: 'delete',
                     resource_id: 1,
                     description: 'Delete a user'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 5,
                     action: 'list',
                     resource_id: 1,
                     description: 'List users'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 6,
                     action: 'create',
                     resource_id: 2,
                     description: 'Create a new role'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 7,
                     action: 'read',
                     resource_id: 2,
                     description: 'Fetch a role'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 8,
                     action: 'update',
                     resource_id: 2,
-                    description: 'Update an existing role, add users and permission'
+                    description: 'Update an existing role, add users and permissions'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 9,
                     action: 'delete',
                     resource_id: 2,
-                    description: 'Delete a role, remove users and permission'
+                    description: 'Delete a role, remove users and permissions'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 10,
                     action: 'list',
                     resource_id: 2,
                     description: 'List roles'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 11,
                     action: 'read',
                     resource_id: 3,
                     description: 'Fetch a contact'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 12,
                     action: 'delete',
                     resource_id: 3,
                     description: 'Delete a contact'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 13,
                     action: 'list',
                     resource_id: 3,
                     description: 'List contacts'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 14,
                     action: 'read',
                     resource_id: 4,
                     description: 'Fetch a permission'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 15,
                     action: 'list',
                     resource_id: 4,
-                    description: 'Lists permission'
+                    description: 'Lists permissions'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 16,
                     action: 'update',
                     resource_id: 4,
                     description: 'Update an existing permission'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 17,
                     action: 'create',
                     resource_id: 4,
                     description: 'Create a new permission'
                 }),
-                knex('permission').insert({
+                knex('permissions').insert({
                     id: 18,
                     action: 'delete',
                     resource_id: 4,
@@ -135,75 +135,75 @@ exports.seed = function(knex, Promise) {
         })
         .then(() => {
             return Promise.all([
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 1
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 2
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 3
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 4
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 5
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 6
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 7
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 8
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 9
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 10
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 13
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 14
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 15
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 16
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 17
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 18
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 2,
                     permission_id: 2
                 }),
-                knex('roles_permission').insert({
+                knex('roles_permissions').insert({
                     role_id: 2,
                     permission_id: 7
                 })
