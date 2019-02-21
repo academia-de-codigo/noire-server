@@ -14,6 +14,11 @@ exports.seed = function(knex, Promise) {
             id: 3,
             name: 'contact',
             description: 'Contacts Management'
+        }),
+        knex('resources').insert({
+            id: 4,
+            name: 'permissions',
+            description: 'System Permissions'
         })
     ])
         .then(() => {
@@ -95,6 +100,36 @@ exports.seed = function(knex, Promise) {
                     action: 'list',
                     resource_id: 3,
                     description: 'List contacts'
+                }),
+                knex('permissions').insert({
+                    id: 14,
+                    action: 'read',
+                    resource_id: 3,
+                    description: 'Fetch a permission'
+                }),
+                knex('permissions').insert({
+                    id: 15,
+                    action: 'list',
+                    resource_id: 3,
+                    description: 'Lists permissions'
+                }),
+                knex('permissions').insert({
+                    id: 16,
+                    action: 'update',
+                    resource_id: 3,
+                    description: 'Update an existing permissions'
+                }),
+                knex('permissions').insert({
+                    id: 17,
+                    action: 'create',
+                    resource_id: 3,
+                    description: 'Create a new permissions'
+                }),
+                knex('permissions').insert({
+                    id: 18,
+                    action: 'delete',
+                    resource_id: 3,
+                    description: 'Delete a permission'
                 })
             ]);
         })
@@ -139,6 +174,30 @@ exports.seed = function(knex, Promise) {
                 knex('roles_permissions').insert({
                     role_id: 1,
                     permission_id: 10
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 13
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 14
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 15
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 16
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 17
+                }),
+                knex('roles_permissions').insert({
+                    role_id: 1,
+                    permission_id: 18
                 }),
                 knex('roles_permissions').insert({
                     role_id: 2,
