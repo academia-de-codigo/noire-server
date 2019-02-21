@@ -21,11 +21,10 @@ const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.scrip
 describe('Service: user', () => {
     let cryptStub;
     let txSpy;
+    let knex;
 
     beforeEach(async () => {
-        /*jshint -W064 */
-        const knex = Knex(KnexConfig.testing); // eslint-disable-line
-        /*jshint -W064 */
+        knex = Knex(KnexConfig.testing);
 
         await knex.migrate.latest();
         await knex.seed.run();
@@ -738,14 +737,23 @@ describe('Service: user', () => {
     });
 
     it('deletes an existing user', async () => {
+        // setup
+        const id = 3;
+
         // exercise
-        const result = await UserService.delete(3);
+        const result = await UserService.delete(id);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
         expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.not.exist();
+
+        expect(
+            await knex('users')
+                .where('id', id)
+                .first()
+        ).to.not.exist();
     });
 
     it('handles deleting a non existing user', async () => {

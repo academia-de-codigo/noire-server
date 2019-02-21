@@ -20,9 +20,7 @@ describe('Service: role', function() {
     let knex;
 
     beforeEach(async () => {
-        /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
-        /*jshint -W064 */
+        knex = Knex(KnexConfig.testing);
 
         await knex.migrate.latest();
         await knex.seed.run();
@@ -168,25 +166,6 @@ describe('Service: role', function() {
         });
     });
 
-    it('lists permissions', async () => {
-        // exercise
-        const results = await RoleService.listPermissions();
-
-        // validate
-        expect(results).to.be.an.array();
-        expect(results.length).to.equals(4);
-        results.forEach(resource => {
-            expect(resource).to.be.instanceof(ResourceModel);
-            expect(resource.name).to.be.a.string();
-            expect(resource.permissions).to.be.an.array();
-            resource.permissions.forEach(permission => {
-                expect(permission).to.be.instanceof(PermissionModel);
-                expect(permission.id).to.be.a.number();
-                expect(permission.action).to.be.a.string();
-            });
-        });
-    });
-
     it('gets valid role by id', async () => {
         // setup
         const id = 2;
@@ -271,13 +250,22 @@ describe('Service: role', function() {
     });
 
     it('deletes an existing role', async () => {
+        // setup
+        const id = 4;
+
         // exercise
-        const result = await RoleService.delete(4);
+        const result = await RoleService.delete(id);
 
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
         expect(txSpy.args[0][0]).to.equals(RoleModel);
         expect(result).to.not.exists();
+
+        expect(
+            await knex('roles')
+                .where('id', id)
+                .first()
+        ).to.not.exist();
     });
 
     it('does not delete a non existing role', async () => {
@@ -470,7 +458,7 @@ describe('Service: role', function() {
         // setup
         const roleId = 1;
         const resource = 'test';
-        const permission = { id: 10, action: 'create', description: 'create test' };
+        const permission = { id: 11, action: 'create', description: 'create test' };
 
         // exercise
         const result = await RoleService.addPermission(

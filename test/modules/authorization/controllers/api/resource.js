@@ -16,6 +16,10 @@ describe('API Controller: resource', () => {
         {
             name: 'role',
             permissions: [{ id: 1, action: 'create' }, { id: 2, action: 'delete' }]
+        },
+        {
+            name: 'user',
+            description: 'a user'
         }
     ];
 
@@ -71,5 +75,77 @@ describe('API Controller: resource', () => {
         expect(response.statusCode).to.equals(500);
         expect(response.statusMessage).to.equals('Internal Server Error');
         expect(response.result.message).to.equal('An internal server error occurred');
+    });
+
+    it('gets a resource by name', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByNameStub.restore();
+        };
+
+        // setup
+        const findByNameStub = Sinon.stub(ResourceService, 'findByName');
+        findByNameStub.withArgs('user').resolves(resources[2]);
+        server.route({ method: 'GET', path: '/resource/{name}', handler: ResourceCtrl.getByName });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/resource/user'
+        });
+
+        // validate
+        expect(findByNameStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(200);
+        expect(response.statusMessage).to.equal('OK');
+        expect(response.result).to.equal(resources[2]);
+    });
+
+    it('handles server errors while getting a resource', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByNameStub.restore();
+        };
+
+        // setup
+        const findByNameStub = Sinon.stub(ResourceService, 'findByName');
+        findByNameStub.rejects(NSError.RESOURCE_FETCH());
+        server.route({ method: 'GET', path: '/resource/{name}', handler: ResourceCtrl.getByName });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/resource/user'
+        });
+
+        // validate
+        expect(findByNameStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(500);
+        expect(response.statusMessage).to.equal('Internal Server Error');
+        expect(response.result.message).to.equal('An internal server error occurred');
+    });
+
+    it('handles getting a resource with a invalid name', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            findByNameStub.restore();
+        };
+
+        // setup
+        const findByNameStub = Sinon.stub(ResourceService, 'findByName');
+        findByNameStub.rejects(NSError.RESOURCE_NOT_FOUND());
+        server.route({ method: 'GET', path: '/resource/{name}', handler: ResourceCtrl.getByName });
+
+        // exercise
+        const response = await server.inject({
+            method: 'GET',
+            url: '/resource/potato'
+        });
+
+        // validate
+        expect(findByNameStub.calledOnce).to.be.true();
+        expect(response.statusCode).to.equal(404);
+        expect(response.statusMessage).to.equal('Not Found');
+        expect(response.result.message).to.equal(NSError.RESOURCE_NOT_FOUND().message);
     });
 });

@@ -15,11 +15,10 @@ const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.scrip
 
 describe('Service: resource', () => {
     let txSpy;
+    let knex;
 
     beforeEach(async () => {
-        /*jshint -W064 */
-        const knex = Knex(KnexConfig.testing); // eslint-disable-line
-        /*jshint -W064 */
+        knex = Knex(KnexConfig.testing);
 
         await knex.migrate.latest();
         await knex.seed.run();
@@ -44,7 +43,7 @@ describe('Service: resource', () => {
         const result = await ResourceService.count();
 
         // validate
-        expect(result).to.equals(4);
+        expect(result).to.equals(7);
     });
 
     it('counts resources with search criteria', async () => {
@@ -64,7 +63,7 @@ describe('Service: resource', () => {
 
         // validate
         expect(results).to.be.an.array();
-        expect(results.length).to.equals(4);
+        expect(results.length).to.equals(7);
         results.forEach(resource => {
             expect(resource).to.be.instanceof(ResourceModel);
             expect(resource.name).to.be.a.string();
@@ -144,7 +143,7 @@ describe('Service: resource', () => {
 
         // validate
         expect(results).to.be.an.array();
-        expect(results.length).to.equals(4);
+        expect(results.length).to.equals(7);
         results.forEach(resource => {
             expect(resource).to.be.instanceof(ResourceModel);
             expect(resource.id).to.exist();
@@ -162,7 +161,7 @@ describe('Service: resource', () => {
         // exercise
         const results = await ResourceService.list(criteria);
         expect(results).to.be.an.array();
-        expect(results.length).to.equals(4);
+        expect(results.length).to.equals(7);
         expect(results[0].id > results[1].id).to.be.true();
         results.forEach(resource => {
             expect(resource).to.be.instanceof(ResourceModel);
@@ -246,12 +245,21 @@ describe('Service: resource', () => {
     });
 
     it('deletes an existing resource', async () => {
+        // setup
+        const id = 3;
+
         // exercise
-        const result = await ResourceService.delete(3);
+        const result = await ResourceService.delete(id);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(result).to.not.exists();
+
+        expect(
+            await knex('resources')
+                .where('id', id)
+                .first()
+        ).to.not.exist();
     });
 
     it('handles deleting a non existing resource', async () => {
