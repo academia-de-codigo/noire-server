@@ -21,11 +21,10 @@ const { afterEach, beforeEach, describe, expect, it } = (exports.lab = Lab.scrip
 describe('Service: user', () => {
     let cryptStub;
     let txSpy;
+    let knex;
 
     beforeEach(async () => {
-        /*jshint -W064 */
-        const knex = Knex(KnexConfig.testing); // eslint-disable-line
-        /*jshint -W064 */
+        knex = Knex(KnexConfig.testing);
 
         await knex.migrate.latest();
         await knex.seed.run();
@@ -251,11 +250,7 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exist();
-            expect(user.active).to.satisfy(
-                value =>
-                    // accommodate boolean in both sqlite and postgres
-                    value === true || value === 1
-            );
+            expect(user.active).to.equal(true);
         });
     });
 
@@ -277,11 +272,7 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exist();
-            expect(user.active).to.satisfy(
-                value =>
-                    // accommodate boolean in both sqlite and postgres
-                    value === true || value === 1
-            );
+            expect(user.active).to.equal(true);
         });
     });
 
@@ -303,11 +294,7 @@ describe('Service: user', () => {
             expect(user.username).to.be.a.string();
             expect(user.email).to.be.a.string();
             expect(user.password).to.not.exist();
-            expect(user.active).to.satisfy(
-                value =>
-                    // accommodate boolean in both sqlite and postgres
-                    value === true || value === 1
-            );
+            expect(user.active).to.equal(true);
         });
     });
 
@@ -616,11 +603,7 @@ describe('Service: user', () => {
         expect(result.email).to.equals(user.email);
         expect(result.avatar).to.equals(user.avatar);
         expect(result.password).to.equals(fakeHash);
-        expect(result.active).to.satisfy(
-            value =>
-                // accommodate boolean in both sqlite and postgres
-                value === true || value === 1
-        );
+        expect(result.active).to.equal(true);
     });
 
     it('updates an existing user without updating the username', async () => {
@@ -639,11 +622,7 @@ describe('Service: user', () => {
         expect(result.id).to.equals(id);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.exists();
-        expect(result.active).to.satisfy(
-            value =>
-                // accommodate boolean in both sqlite and postgres
-                value === true || value === 1
-        );
+        expect(result.active).to.equal(true);
     });
 
     it('updates an existing user with same username and id as request parameters string', async () => {
@@ -709,14 +688,10 @@ describe('Service: user', () => {
         expect(result.name).to.equals(user.name);
         expect(result.email).to.equals(user.email);
         expect(result.password).to.equals(fakeHash);
-        expect(result.active).to.satisfy(
-            value =>
-                // accommodate boolean in both sqlite and postgres
-                value === true || value === 1
-        );
+        expect(result.active).to.equal(true);
     });
 
-    it('handles updating a non existing user', async () => {
+    it('handle updating a non existing user', async () => {
         await expect(UserService.update(900, {})).to.reject(
             Error,
             NSError.RESOURCE_NOT_FOUND().message
@@ -738,14 +713,23 @@ describe('Service: user', () => {
     });
 
     it('deletes an existing user', async () => {
+        // setup
+        const id = 3;
+
         // exercise
-        const result = await UserService.delete(3);
+        const result = await UserService.delete(id);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
         expect(txSpy.args[0][0]).to.equals(UserModel);
         expect(result).to.not.exist();
+
+        expect(
+            await knex('users')
+                .where('id', id)
+                .first()
+        ).to.not.exist();
     });
 
     it('handles deleting a non existing user', async () => {

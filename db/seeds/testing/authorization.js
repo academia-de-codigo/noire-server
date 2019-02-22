@@ -49,6 +49,12 @@ exports.seed = function(knex, Promise) {
                         action: 'read',
                         resource_id: 4,
                         description: 'Should not change'
+                    }),
+                    knex('permissions').insert({
+                        id: 10,
+                        action: 'delete',
+                        resource_id: 5,
+                        description: 'Should not change'
                     })
                 ]);
             }),
@@ -73,6 +79,21 @@ exports.seed = function(knex, Promise) {
                     knex('resources').insert({
                         id: 4,
                         name: 'noroles'
+                    }),
+                    knex('resources').insert({
+                        id: 5,
+                        name: 'contact',
+                        description: 'contact description'
+                    }),
+                    knex('resources').insert({
+                        id: 6,
+                        name: 'permission',
+                        description: 'permission description'
+                    }),
+                    knex('resources').insert({
+                        id: 7,
+                        name: 'no test',
+                        description: 'description'
                     })
                 ]);
             }),

@@ -22,9 +22,7 @@ describe('Service: contacts', () => {
     let knex;
 
     beforeEach(async () => {
-        /*jshint -W064 */
-        knex = Knex(KnexConfig.testing); // eslint-disable-line
-        /*jshint -W064 */
+        knex = Knex(KnexConfig.testing);
 
         await knex.migrate.latest();
         await knex.seed.run();
@@ -208,16 +206,23 @@ describe('Service: contacts', () => {
         };
 
         // setup
+        const id = 2;
         const txSpy = Sinon.spy(Repository, 'tx');
 
         // exercise
-        const result = await ContactsService.delete(2);
+        const result = await ContactsService.delete(id);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
         expect(txSpy.args[0].length).to.equals(2);
         expect(txSpy.args[0][0]).to.equals(ContactModel);
         expect(result).to.not.exist();
+
+        expect(
+            await knex('contacts')
+                .where('id', id)
+                .first()
+        ).to.not.exist();
     });
 
     it('handles deleting a non existing contact', async () => {
