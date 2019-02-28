@@ -97,7 +97,10 @@ describe('Plugin: route-errors', () => {
         const response = await server.inject({
             method: 'GET',
             url: fakeRoute.path,
-            credentials: { scope: 'user' }
+            auth: {
+                credentials: { scope: 'user' },
+                strategy: 'default'
+            }
         });
 
         // validate
@@ -114,7 +117,8 @@ describe('Plugin: route-errors', () => {
             handler: () => null,
             options: {
                 auth: {
-                    scope: 'admin'
+                    scope: 'admin',
+                    strategy: 'default'
                 },
                 app: {
                     redirect: false
@@ -128,7 +132,10 @@ describe('Plugin: route-errors', () => {
         const response = await server.inject({
             method: 'GET',
             url: fakeRoute.path,
-            credentials: { scope: 'user' }
+            auth: {
+                credentials: { scope: 'user' },
+                strategy: 'default'
+            }
         });
 
         // validate

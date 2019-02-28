@@ -36,8 +36,9 @@ describe('Controller: Authorization', () => {
         server.route(fakeRoute);
         const response = await server.inject({
             url: '/',
-            credentials: {
-                username
+            auth: {
+                credentials: { username },
+                strategy: 'default'
             }
         });
 
@@ -56,8 +57,9 @@ describe('Controller: Authorization', () => {
         server.route(fakeRoute);
         const response = await server.inject({
             url: '/',
-            credentials: {
-                username
+            auth: {
+                credentials: { username },
+                strategy: 'default'
             }
         });
 
@@ -76,8 +78,9 @@ describe('Controller: Authorization', () => {
         server.route(fakeRoute);
         const response = await server.inject({
             url: '/',
-            credentials: {
-                username
+            auth: {
+                credentials: { username },
+                strategy: 'default'
             }
         });
 
@@ -97,8 +100,9 @@ describe('Controller: Authorization', () => {
         server.route(fakeRoute);
         const response = await server.inject({
             url: '/',
-            credentials: {
-                username
+            auth: {
+                credentials: { username },
+                strategy: 'default'
             }
         });
 

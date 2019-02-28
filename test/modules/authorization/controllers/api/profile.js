@@ -37,7 +37,10 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/profile',
-            credentials: user
+            auth: {
+                credentials: user,
+                strategy: 'default'
+            }
         });
 
         // validate
@@ -62,8 +65,9 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/profile',
-            credentials: {
-                id: 900
+            auth: {
+                credentials: { id: 900 },
+                strategy: 'deafult'
             }
         });
 
@@ -88,7 +92,10 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'GET',
             url: '/profile',
-            credentials: user
+            auth: {
+                credentials: user,
+                strategy: 'default'
+            }
         });
 
         expect(findByIdStub.calledOnce).to.be.true();
@@ -113,7 +120,10 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'PUT',
             url: '/profile',
-            credentials: user,
+            auth: {
+                credentials: user,
+                strategy: 'default'
+            },
             payload: entity
         });
 
@@ -143,8 +153,9 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'PUT',
             url: '/profile',
-            credentials: {
-                id: 900
+            auth: {
+                credentials: { id: 900 },
+                strategy: 'default'
             }
         });
 
@@ -169,7 +180,10 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'PUT',
             url: '/profile',
-            credentials: user
+            auth: {
+                credentials: user,
+                strategy: 'default'
+            }
         });
 
         expect(updateStub.calledOnce).to.be.true();
@@ -193,7 +207,10 @@ describe('API Controller: Profile', () => {
         const response = await server.inject({
             method: 'PUT',
             url: '/profile',
-            credentials: user
+            auth: {
+                credentials: user,
+                strategy: 'default'
+            }
         });
 
         expect(updateStub.calledOnce).to.be.true();
