@@ -5,6 +5,7 @@ const Hapi = require('hapi');
 const Api = require('plugins/api');
 const Package = require('package.json');
 const Logger = require('test/fixtures/logger-plugin');
+const Auth = require('test/fixtures/auth-plugin');
 
 const { after, describe, expect, it } = (exports.lab = Lab.script());
 
@@ -48,6 +49,7 @@ describe('Plugin: api', () => {
         // setup
         const server = Hapi.server();
         server.register(Logger);
+        server.register(Auth);
 
         // exercise
         await server.register(Api);
