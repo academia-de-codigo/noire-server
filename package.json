@@ -62,10 +62,10 @@
         "vision": "^5.4.4"
     },
     "devDependencies": {
-        "clean-webpack-plugin": "^1.0.1",
+        "clean-webpack-plugin": "^2.0.0",
         "code": "^5.2.4",
         "codecov": "^3.2.0",
-        "copy-webpack-plugin": "^5.0.0",
+        "copy-webpack-plugin": "^5.0.1",
         "css-loader": "^2.1.1",
         "eslint-config-prettier": "^4.1.0",
         "expose-loader": "^0.7.5",
