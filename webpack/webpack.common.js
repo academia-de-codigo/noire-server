@@ -19,9 +19,7 @@ const favIconSrc = path.join(srcPath, Config.build.assets, 'favicon.ico');
 const internals = {
     entries: {},
     plugins: {
-        clean: new CleanWebpackPlugin([distPath], {
-            root: process.cwd()
-        }),
+        clean: new CleanWebpackPlugin(),
         jquery: new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery'
