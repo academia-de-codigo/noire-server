@@ -35,6 +35,7 @@ module.exports = {
             client: false,
             bindings: true
         },
+        asyncStackTraces: true, // performance penalty, dev only
         ...knexSnakeCaseMappers()
     },
 

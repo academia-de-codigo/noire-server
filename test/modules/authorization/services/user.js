@@ -715,6 +715,9 @@ describe('Service: user', () => {
     it('deletes an existing user', async () => {
         // setup
         const id = 3;
+        await knex('users_roles')
+            .where('user_id', 3)
+            .del();
 
         // exercise
         const result = await UserService.delete(id);
