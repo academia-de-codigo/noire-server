@@ -1,4 +1,4 @@
-exports.seed = function(knex, Promise) {
+exports.seed = function(knex) {
     return Promise.all([
         knex('users').insert({
             id: 1,

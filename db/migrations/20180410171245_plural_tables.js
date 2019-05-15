@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
     return Promise.all([
         knex.schema.renameTable('user', 'users'),
         knex.schema.renameTable('role', 'roles'),
@@ -9,7 +9,7 @@ exports.up = function(knex, Promise) {
     ]);
 };
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
     return Promise.all([
         knex.schema.renameTable('users', 'user'),
         knex.schema.renameTable('roles', 'role'),

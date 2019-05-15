@@ -1,4 +1,4 @@
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
     return Promise.all([
         knex.schema.createTable('user', function(table) {
             table.increments().primary();
@@ -32,7 +32,7 @@ exports.up = function(knex, Promise) {
     ]);
 };
 
-exports.down = async function(knex, Promise) {
+exports.down = async function(knex) {
     await knex.schema.dropTableIfExists('user_role');
 
     return Promise.all([
