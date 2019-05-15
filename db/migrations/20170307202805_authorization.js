@@ -1,6 +1,6 @@
 const Actions = require('enums/actions');
 
-exports.up = function(knex, Promise) {
+exports.up = function(knex) {
     return Promise.all([
         knex.schema.createTable('resource', function(table) {
             table.increments().primary();
@@ -42,7 +42,7 @@ exports.up = function(knex, Promise) {
     ]);
 };
 
-exports.down = async function(knex, Promise) {
+exports.down = async function(knex) {
     await knex.schema.dropTableIfExists('role_permission');
 
     return Promise.all([
