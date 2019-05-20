@@ -53,14 +53,12 @@ describe('Model: search', function() {
             }
         }();
         const queryBuilder = model.$query();
-        Sinon.stub(queryBuilder, 'where').callsFake(func => func(queryBuilder));
         Sinon.spy(queryBuilder, 'orWhere');
 
         // exercise
         queryBuilder.search(fakeSearch);
 
         // verify
-        expect(queryBuilder.where.calledOnce).to.be.true();
         expect(queryBuilder.orWhere.callCount).to.equal(fakeFields.length);
         fakeFields.forEach(field => {
             expect(queryBuilder.orWhere.calledWith(field, 'like')).to.be.true();
@@ -239,7 +237,10 @@ describe('Model: search', function() {
         const ownerOrWhereInSpy = Sinon.spy(ownerQB, 'orWhereIn');
 
         // exercise and verify
-        expect(() => OwnerClass.query().search('something', 'relation')).to.throw(Error, 'relation does not exist');
+        expect(() => OwnerClass.query().search('something', 'relation')).to.throw(
+            Error,
+            'relation does not exist'
+        );
 
         expect(relationStub.calledOnce).to.be.true();
         expect(ownerOrWhereInSpy.notCalled).to.be.true();
@@ -366,15 +367,21 @@ describe('Model: search', function() {
             const queryBuilder = relationsQueryBuilders[relationName];
 
             // result set or where id matches result set of related model query builder
-            expect(ownerOrWhereInSpy.args[index][0]).to.equal(relation[relationName].ownerProp._props);
-            expect(ownerOrWhereInSpy.args[index][1]).to.instanceOf(queryBuilder.original.constructor);
+            expect(ownerOrWhereInSpy.args[index][0]).to.equal(
+                relation[relationName].ownerProp._props
+            );
+            expect(ownerOrWhereInSpy.args[index][1]).to.instanceOf(
+                queryBuilder.original.constructor
+            );
             expect(queryBuilder.stub.calledOnce).to.be.true();
             // search related model with criteria
             expect(relationSpy.search.args[0].length).to.equal(1);
             expect(relationSpy.search.args[0][0]).to.equal(criteria);
             // select related model foreign key to owner model
             expect(relationSpy.select.args[0].length).to.equal(1);
-            expect(relationSpy.select.args[0][0]).to.equal(relation[relationName].relatedProp._props);
+            expect(relationSpy.select.args[0][0]).to.equal(
+                relation[relationName].relatedProp._props
+            );
             // search with criteria only
             expect(ownerSearchSpy.args[index + 1].length).to.equal(1);
             expect(ownerSearchSpy.args[index + 1][0]).to.equal(criteria);
