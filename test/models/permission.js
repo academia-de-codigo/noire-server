@@ -25,7 +25,7 @@ describe('Model: permission', () => {
         expect(PermissionModel.relationMappings).to.be.an.object();
         expect(PermissionModel.relationMappings.resource).to.exist();
         expect(PermissionModel.relationMappings.resource.relation).to.equals(
-            BaseModel.HasOneRelation
+            BaseModel.BelongsToOneRelation
         );
     });
 
