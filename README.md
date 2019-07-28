@@ -13,18 +13,12 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 
 **WARNING: Noire is currently under active development and might not be ready for heavy production use**
 
-### View Layer
-
-*   Accept data
-*   Apply style and formatting
-*   Rendering
-
 ### Controllers
 
 *   Map routes
 *   Extract route parameters
 *   Kick off some work
-*   Send the result to a View for rendering
+*   Send the result back to the client
 
 ### Service Layer
 
@@ -40,15 +34,10 @@ Extremely opinionated [Hapi](http://hapijs.com) boilerplate using a layered arch
 ## Features
 
 *   HTTP and HTTPS support
-*   Server rendered views using the Semantic-UI front-end framework and Handlebars template engine
-*   API routes for rendering on the client side and building SPAs
 *   Automated API documentation generation
 *   Stateless JWT auth for API endpoints
-*   Cookie stored JWT auth for web app with CSRF protection
 *   RBAC authorization
-*   AJAX login, signup, registration and password reset forms
 *   Email sending using handlebars templates
-*   Client side caching of assets
 *   Fast and flexible logging (Pino)
 *   Testing, code coverage and Travis CI integration
 *   Graceful server shutdown
@@ -82,10 +71,6 @@ Edit all `lib/config*` files
 
 `npm run reset`
 
-### Generate Frontend Build
-
-`npm run build`
-
 ### Run the unit tests
 
 `npm test`
@@ -93,18 +78,16 @@ Edit all `lib/config*` files
 ### Launch the server in production mode
 
 *   Make sure `NODE_ENV=production`
-*   Update frontend build running `npm run webpack:prod`
 *   Start the server with `npm start`
 
 ### Development
 
 *   Set `NODE_ENV=development`
-*   Update frontend build running `npm run webpack`
 *   Start the server in watch mode with `npm run watch`
 
 #### Development Environment
 
-Noire is developed using Vim and Visual Studio Code. With VSCode the following plugins are used:
+Noire is developed using Vim and/or Visual Studio Code. With VSCode the following plugins are used:
 
 *   Babel ES6/ES7
 *   Document This
