@@ -1,5 +1,5 @@
+const Lab = require('@hapi/lab');
 const Hoek = require('hoek');
-const Lab = require('lab');
 const Sinon = require('sinon');
 const Hapi = require('hapi');
 const PermissionService = require('modules/authorization/services/permission');

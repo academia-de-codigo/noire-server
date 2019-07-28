@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Path = require('path');
 const mock = require('mock-require');
 const Hapi = require('hapi');

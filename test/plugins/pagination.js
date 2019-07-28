@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Hapi = require('hapi');
 const Pagination = require('plugins/pagination');
 const Logger = require('test/fixtures/logger-plugin');

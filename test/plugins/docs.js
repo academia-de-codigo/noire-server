@@ -1,4 +1,4 @@
-const Lab = require('lab'); // the test framework
+const Lab = require('@hapi/lab'); // the test framework
 const Hapi = require('hapi');
 const Vision = require('vision');
 const Inert = require('inert');

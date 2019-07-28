@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Sinon = require('sinon');
 const SearchQueryBuilder = require('models/search');
 const Objection = require('objection');
@@ -43,7 +43,7 @@ describe('Model: search', function() {
         // setup
         const fakeSearch = 'something';
         const fakeFields = ['search1', 'search2', 'search3'];
-        const model = new class extends Objection.Model {
+        const model = new (class extends Objection.Model {
             static get searchFields() {
                 return fakeFields;
             }
@@ -51,7 +51,7 @@ describe('Model: search', function() {
             static get QueryBuilder() {
                 return SearchQueryBuilder;
             }
-        }();
+        })();
         const queryBuilder = model.$query();
         Sinon.spy(queryBuilder, 'orWhere');
 

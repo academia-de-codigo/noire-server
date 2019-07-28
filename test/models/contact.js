@@ -1,10 +1,10 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const BaseModel = require('models/base');
 const ContactModel = require('models/contact');
 
 const { describe, expect, it } = (exports.lab = Lab.script());
 
-describe ('Model: contact', () => {
+describe('Model: contact', () => {
     it('extends from base model', () => {
         // exercise
         let contactModel = new ContactModel();

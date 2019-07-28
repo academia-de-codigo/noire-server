@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Knex = require('knex');
 const KnexConfig = require('knexfile');
 const Objection = require('objection');

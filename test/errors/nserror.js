@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Boom = require('boom');
 const NSError = require('errors/nserror');
 

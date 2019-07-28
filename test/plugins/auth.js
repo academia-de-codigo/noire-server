@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Sinon = require('sinon');
 const JWT = require('jsonwebtoken');
 const Bcrypt = require('bcrypt');

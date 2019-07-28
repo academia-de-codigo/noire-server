@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Sinon = require('sinon');
 const NodeMailer = require('nodemailer');
 const Logger = require('test/fixtures/logger-plugin');

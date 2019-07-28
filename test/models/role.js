@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const RoleModel = require('models/role');
 const BaseModel = require('models/base');
 

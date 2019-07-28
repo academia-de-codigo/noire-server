@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Mock = require('mock-require');
 
 const { before, describe, expect, it, after } = (exports.lab = Lab.script());
@@ -9,7 +9,7 @@ describe('Config', () => {
 
     before(() => {
         env = process.env.NODE_ENV;
-        
+
         Mock('config/common', { common: true, env: 'common' });
         Mock('config/dev', { env: 'dev' });
         Mock('config/prod', { env: 'prod' });
@@ -51,7 +51,7 @@ describe('Config', () => {
     it('overrides common config only if same config appears in env specific file', () => {
         //setup
         process.env.NODE_ENV = 'dev';
-        
+
         //exercise
         config = Mock.reRequire('config');
 

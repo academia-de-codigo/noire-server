@@ -1,5 +1,5 @@
+const Lab = require('@hapi/lab');
 const Sinon = require('sinon');
-const Lab = require('lab');
 const Hapi = require('hapi');
 const Pino = require('hapi-pino');
 const Logger = require('plugins/logger');

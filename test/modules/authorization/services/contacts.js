@@ -1,4 +1,4 @@
-const Lab = require('lab');
+const Lab = require('@hapi/lab');
 const Sinon = require('sinon');
 const Hapi = require('hapi');
 const Knex = require('knex');
