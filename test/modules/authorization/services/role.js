@@ -358,7 +358,6 @@ describe('Service: role', function() {
         expect(txSpy.args[0][0].indexOf(UserModel)).to.not.equals(-1);
         expect(result).to.be.an.array();
         expect(result.length).to.equals(1);
-        expect(result[0]).instanceof(Objection.Model);
         expect(result[0].roleId).to.equals(roleId);
         expect(result[0].userId).to.equals(userIds);
     });
@@ -379,7 +378,6 @@ describe('Service: role', function() {
         expect(result).to.be.an.array();
         expect(result.length).to.equals(userIds.length);
         result.forEach(model => {
-            expect(model).instanceof(Objection.Model);
             expect(model.roleId).to.equals(roleId);
         });
         expect(result.map(model => model.userId)).to.equals(userIds);
@@ -474,7 +472,6 @@ describe('Service: role', function() {
         expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
         expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
         expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.equal(-1);
-        expect(result).instanceof(Objection.Model);
         expect(result.roleId).to.equals(roleId);
         expect(result.permissionId).to.equals(permission.id);
 
@@ -505,7 +502,6 @@ describe('Service: role', function() {
         expect(txSpy.args[0][0].indexOf(RoleModel)).to.not.equal(-1);
         expect(txSpy.args[0][0].indexOf(PermissionModel)).to.not.equal(-1);
         expect(txSpy.args[0][0].indexOf(ResourceModel)).to.not.equal(-1);
-        expect(result).instanceof(Objection.Model);
         expect(result.roleId).to.equals(1);
         expect(result.permissionId).to.equals(9);
 
