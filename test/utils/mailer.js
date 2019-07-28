@@ -40,7 +40,7 @@ describe('Utils: mailer', () => {
         };
 
         Config.mail = {
-            templates: 'fixtures/email-templates',
+            templates: 'test/fixtures/templates',
             compile: '**/*.hbs'
         };
 

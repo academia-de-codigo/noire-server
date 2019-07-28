@@ -30,7 +30,7 @@ describe('Plugin: api', () => {
 
     it('registers the route handlers', async () => {
         // setup
-        mock(Path.join('routes/api'), fakeRouteConfig);
+        mock(Path.join('routes'), fakeRouteConfig);
         const Api = mock.reRequire('plugins/api');
         const server = Hapi.server();
         server.register(Logger);
