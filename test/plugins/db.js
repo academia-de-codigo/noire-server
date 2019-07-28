@@ -1,5 +1,5 @@
 const Lab = require('@hapi/lab');
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
 const mock = require('mock-require');
 const Config = require('config');

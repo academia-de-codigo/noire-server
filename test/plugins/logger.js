@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
-const Hapi = require('hapi');
 const Pino = require('hapi-pino');
 const Logger = require('plugins/logger');
 const FakeLogger = require('test/fixtures/logger-plugin');

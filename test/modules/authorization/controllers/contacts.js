@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
-const Hapi = require('hapi');
 const Logger = require('test/fixtures/logger-plugin');
 const ContactsCtrl = require('modules/authorization/controllers/contacts');
 const ContactsService = require('modules/authorization/services/contacts');

@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
-const Hapi = require('hapi');
 const JWT = require('jsonwebtoken');
 const UserService = require('modules/authorization/services/user');
 const LoginCtrl = require('modules/authorization/controllers/login');

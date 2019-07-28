@@ -4,7 +4,7 @@ module.exports = {
     coverage: true,
     threshold: 90,
     lint: true,
-    assert: 'code',
+    assert: '@hapi/code',
     'coverage-path': 'lib',
     'coverage-exclude': ['config.js'],
     paths: [

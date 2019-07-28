@@ -1,5 +1,5 @@
 const Lab = require('@hapi/lab');
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
 const Objection = require('objection');
 const Repository = require('plugins/repository');

@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
-const Hapi = require('hapi');
 const Auth = require('plugins/auth');
 const NSError = require('errors/nserror');
 const RegisterCtrl = require('modules/authorization/controllers/register');

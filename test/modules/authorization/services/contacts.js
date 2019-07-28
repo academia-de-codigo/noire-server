@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
-const Hapi = require('hapi');
 const Knex = require('knex');
 const Logger = require('test/fixtures/logger-plugin');
 const Objection = require('objection');

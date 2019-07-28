@@ -1,7 +1,7 @@
 const Lab = require('@hapi/lab'); // the test framework
-const Hapi = require('hapi');
-const Vision = require('vision');
-const Inert = require('inert');
+const Hapi = require('@hapi/hapi');
+const Vision = require('@hapi/vision');
+const Inert = require('@hapi/inert');
 const Lout = require('lout');
 const Docs = require('plugins/docs');
 const Logger = require('test/fixtures/logger-plugin');
