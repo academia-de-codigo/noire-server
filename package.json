@@ -1,6 +1,6 @@
 {
     "name": "noire-server",
-    "version": "0.5.6",
+    "version": "0.6.0",
     "description": "Noire Server",
     "main": "lib/index.js",
     "keywords": [
