@@ -1,4 +1,5 @@
 const Lab = require('@hapi/lab');
+const Hapi = require('@hapi/hapi');
 const Sinon = require('sinon');
 const NodeMailer = require('nodemailer');
 const Logger = require('test/fixtures/logger-plugin');
@@ -8,8 +9,8 @@ const NSError = require('errors/nserror');
 
 const { after, afterEach, before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
-describe('Utils: mailer', () => {
-    let mailConfig, smtpConfig, buildConfig;
+describe('Plugin: mailer', () => {
+    let server, mailConfig, smtpConfig, buildConfig;
     let Config, Mailer;
     let nodeMailerStub;
 
@@ -20,7 +21,7 @@ describe('Utils: mailer', () => {
         buildConfig = Config.build;
 
         Mock('plugins/logger', Logger);
-        Mailer = Mock.reRequire('utils/mailer');
+        Mailer = Mock.reRequire('plugins/mailer');
     });
 
     after(() => {
@@ -52,19 +53,22 @@ describe('Utils: mailer', () => {
             sendMail: Sinon.stub().resolves(),
             verify: Sinon.stub().resolves()
         });
+
+        server = Hapi.server();
+        server.register(Logger);
     });
 
     afterEach(() => {
         nodeMailerStub.restore();
     });
 
-    it('does not initialize mailer without smtp configuration', async () => {
+    it('does not register mailer without smtp configuration', async () => {
         // setup
         delete process.env.SMTP_USER;
         delete process.env.SMTP_PASS;
 
         // verify
-        await expect(Mailer.init()).to.reject('smtp configuration not found');
+        await expect(server.register(Mailer)).to.reject('smtp configuration not found');
     });
 
     it('does not initialize mailer if template directory not found', async () => {
@@ -72,7 +76,7 @@ describe('Utils: mailer', () => {
         Config.mail.templates = 'invalid';
 
         // verify
-        await expect(Mailer.init()).to.reject('email templates not found');
+        await expect(server.register(Mailer)).to.reject('email templates not found');
     });
 
     it('handles template compilation errors', async flags => {
@@ -85,7 +89,7 @@ describe('Utils: mailer', () => {
         Sinon.stub(Handlebars, 'compile').throws();
 
         // verify
-        await expect(Mailer.init()).to.reject('email configuration error');
+        await expect(server.register(Mailer)).to.reject('email configuration error');
     });
 
     it('handles smtp transport creation error', async () => {
@@ -93,7 +97,7 @@ describe('Utils: mailer', () => {
         NodeMailer.createTransport.restore();
         Sinon.stub(NodeMailer, 'createTransport').throws();
 
-        await expect(Mailer.init()).to.reject(Error, 'smtp transport error');
+        await expect(server.register(Mailer)).to.reject(Error, 'smtp transport error');
     });
 
     it('verifies transport if set in configuration', async () => {
@@ -108,7 +112,7 @@ describe('Utils: mailer', () => {
         });
 
         // exercise
-        await Mailer.init();
+        await server.register(Mailer);
 
         // verify
         expect(verifyStub.calledOnce).to.be.true();
@@ -125,7 +129,7 @@ describe('Utils: mailer', () => {
         });
 
         // exercise
-        await Mailer.init();
+        await server.register(Mailer);
 
         // verify
         expect(verifyStub.called).to.be.false();
@@ -142,7 +146,7 @@ describe('Utils: mailer', () => {
         });
 
         // verify
-        await expect(Mailer.init()).to.reject('smtp transport error');
+        await expect(server.register(Mailer)).to.reject('smtp transport error');
     });
 
     it('sends email from template', async () => {
@@ -163,7 +167,7 @@ describe('Utils: mailer', () => {
             verify: Sinon.stub(),
             sendMail: sendMailStub
         });
-        await Mailer.init();
+        await server.register(Mailer);
 
         // exercise
         await Mailer.sendMail(email);
@@ -185,7 +189,7 @@ describe('Utils: mailer', () => {
         // setup
         NodeMailer.createTransport.restore();
         Sinon.stub(NodeMailer, 'createTransport').returns(undefined);
-        await Mailer.init();
+        await server.register(Mailer);
 
         // exercise and verify
         await expect(Mailer.sendMail()).to.reject('smtp transport not available');
@@ -198,7 +202,7 @@ describe('Utils: mailer', () => {
             verify: Sinon.stub(),
             sendMail: Sinon.stub().rejects()
         });
-        await Mailer.init();
+        await server.register(Mailer);
 
         // exercise and verify
         await expect(Mailer.sendMail({ template: 'template1' })).to.reject(
