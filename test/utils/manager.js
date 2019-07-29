@@ -1,15 +1,11 @@
 const Lab = require('@hapi/lab');
-const Path = require('path');
 const Exiting = require('exiting');
 const Manager = require('utils/manager');
+const Config = require('config');
+const ConfigValidation = require('utils/config-validation');
+const Sinon = require('sinon');
 
-const { before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
-
-const internals = {};
-
-internals.composeOptions = {
-    relativeTo: Path.resolve(__dirname, '../../lib')
-};
+const { after, before, beforeEach, describe, expect, it } = (exports.lab = Lab.script());
 
 describe('Manager', () => {
     before(() => {
@@ -21,75 +17,63 @@ describe('Manager', () => {
         Manager.reset();
     });
 
-    it('returns servers object for single server', async () => {
-        // setup
-        const server = 'server';
-        const manifest = { server: { app: { name: server } } };
-
-        // exercise
-        const servers = await Manager.start(manifest, internals.composeOptions);
-
-        // verify
-        expect(servers[server].info).to.be.an.object();
-        expect(servers[server].info.port).to.be.a.number();
-        expect(servers[server].settings.app.name).to.equals(manifest.server.app.name);
+    after(() => {
+        Manager.reset();
     });
 
-    it('returns servers object for multiple servers', async () => {
+    it('validates configuration', async flags => {
+        // cleanup
+        flags.onCleanup = function() {
+            validateSpy.restore();
+        };
+
         // setup
-        const server1 = 'server1';
-        const server2 = 'server2';
-        const manifests = [
-            { server: { app: { name: server1 } } },
-            { server: { app: { name: server2 } } }
-        ];
+        const validateSpy = Sinon.spy(ConfigValidation, 'validate');
 
         // exercise
-        const servers = await Manager.start(manifests, internals.composeOptions);
+        await Manager.start();
 
-        // verify
-        expect(servers[server1].info).to.be.an.object();
-        expect(servers[server1].info.port).to.be.a.number();
-        expect(servers[server1].settings.app.name).to.equals(manifests[0].server.app.name);
-        expect(servers[server2].info).to.be.an.object();
-        expect(servers[server2].info.port).to.be.a.number();
-        expect(servers[server2].settings.app.name).to.equals(manifests[1].server.app.name);
+        // validation
+        expect(validateSpy.calledOnce).to.be.true();
     });
 
-    it('starts servers on specified ports', async () => {
-        // setup
-        const server1 = 'server1';
-        const server2 = 'server2';
-        const manifests = [
-            { server: { port: 8888, app: { name: server1 } } },
-            { server: { port: 8889, app: { name: server2 } } }
-        ];
-
+    it('returns server object', async () => {
         // exercise
-        const servers = await Manager.start(manifests, internals.composeOptions);
+        const server = await Manager.start();
 
         // verify
-        expect(servers[server1].info).to.be.an.object();
-        expect(servers[server1].info.port).to.equal(8888);
-        expect(servers[server2].info).to.be.an.object();
-        expect(servers[server2].info.port).to.equal(8889);
+        expect(server.info).to.be.an.object();
+        expect(server.info.port).to.be.a.number();
+        expect(server.settings.app.name).to.equals('api');
+    });
+
+    it('starts server on specified port', async flags => {
+        flags.onCleanup = async function() {
+            Config.api.port = origPort;
+        };
+
+        // setup
+        const origPort = Config.api.port;
+        Config.api.port = 8888;
+
+        // exercise
+        const server = await Manager.start();
+
+        // verify
+        expect(server.info).to.be.an.object();
+        expect(server.info.port).to.equal(8888);
     });
 
     it('stops a started server', async () => {
         // setup
-        const server = 'server';
-        const manifests = [
-            { server: { app: { name: server } } },
-            { server: { app: { name: 'another server' } } }
-        ];
         let called = false;
         const preStop = function() {
             called = true;
         };
 
         // exercise
-        const servers = await Manager.start(manifests, internals.composeOptions);
-        servers[server].events.on('stop', preStop);
+        const server = await Manager.start();
+        server.events.on('stop', preStop);
         await Manager.stop();
 
         // verify
@@ -97,12 +81,9 @@ describe('Manager', () => {
     });
 
     it('returns proper server state', async () => {
-        // setup
-        const manifest = { server: { app: { name: 'server' } } };
-
         // exercise
         let initialState = Manager.getState();
-        await Manager.start(manifest, internals.composeOptions);
+        await Manager.start();
         let startedState = Manager.getState();
         await Manager.stop();
         let stoppedState = Manager.getState();
@@ -111,6 +92,21 @@ describe('Manager', () => {
         expect(initialState).to.equals('stopped');
         expect(startedState).to.equals('started');
         expect(stoppedState).to.equals('stopped');
+    });
+
+    it('registers plugins', async () => {
+        // setup
+        let registerCount = 0;
+        const register = function() {
+            registerCount++;
+        };
+        const plugins = [{ name: 'p1', pkg: {}, register }, { name: 'p2', pkg: {}, register }];
+
+        // exercise
+        await Manager.start(plugins);
+
+        // verify
+        expect(registerCount).to.equal(2);
     });
 
     it('handles plugin registration failures', async () => {
@@ -123,25 +119,8 @@ describe('Manager', () => {
             name: 'fakePlugin',
             pkg: {}
         };
-        const manifests = [
-            {
-                server: {
-                    app: {
-                        name: 'server1'
-                    }
-                },
-                register: {
-                    plugins: [
-                        {
-                            plugin: fakePlugin
-                        }
-                    ]
-                }
-            }
-        ];
-        manifests.push({ server: { app: { name: 'server2' } } });
 
         // exercise and validate
-        await expect(Manager.start(manifests, internals.composeOptions)).to.reject(PLUGIN_ERROR);
+        await expect(Manager.start([fakePlugin])).to.reject(PLUGIN_ERROR);
     });
 });
