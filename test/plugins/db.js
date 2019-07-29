@@ -212,6 +212,6 @@ describe('Plugin: db', () => {
 
         // verify
         expect(Logger.fake.child.calledWith({ plugin: 'db' })).to.be.true();
-        expect(Logger.fake.debug.calledWith('stopped')).to.be.true();
+        expect(Logger.fake.debug.calledWith('plugin stopped')).to.be.true();
     });
 });
