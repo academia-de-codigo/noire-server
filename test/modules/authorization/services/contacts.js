@@ -11,8 +11,8 @@ const QS = require('qs');
 const ContactsService = require('modules/authorization/services/contacts');
 const Mailer = require('plugins/mailer');
 const Auth = require('plugins/auth');
-const UserModel = require('models/user');
-const ContactModel = require('models/contact');
+const UserModel = require('models/authorization/user');
+const ContactModel = require('models/authorization/contact');
 const NSError = require('errors/nserror');
 const Config = require('config');
 
@@ -33,7 +33,7 @@ describe('Service: contacts', () => {
         server.register(Logger);
         server.register({
             plugin: Repository,
-            options: { models: ['user', 'contact'] }
+            options: { models: ['authorization/user', 'authorization/contact'] }
         });
     });
 

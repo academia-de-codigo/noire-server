@@ -6,10 +6,10 @@ const Objection = require('objection');
 const KnexConfig = require('knexfile');
 const RoleService = require('modules/authorization/services/role');
 const Repository = require('plugins/repository');
-const UserModel = require('models/user');
-const RoleModel = require('models/role');
-const PermissionModel = require('models/permission');
-const ResourceModel = require('models/resource');
+const UserModel = require('models/authorization/user');
+const RoleModel = require('models/authorization/role');
+const PermissionModel = require('models/authorization/permission');
+const ResourceModel = require('models/authorization/resource');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
 
@@ -31,7 +31,14 @@ describe('Service: role', function() {
         server.register(Logger);
         server.register({
             plugin: Repository,
-            options: { models: ['user', 'role', 'resource', 'permission'] }
+            options: {
+                models: [
+                    'authorization/user',
+                    'authorization/role',
+                    'authorization/resource',
+                    'authorization/permission'
+                ]
+            }
         });
 
         txSpy = Sinon.spy(Repository, 'tx');

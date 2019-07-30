@@ -6,8 +6,8 @@ const Objection = require('objection');
 const KnexConfig = require('knexfile');
 const PermissionService = require('modules/authorization/services/permission');
 const Repository = require('plugins/repository');
-const PermissionModel = require('models/permission');
-const ResourceModel = require('models/resource');
+const PermissionModel = require('models/authorization/permission');
+const ResourceModel = require('models/authorization/resource');
 const NSError = require('errors/nserror');
 const Logger = require('test/fixtures/logger-plugin');
 const Resources = require('enums/resources');
@@ -31,7 +31,7 @@ describe('Service: permission', function() {
         server.register({
             plugin: Repository,
             options: {
-                models: ['permission', 'resource']
+                models: ['authorization/permission', 'authorization/resource']
             }
         });
 

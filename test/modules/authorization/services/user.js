@@ -8,8 +8,8 @@ const URL = require('url');
 const QS = require('qs');
 const UserService = require('modules/authorization/services/user');
 const Repository = require('plugins/repository');
-const UserModel = require('models/user');
-const RoleModel = require('models/role');
+const UserModel = require('models/authorization/user');
+const RoleModel = require('models/authorization/role');
 const Auth = require('plugins/auth');
 const Mailer = require('plugins/mailer');
 const NSError = require('errors/nserror');
@@ -33,7 +33,10 @@ describe('Service: user', () => {
 
         const server = Hapi.server();
         server.register(Logger);
-        server.register({ plugin: Repository, options: { models: ['user', 'role'] } });
+        server.register({
+            plugin: Repository,
+            options: { models: ['authorization/user', 'authorization/role'] }
+        });
 
         txSpy = Sinon.spy(Repository, 'tx');
     });

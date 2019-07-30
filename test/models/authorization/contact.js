@@ -1,6 +1,6 @@
 const Lab = require('@hapi/lab');
 const BaseModel = require('models/base');
-const ContactModel = require('models/contact');
+const ContactModel = require('models/authorization/contact');
 
 const { describe, expect, it } = (exports.lab = Lab.script());
 

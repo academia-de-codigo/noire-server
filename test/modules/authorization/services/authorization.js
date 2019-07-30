@@ -25,7 +25,14 @@ describe('Service: authorization', () => {
         server.register(Logger);
         server.register({
             plugin: Repository,
-            options: { models: ['user', 'role', 'resource', 'permission'] }
+            options: {
+                models: [
+                    'authorization/user',
+                    'authorization/role',
+                    'authorization/resource',
+                    'authorization/permission'
+                ]
+            }
         });
     });
 
