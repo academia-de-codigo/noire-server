@@ -6,7 +6,7 @@ module.exports = {
     lint: true,
     assert: '@hapi/code',
     'coverage-path': 'lib',
-    'coverage-exclude': ['config.js'],
+    'coverage-exclude': ['config'],
     paths: [
         'test/config',
         'test/errors',
