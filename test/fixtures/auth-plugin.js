@@ -1,4 +1,4 @@
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const Package = require('package.json');
 
 exports.authenticate = true;
