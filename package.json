@@ -36,7 +36,6 @@
         "@hapi/hoek": "^8.2.4",
         "@hapi/inert": "^5.2.1",
         "@hapi/joi": "^15.1.1",
-        "@hapi/lab": "^20.2.2",
         "@hapi/vision": "^5.5.3",
         "bcrypt": "^3.0.6",
         "chalk": "^2.4.2",
@@ -58,6 +57,7 @@
     },
     "devDependencies": {
         "@hapi/code": "^6.0.0",
+        "@hapi/lab": "^20.2.2",
         "codecov": "^3.5.0",
         "eslint-config-prettier": "^6.0.0",
         "mock-require": "^3.0.3",
