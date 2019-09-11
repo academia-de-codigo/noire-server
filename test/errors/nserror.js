@@ -1,5 +1,5 @@
 const Lab = require('@hapi/lab');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const NSError = require('errors/nserror');
 
 const { describe, expect, it } = (exports.lab = Lab.script());
