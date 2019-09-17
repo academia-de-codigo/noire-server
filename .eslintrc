@@ -27,8 +27,9 @@
             }
         ],
         "space-before-blocks": [1, "always"],
-        "no-console": "off",
+        "require-atomic-updates": "off",
         "no-return-await": 1,
+        "no-console": "off",
         "key-spacing": [
             2,
             {
@@ -36,10 +37,7 @@
                 "afterColon": true,
                 "mode": "minimum"
             }
-        ],
-        "rules": {
-            "prettier/prettier": "error"
-        }
+        ]
     },
     "plugins": []
 }
