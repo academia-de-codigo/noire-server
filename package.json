@@ -47,7 +47,7 @@
         "hapi-pino": "^6.1.0",
         "html-to-text": "^5.1.1",
         "jsonwebtoken": "^8.5.1",
-        "knex": "^0.19.4",
+        "knex": "^0.19.5",
         "lout": "^11.2.3",
         "nodemailer": "^6.3.0",
         "objection": "^1.6.9",
