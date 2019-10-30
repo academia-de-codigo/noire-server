@@ -1,3 +1,5 @@
+const User = require('models/authorization/user');
+
 exports.up = function(knex) {
     return Promise.all([
         knex.schema.createTable('user', function(table) {
