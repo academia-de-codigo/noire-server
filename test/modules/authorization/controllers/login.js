@@ -26,11 +26,6 @@ describe('API Controller: login', () => {
             path: '/login',
             config: { handler: LoginCtrl.login, plugins: { stateless: true } }
         });
-        server.route({
-            method: 'GET',
-            path: '/logout',
-            config: { handler: LoginCtrl.logout, plugins: { stateless: true } }
-        });
 
         server.route({
             method: 'GET',
@@ -154,76 +149,6 @@ describe('API Controller: login', () => {
         expect(response.statusMessage).to.equal('OK');
         expect(response.headers['server-authorization']).to.exist();
         expect(response.headers['server-authorization']).to.equals(token);
-    });
-
-    it('stores token in cookie if statefull login', async flags => {
-        // cleanup
-        flags.onCleanup = function() {
-            authenticateStub.restore();
-        };
-
-        // setup
-        server = Hapi.server();
-        server.route({
-            method: 'POST',
-            path: '/login',
-            config: { handler: LoginCtrl.login, plugins: { stateless: false } }
-        });
-        const credentials = { username: 'invalid', password: 'secret' };
-        const authenticateStub = Sinon.stub(UserService, 'authenticate');
-        authenticateStub.withArgs(credentials.username, credentials.password).resolves(token);
-
-        // exercise
-        const response = await server.inject({
-            method: 'POST',
-            url: '/login',
-            payload: credentials
-        });
-
-        expect(authenticateStub.calledOnce).to.be.true();
-        expect(response.statusCode).to.equal(200);
-        expect(response.statusMessage).to.equal('OK');
-        expect(response.headers['set-cookie']).to.be.an.array();
-        expect(response.headers['set-cookie'][0]).to.be.a.string();
-        expect(response.headers['set-cookie'][0].startsWith('token=')).to.be.true();
-        expect(response.headers['set-cookie'][0].indexOf(token)).to.equals('token='.length);
-    });
-
-    it('logout user', async () => {
-        // exercise
-        const response = await server.inject({
-            method: 'GET',
-            url: '/logout'
-        });
-
-        // validate
-        expect(response.statusCode).to.equal(200);
-        expect(response.statusMessage).to.equal('OK');
-        expect(response.result.success).to.be.true();
-        expect(response.result.message).to.equals('logged out');
-    });
-
-    it('removes token from cookie if statefull logout', async () => {
-        // setup
-        server = Hapi.server();
-        server.route({
-            method: 'GET',
-            path: '/logout',
-            config: { handler: LoginCtrl.logout, plugins: { stateless: false } }
-        });
-
-        // exercise
-        const response = await server.inject({
-            method: 'GET',
-            url: '/logout'
-        });
-
-        // validate
-        expect(response.statusCode).to.equal(200);
-        expect(response.statusMessage).to.equal('OK');
-        expect(response.headers['set-cookie']).to.be.an.array();
-        expect(response.headers['set-cookie'][0]).to.be.a.string();
-        expect(response.headers['set-cookie'][0].startsWith('token=;')).to.be.true();
     });
 
     it('renews authentication token without type', async () => {
