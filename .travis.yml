@@ -5,6 +5,7 @@ node_js:
     - '12'
 branches:
     only:
+        - dependencies-update
         - master
 addons:
     apt:
