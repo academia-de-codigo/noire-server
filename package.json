@@ -56,8 +56,8 @@
         "sqlite3": "^4.1.1"
     },
     "devDependencies": {
-        "@hapi/code": "^6.0.0",
-        "@hapi/lab": "^20.4.0",
+        "@hapi/code": "^8.0.1",
+        "@hapi/lab": "^22.0.3",
         "codecov": "^3.6.5",
         "eslint-config-prettier": "^6.10.0",
         "mock-require": "^3.0.3",
@@ -66,6 +66,6 @@
         "prettier-eslint": "^9.0.1",
         "prettier-eslint-cli": "^5.0.0",
         "qs": "^6.9.1",
-        "sinon": "^7.5.0"
+        "sinon": "^9.0.0"
     }
 }
