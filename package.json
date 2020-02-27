@@ -30,7 +30,7 @@
     },
     "homepage": "https://github.com/academia-de-codigo/noire-server",
     "dependencies": {
-        "@hapi/boom": "^7.4.11",
+        "@hapi/boom": "^9.0.0",
         "@hapi/glue": "^7.0.0",
         "@hapi/hapi": "^19.1.1",
         "@hapi/hoek": "^9.0.3",
