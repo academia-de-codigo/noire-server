@@ -31,10 +31,10 @@
     "homepage": "https://github.com/academia-de-codigo/noire-server",
     "dependencies": {
         "@hapi/boom": "^7.4.11",
-        "@hapi/glue": "^6.2.0",
-        "@hapi/hapi": "^18.4.1",
+        "@hapi/glue": "^7.0.0",
+        "@hapi/hapi": "^19.1.1",
         "@hapi/hoek": "^8.5.1",
-        "@hapi/inert": "^5.2.2",
+        "@hapi/inert": "^6.0.1",
         "@hapi/joi": "^16.1.8",
         "@hapi/vision": "^5.5.4",
         "bcrypt": "^4.0.0",
