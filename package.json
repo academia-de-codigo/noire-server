@@ -50,7 +50,7 @@
         "jsonwebtoken": "^8.5.1",
         "knex": "^0.20.10",
         "nodemailer": "^6.4.3",
-        "objection": "^1.6.11",
+        "objection": "^2.1.3",
         "pg": "^7.18.2",
         "pino": "^5.16.0",
         "sqlite3": "^4.1.1"
