@@ -2,7 +2,7 @@ const Lab = require('@hapi/lab'); // the test framework
 const Hapi = require('@hapi/hapi');
 const Vision = require('@hapi/vision');
 const Inert = require('@hapi/inert');
-const Lout = require('lout');
+const Swagger = require('hapi-swagger');
 const Docs = require('plugins/docs');
 const Logger = require('test/fixtures/logger-plugin');
 const Sinon = require('sinon');
@@ -49,14 +49,14 @@ describe('Plugin: docs', () => {
 
     it('handles inert plugin registration failures', async flags => {
         // cleanup
-        const loutRegister = Lout.plugin.register;
+        const swaggerRegister = Swagger.plugin.register;
         flags.onCleanup = function() {
-            Lout.plugin.register = loutRegister;
+            Swagger.plugin.register = swaggerRegister;
         };
 
         // setup
         const PLUGIN_ERROR = 'plugin error';
-        Lout.plugin.register = async function() {
+        Swagger.plugin.register = async function() {
             throw new Error(PLUGIN_ERROR);
         };
         const server = Hapi.server();
