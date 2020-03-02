@@ -375,7 +375,7 @@ describe('Service: role', function() {
         const userIds = [1, 2, 3];
 
         // exercise
-        const result = await RoleService.addUsers(4, [1, 2, 3]);
+        const result = await RoleService.addUsers(4, userIds);
 
         // validate
         expect(txSpy.calledOnce).to.be.true();
