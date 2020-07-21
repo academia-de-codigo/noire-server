@@ -58,7 +58,7 @@
     "devDependencies": {
         "@hapi/code": "^8.0.1",
         "@hapi/lab": "^22.0.4",
-        "codecov": "^3.6.5",
+        "codecov": "^3.7.1",
         "eslint-config-prettier": "^6.10.1",
         "mock-require": "^3.0.3",
         "nodemon": "^2.0.2",
