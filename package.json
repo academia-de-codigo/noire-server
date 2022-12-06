@@ -65,7 +65,7 @@
         "prettier": "^2.0.1",
         "prettier-eslint": "^9.0.1",
         "prettier-eslint-cli": "^5.0.0",
-        "qs": "^6.9.2",
+        "qs": "^6.9.7",
         "sinon": "^9.0.1"
     }
 }
